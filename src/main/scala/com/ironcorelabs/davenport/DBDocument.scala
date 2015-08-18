@@ -28,9 +28,9 @@ abstract trait DBDocument[T] {
   val data: T
   val cas: Long
   def dataJson: Throwable \/ RawJsonString
-  def modify(f: T => T): DBProg[_]
+  // def modify(f: T => T): DBProg[_]
   def remove: DBProg[Unit] = removeKey(key)
-  lazy val hashver = HashVerString(cas.toString)
+  lazy val hashver = HashVer(cas)
 }
 
 trait DBDocumentCompanion[T] {

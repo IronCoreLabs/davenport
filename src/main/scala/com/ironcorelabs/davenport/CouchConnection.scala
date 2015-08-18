@@ -120,7 +120,7 @@ object CouchConnection extends AbstractConnection {
       case GetCounter(k: Key) => getCounter(k)
       case IncrementCounter(k: Key, delta: Long) => incrementCounter(k, delta)
       case RemoveKey(k: Key) => removeKey(k)
-      case UpdateDoc(k: Key, v: RawJsonString, h: HashVerString) => updateDoc(k, v, h)
+      case UpdateDoc(k: Key, v: RawJsonString, h: HashVer) => updateDoc(k, v, h)
       case BatchCreateDocs(st: DBBatchStream, continue: (Throwable => Boolean)) =>
         batchCreateDocs(st, continue)
     }
@@ -153,7 +153,7 @@ object CouchConnection extends AbstractConnection {
         _.remove(k.value, classOf[RawJsonDocument])
       ).map(_ => ().right)
 
-    private def updateDoc(k: Key, v: RawJsonString, h: HashVerString): Task[Throwable \/ DbValue] =
+    private def updateDoc(k: Key, v: RawJsonString, h: HashVer): Task[Throwable \/ DbValue] =
       couchOp2DbV(_.replace(
         RawJsonDocument.create(k.value, 0, v.value, h.value.toLong)
       ))
@@ -220,7 +220,7 @@ object CouchConnection extends AbstractConnection {
       eOrT.fold(
         Task.fail(_),
         _.map { doc =>
-          DbValue(RawJsonString(doc.content), HashVerString(doc.cas.toString)).right
+          DbValue(RawJsonString(doc.content), HashVer(doc.cas)).right
         }
       )
     }

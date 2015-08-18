@@ -19,10 +19,10 @@ object MemConnection extends AbstractConnection {
   type KVMap = Map[Key, RawJsonString]
   type KVState[A] = State[KVMap, A]
 
-  def genHashVer(s: RawJsonString): HashVerString =
-    HashVerString(scala.util.hashing.MurmurHash3.stringHash(s.value).toString)
+  def genHashVer(s: RawJsonString): HashVer =
+    HashVer(scala.util.hashing.MurmurHash3.stringHash(s.value).toLong)
   private def modifyState(s: KVMap): (KVMap, Throwable \/ Unit) = s -> ().right
-  private def modifyStateDbv(s: KVMap, j: RawJsonString, h: HashVerString): (KVMap, Throwable \/ DbValue) = s -> DbValue(j, h).right
+  private def modifyStateDbv(s: KVMap, j: RawJsonString, h: HashVer): (KVMap, Throwable \/ DbValue) = s -> DbValue(j, h).right
   private def toKVState(logger: String => Unit = ((_) => ())): DBOp ~> KVState = new (DBOp ~> KVState) {
     // the logger is a side effect and the count is mutable, but at least
     // it is private and the side effects are incidental to the working of the

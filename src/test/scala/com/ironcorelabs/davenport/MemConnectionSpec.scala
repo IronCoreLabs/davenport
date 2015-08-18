@@ -65,7 +65,7 @@ class MemConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll wi
       data should ===(emptyData)
     }
     "fail updating a doc when using incorrect hashver" in {
-      val testUpdate = updateDoc(k, newvalue, HashVerString("badver"))
+      val testUpdate = updateDoc(k, newvalue, HashVer(0))
       val (data, res) = MemConnection.run(testUpdate, seedData)
       res should be(left)
       data should ===(seedData)

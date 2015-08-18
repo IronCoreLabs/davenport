@@ -65,7 +65,7 @@ class CouchConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll 
     "update a doc that exists with correct hashver" in {
       val testUpdate = for {
         t <- getDoc(k)
-        res <- updateDoc(k, newvalue, t.hashVerString)
+        res <- updateDoc(k, newvalue, t.hashVer)
       } yield res
       val res = CouchConnection(testUpdate)
       res should be(right)
@@ -73,12 +73,12 @@ class CouchConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll 
       res2.value.jsonString should ===(newvalue)
     }
     "fail updating a doc that doesn't exist" in {
-      val testUpdate = updateDoc(k404, newvalue, HashVerString("1234"))
+      val testUpdate = updateDoc(k404, newvalue, HashVer(1234))
       val res = CouchConnection(testUpdate)
       res.leftValue.getClass should ===(classOf[DocumentDoesNotExistException])
     }
     "fail updating a doc when using incorrect hashver" in {
-      val testUpdate = updateDoc(k, v, HashVerString("1234"))
+      val testUpdate = updateDoc(k, v, HashVer(1234))
       val res = CouchConnection(testUpdate)
       res.leftValue.getClass should ===(classOf[CASMismatchException])
     }
@@ -176,7 +176,7 @@ class CouchConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll 
       } yield ())
 
       // Update
-      def upd(cas: Long) = updateDoc(k, newvalue, HashVerString(cas.toString))
+      def upd(cas: Long) = updateDoc(k, newvalue, HashVer(cas))
 
       // Generate a task that will fail with a bad CAS and prove it
       val res: Task[Throwable \/ DbValue] = CouchConnection.execTask(upd(123))
@@ -186,7 +186,7 @@ class CouchConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll 
       val handled: Task[Throwable \/ DbValue] = res.handleWith {
         case e: CASMismatchException => CouchConnection.execTask(for {
           v <- getDoc(k)
-          u <- upd(v.hashVerString.value.toLong)
+          u <- upd(v.hashVer.value)
         } yield u)
       }
       val finalres = handled.attemptRun.join

@@ -13,8 +13,8 @@ object DB {
   // 1. Basic building block types encoded as scala value classes (google that)
   final case class Key(value: String) extends AnyVal
   final case class RawJsonString(value: String) extends AnyVal
-  final case class HashVerString(value: String) extends AnyVal
-  final case class DbValue(jsonString: RawJsonString, hashVerString: HashVerString)
+  final case class HashVer(value: Long) extends AnyVal
+  final case class DbValue(jsonString: RawJsonString, hashVer: HashVer)
   final case class DbBatchError(recordNum: Int, errorString: String)
 
   // 2. Type aliases for simpler function signatures
@@ -32,12 +32,14 @@ object DB {
   // implicit val EachDBOps: Each[DBOps] = new Each[DBOps] {
   // def each[A](fa: DBOps[A])(f: A => Unit) = fa foreach f
   // }
-  def liftIntoDBProg[A](either: Throwable \/ A): DBProg[A] = EitherT.eitherT(Monad[DBOps].point(either))
-  def liftToFreeEitherT[A](a: DBOp[Throwable \/ A]): DBProg[A] = {
+  def liftIntoDBProg[A](opt: Option[A], errormessage: String): DBProg[A] = EitherT.eitherT(Monad[DBOps].point(opt \/> new Exception(errormessage)))
+  implicit def liftIntoDBProg[A](opt: Option[A]): DBProg[A] = EitherT.eitherT(Monad[DBOps].point(opt \/> new Exception("Value not found")))
+  implicit def liftIntoDBProg[A](either: Throwable \/ A): DBProg[A] = EitherT.eitherT(Monad[DBOps].point(either))
+  implicit def liftToFreeEitherT[A](a: DBOp[Throwable \/ A]): DBProg[A] = {
     val free: DBOps[Throwable \/ A] = Free.liftFC(a)
     EitherT.eitherT(free)
   }
-  def dbProgFail[A](e: Throwable): DBProg[A] = liftIntoDBProg(e.left)
+  implicit def dbProgFail[A](e: Throwable): DBProg[A] = liftIntoDBProg(e.left)
   implicit def key2String(k: Key): String = k.value
   implicit def string2Key(s: String): Key = Key(s)
 
@@ -45,7 +47,7 @@ object DB {
   sealed trait DBOp[+A]
   case class GetDoc(key: Key) extends DBOp[Throwable \/ DbValue]
   case class CreateDoc(key: Key, doc: RawJsonString) extends DBOp[Throwable \/ DbValue]
-  case class UpdateDoc(key: Key, doc: RawJsonString, hashver: HashVerString) extends DBOp[Throwable \/ DbValue]
+  case class UpdateDoc(key: Key, doc: RawJsonString, hashver: HashVer) extends DBOp[Throwable \/ DbValue]
   case class RemoveKey(key: Key) extends DBOp[Throwable \/ Unit]
   case class GetCounter(key: Key) extends DBOp[Throwable \/ Long]
   case class IncrementCounter(key: Key, delta: Long = 1) extends DBOp[Throwable \/ Long]
@@ -55,7 +57,7 @@ object DB {
   def getDoc(k: Key): DBProg[DbValue] = liftToFreeEitherT(GetDoc(k))
   def createDoc(k: Key, doc: RawJsonString): DBProg[DbValue] =
     liftToFreeEitherT(CreateDoc(k, doc))
-  def updateDoc(k: Key, doc: RawJsonString, hashver: HashVerString): DBProg[DbValue] =
+  def updateDoc(k: Key, doc: RawJsonString, hashver: HashVer): DBProg[DbValue] =
     liftToFreeEitherT(UpdateDoc(k, doc, hashver))
   def removeKey(k: Key): DBProg[Unit] = liftToFreeEitherT(RemoveKey(k))
   def getCounter(k: Key): DBProg[Long] = liftToFreeEitherT(GetCounter(k))
@@ -64,7 +66,7 @@ object DB {
   def batchCreateDocs(st: DBBatchStream, continue: Throwable => Boolean = _ => true): DBProg[DBBatchResults] = liftToFreeEitherT(BatchCreateDocs(st, continue))
   def modifyDoc(k: Key, f: RawJsonString => RawJsonString): DBProg[DbValue] = for {
     t <- getDoc(k)
-    res <- updateDoc(k, f(t.jsonString), t.hashVerString)
+    res <- updateDoc(k, f(t.jsonString), t.hashVer)
   } yield res
 
   // Random other type conveniences
