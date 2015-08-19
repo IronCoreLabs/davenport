@@ -1,0 +1,11 @@
+language: scala
+scala:
+    - 2.9.3
+    - 2.10.4
+    - 2.11.7
+jdk:
+    - oraclejdk7
+    - oraclejdk8
+    - openjdk8
+script: sbt ++$TRAVIS_SCALA_VERSION test-only -- -l com.ironcorelabs.davenport.tags.RequiresCouch
+

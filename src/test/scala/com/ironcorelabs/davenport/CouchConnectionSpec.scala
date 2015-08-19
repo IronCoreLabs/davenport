@@ -6,13 +6,16 @@
 package com.ironcorelabs.davenport
 
 import scalaz._, Scalaz._, scalaz.concurrent.Task
-import org.scalatest.{ WordSpec, Matchers, BeforeAndAfterAll, OptionValues }
+import org.scalatest.{ WordSpec, Matchers, BeforeAndAfterAll, OptionValues, Tag }
 import org.typelevel.scalatest._
 import DisjunctionValues._
 import scala.language.postfixOps
 import DB._
+import com.ironcorelabs.davenport.tags.RequiresCouch
+// import com.ironcorelabs.davenport.tagobjects.RequiresCouch
 import scala.concurrent.duration._
 
+@RequiresCouch
 class CouchConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll with DisjunctionMatchers with OptionValues {
   val k = Key("test")
   val k404 = Key("test404")
