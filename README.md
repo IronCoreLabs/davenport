@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/IronCoreLabs/davenport.svg)](https://travis-ci.org/IronCoreLabs/davenport)
+
 # Davenport - A principled CouchBase library for Scala
 
 First, there are other libraries for interfacing with CouchBase from scala that we're aware of:
