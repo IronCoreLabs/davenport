@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/IronCoreLabs/davenport.svg)](https://travis-ci.org/IronCoreLabs/davenport)
+[ ![Download](https://api.bintray.com/packages/ironcorelabs/releases/davenport/images/download.svg) ](https://bintray.com/ironcorelabs/releases/davenport/_latestVersion)
 
 # Davenport - A principled CouchBase library for Scala
 
