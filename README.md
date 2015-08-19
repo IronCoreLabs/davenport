@@ -37,10 +37,7 @@ val finalResult = MemConnection.exec(operations)
 // or:
 val finalResult = CouchConnection.exec(operations)
 
-// and in either case the result will be the same (although we couch stores a CAS value and the
-// mem implementation uses a hash to do something similar and these will not be the same in
-// the returned DbValue hashVer field)
-)
+// and in either case the result will be the same except for the hashVer
 ```
 
 * This also has some nice short-circuiting properties. If you have a DB error early on, continued DB operations will halt (unless you prefer otherwise).
@@ -94,8 +91,9 @@ We presently only support a single bucket, although multiple-bucket support shou
 
 First, in your `build.sbt` file, you will want to reference davenport like so:
 
-    resolvers += "IronCore BinTray Repo" at "http://dl.bintray.com/ironcore/releases"
+    resolvers += "IronCore BinTray Repo" at "http://dl.bintray.com/ironcorelabs/releases"
     libraryDependencies ++= Seq(
+        "com.ironcorelabs" %% "davenport" % "0.0.5-alpha",
         "org.scalaz" %% "scalaz-core" % "7.1.2", // for type awesomeness
         "org.scalaz" %% "scalaz-concurrent" % "7.1.2", // for type awesomeness
         "io.argonaut" %% "argonaut" % "6.1" // json (de)serialization scalaz style
@@ -212,3 +210,12 @@ val (db2, u1) = MemConnection.run(DBUser.get(Key("user::readyplayerone@example.c
 ```
 
 We expect that the primitives with `RawJsonString` will generally not be used outside of the `DBDocument` classes.
+
+
+
+---
+
+Copyright (c) 2015 IronCore Labs
+
+Licensed under the [MIT Open Source License](http://opensource.org/licenses/MIT)
+
