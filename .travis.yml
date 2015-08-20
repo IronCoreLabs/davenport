@@ -4,6 +4,15 @@ scala:
 jdk:
 - oraclejdk8
 script: sbt ++$TRAVIS_SCALA_VERSION coverage "test-only -- -l com.ironcorelabs.davenport.tags.RequiresCouch"
+sudo: false
+addons:
+  apt:
+    packages:
+    - graphviz
+cache:
+  directories:
+  - "$HOME/.ivy2/cache"
+  - "$HOME/.sbt/boot/"
 env:
   global:
   - secure: eS06mIjZWEC2HlHZzwf+1ezf+3YRikysaGDNAX5ticc0caEwHxXe12Ic7aQrdrAhGbqFnqesEAlMqNvbaZLB2KiJP4VzaTbgt0UIY+Z7Jx5oo3h/bOru8ZOST10VmoZRUJt9C74Uq4/LNY9R8M7BAoPsYsWA+VhLfgB7EZIFTWG6j8rqx9A2E1Qnzfb5nadT0BT1Kk2XFTkMuWvBqj3fctIkK941I4N2pRdsiMxKgD4WYx9BMbWyEIEZQ3UiT0rstUJXC2F7VYvWTbsU6vz3kkXRCSyCEE0YCy0yh7fUqOQ08p6ioVVRoKN+gQu5bZRa6A1cZ1DaahsxnuIWzeYvjx7/hI2ZRhI6CgVfHj7BnXWEoioC9C1vEG50h0+IrSeIyOv37SHNrmuPGBW9xcGrvvouQBGwZwir7pXGvySJ9YwXvXCT1ROv3QV6yC1OGpe3NcZDnV2dXl2cI+KW4+9gdR4p44MS5u5YrzSRXIHFs3B6iTVlUJydQOXYHEnrAvbOhgVNf0K10+6V3qhs7/RryIISkL3T3nsYG+7Nom3HA9Fqk1MaR1hmC7T8Wiy9iZ3m3hSbchhigr8vT9Nh37DGInQmbeZQqNpy8NWxj4jI843t/IjymgMlilfDRvQ+X4U0hpI+BK/w9zPul821xHOip3r0WJWDMNbv4jL7doLa/bk=
