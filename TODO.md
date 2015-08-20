@@ -24,6 +24,13 @@
 ## Code
 
 - [ ] Resolve codacy concerns
+- [ ] Remove dead code
+- [ ] Add extra test coverage
+    - Test `execAsync` and `execTask` for MemConnection
+    - Create tests for DBDocument and Companion
+    - Test getCounter and bad (string?) counter val on increment in MemConnection
+    - Remove runAndPrint from Memconnection?
+- [ ] Remove unused implicits in DB
 
 ## Announce
 
