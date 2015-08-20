@@ -3,9 +3,9 @@
 ## Documentation
 
 - [ ] Setup github pages site with documentation
-    - See https://github.com/oncue/knobs/tree/master/docs  
+    - See https://github.com/oncue/knobs/tree/master/docs
     - Remember to use tut
-- [ ] Add scaladoc comments http://docs.scala-lang.org/style/scaladoc.html
+- [ ] Add [scaladoc comments](http://docs.scala-lang.org/style/scaladoc.html)
 - [ ] Add scaladocs to the github pages site (via unidoc?)
 
 ## Build
@@ -34,11 +34,11 @@
 
 ## Announce
 
-- [ ] Add to tools wiki: https://wiki.scala-lang.org/display/SW/Tools+and+Libraries
-- [ ] Add to libs: http://www.couchbase.com/open-source
-- [ ] Add to awesome: https://github.com/lauris/awesome-scala
-- [ ] Add to implicitly: http://notes.implicit.ly
-    - [ ] Also add infrastructure for autopublishing on update. See https://github.com/n8han/herald
+- [ ] Add to [tools wiki](https://wiki.scala-lang.org/display/SW/Tools+and+Libraries)
+- [ ] Add to [couchbase libs](http://www.couchbase.com/open-source)
+- [ ] Add to [awesome](https://github.com/lauris/awesome-scala)
+- [ ] Add to [implicitly](http://notes.implicit.ly)
+    - [ ] Also add infrastructure for [autopublishing on update](https://github.com/n8han/herald)
 
 ## Misc
 
