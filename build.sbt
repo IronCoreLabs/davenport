@@ -1,8 +1,16 @@
-scalaVersion := "2.11.7"
 name := "davenport"
+
+scalaVersion := "2.11.7"
+
+// crossScalaVersions := Seq("2.10.4")
 
 version := "0.5"
 
+licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
+
+bintrayOrganization := Some("ironcorelabs")
+
+bintrayPackageLabels := Seq("scala", "couchbase", "functional")
 
 resolvers ++= Seq(
   "Typesafe repository" at "http://repo.typesafe.com/typesafe/release/",
@@ -27,7 +35,17 @@ libraryDependencies ++= Seq(
   "org.typelevel" %% "scalaz-scalatest" % "0.2.2" % "test"
 )
 
+// Code coverage checks
+// instrumentSettings
 
+coverageMinimum := 70
+
+coverageFailOnMinimum := false
+
+coverageHighlighting := {
+    if(scalaBinaryVersion.value == "2.11") true
+    else false
+}
 
 
 

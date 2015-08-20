@@ -1,7 +1,21 @@
 language: scala
 scala:
-    - 2.11.7
+- 2.11.7
 jdk:
-    - oraclejdk8
-script: sbt ++$TRAVIS_SCALA_VERSION "test-only -- -l com.ironcorelabs.davenport.tags.RequiresCouch"
+- oraclejdk8
+script: sbt ++$TRAVIS_SCALA_VERSION coverage "test-only -- -l com.ironcorelabs.davenport.tags.RequiresCouch"
+env:
+  global:
+  - secure: eS06mIjZWEC2HlHZzwf+1ezf+3YRikysaGDNAX5ticc0caEwHxXe12Ic7aQrdrAhGbqFnqesEAlMqNvbaZLB2KiJP4VzaTbgt0UIY+Z7Jx5oo3h/bOru8ZOST10VmoZRUJt9C74Uq4/LNY9R8M7BAoPsYsWA+VhLfgB7EZIFTWG6j8rqx9A2E1Qnzfb5nadT0BT1Kk2XFTkMuWvBqj3fctIkK941I4N2pRdsiMxKgD4WYx9BMbWyEIEZQ3UiT0rstUJXC2F7VYvWTbsU6vz3kkXRCSyCEE0YCy0yh7fUqOQ08p6ioVVRoKN+gQu5bZRa6A1cZ1DaahsxnuIWzeYvjx7/hI2ZRhI6CgVfHj7BnXWEoioC9C1vEG50h0+IrSeIyOv37SHNrmuPGBW9xcGrvvouQBGwZwir7pXGvySJ9YwXvXCT1ROv3QV6yC1OGpe3NcZDnV2dXl2cI+KW4+9gdR4p44MS5u5YrzSRXIHFs3B6iTVlUJydQOXYHEnrAvbOhgVNf0K10+6V3qhs7/RryIISkL3T3nsYG+7Nom3HA9Fqk1MaR1hmC7T8Wiy9iZ3m3hSbchhigr8vT9Nh37DGInQmbeZQqNpy8NWxj4jI843t/IjymgMlilfDRvQ+X4U0hpI+BK/w9zPul821xHOip3r0WJWDMNbv4jL7doLa/bk=
+  - secure: PcTVdEXFwSGJ8WgMDSKMVeF8eJ7jOmQfGcdpb3C+fIgs3Gp5YOoJwusjgG6t35TK/hheUN4yujG0IeUmThCQXkW3/49tLnBtYmg7lWEdaMMrxpHvQTEoKE7J5pr+YjMExMVXxr/6NnI6HaE1mIG4Pk0iXzfrLbMBm/Zn/ezSajZRjCNN1X4TtHfKZ9iWEsoY2LAQL2LhkHMtgqpVNv3GcqFhmth5jKD7HZlSxzn0NpZZPVmcdg7Vbpd2HJjhBuaxhxXnqBFdFqqwgww41tQjvwYheBlr4CbgudCf/avqwSaXHuYGtre6Y7PdUCpKVnqIImt0nRXAdZCoJvSDiYr3Po7T41v7V8uks0nFLrAy4RhU5nGRpIe48He2EHylLXEX0wETL/sgq2quSxQw4DAGsR+tGiQ+/qrj78QpvYogDBxq1z8xhAb5I0Jk86iQN/yVVSk32fTUOqB6qQAsoUuILhEcclGjvDNKjFdHa5fVNW2XTMZkHQhOjkgj0+xh2USj256NKcmD0UHofoF0KYOA0JzHxu/p61y7bCL7M3QyJpaMrjUg8ANtr20Q9tVhpssBwD2gGyTPX81MWkE15fO2nUB4GGVWUStcfFtfnMYs7UZWQ38MboQTwWQwJTQRzU6I+NC0ZPBogQzqpGzyYHAcaS5M7XmWJNe4omSn/HVqDbA=
+  - secure: ZrUewegoiLST+K/OHAQv4QXvXTBo7Bei4crOslDOqm0Nl9VS/jf5t3sWCwaZA6c3Lybc71WJG6DyFPl1YXUSAmXzBkLO9JDE8gfgZtP1vZRjgAKcA6ptOIud4dLgU10mLLvWpipu9DsXC6rFFOm1pc7YKwM9XpZ7AZCWDXe5i6I5o0RLAe6gGmLps+awqfcz4yQf/LwXNygI4NFNaBTyqrTwFEqPBBrlkpKXYuWcq54kkCAfoDbueRvUC7BQmKvl4167wwmbODi9rJ84R92gLJ/eemk208y0mZpwxOheWFLLSUuaJGsoJ0nfrJhrD2z3B75IMZp3GXOBTkbxTLyCzPfnB90DzVNdPI/D86FqDIoSg+BF2EtRnvYQxGhXNovePWqpbUtCMndOREr5x9xOGflGBPW8+kv7U95EmP0hnDZQ8qZVeKiP7rvFVT0Cnu/MSzJmqj69/qJdyp9CiawAZop5Iem3MVCKTtZr7XcMS/7+RlSkNTjHkQvzhooyj8VLTJsGbUeer3nZ84Kaxg6I05vhcfVTSEpEoJMq5Oh57n3/3xGk78a1VWKO4K3ASc38HgTWQW+7jki/sScoXKjQzjs4LsVLTG8C0/n/wisrf1qZVgHw9ngJJjbrokergD2/T6LdqvANXAXV4eR6xMoxaTqaK5H7UD+KHawOvm45WCQ=
 
+# On successful build, publish code coverage results and publish to bintray
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+  - >
+      test "${TRAVIS_PULL_REQUEST}" = 'false' &&
+      test "${TRAVIS_JDK_VERSION}" = 'oraclejdk8' &&
+      #test "${TRAVIS_BRANCH}" = 'master' &&
+      sh "$TRAVIS_BUILD_DIR/.travis.credentials.sh" &&
+      sbt 'set version := version.value + "." + System.getenv("TRAVIS_BUILD_NUMBER")' publish

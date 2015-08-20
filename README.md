@@ -1,5 +1,8 @@
 [![Build Status](https://travis-ci.org/IronCoreLabs/davenport.svg)](https://travis-ci.org/IronCoreLabs/davenport)
-[ ![Download](https://api.bintray.com/packages/ironcorelabs/releases/davenport/images/download.svg) ](https://bintray.com/ironcorelabs/releases/davenport/_latestVersion)
+[ ![Download](https://api.bintray.com/packages/ironcorelabs/maven/davenport/images/download.svg) ](https://bintray.com/ironcorelabs/maven/davenport/_latestVersion)
+[![codecov.io](http://codecov.io/github/IronCoreLabs/davenport/coverage.svg?branch=master)](http://codecov.io/github/IronCoreLabs/davenport?branch=master)
+[![Codacy Badge](https://www.codacy.com/project/badge/f9ad4d48e42d49fc851af5d9697753b8)](https://www.codacy.com/app/github-zmre/davenport)
+[![MIT Open Source License](https://img.shields.io/badge/license-MIT-blue.svg)]()
 
 # Davenport - A principled CouchBase library for Scala
 
