@@ -36,7 +36,9 @@ libraryDependencies ++= Seq(
 )
 
 // Code coverage checks
-// instrumentSettings
+
+// Until we get couchbase running on travis-ci, ignore couchconnection
+coverageExcludedPackages := "<empty>;.*CouchConnection.*"
 
 coverageMinimum := 70
 
