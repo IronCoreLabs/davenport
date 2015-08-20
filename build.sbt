@@ -9,8 +9,9 @@ version := "0.5"
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
 
 bintrayOrganization := Some("ironcorelabs")
-
-bintrayPackageLabels := Seq("scala", "couchbase", "functional")
+bintrayPackageLabels := Seq("scala", "couchbase", "functional", "functional programming", "reasonable")
+bintrayRepository := "maven"
+bintrayPackage := "davenport"
 
 resolvers ++= Seq(
   "Typesafe repository" at "http://repo.typesafe.com/typesafe/release/",
@@ -49,7 +50,8 @@ coverageHighlighting := {
     else false
 }
 
-
+tutSettings
+unidocSettings
 
 // Apply default Scalariform formatting.
 // Reformat at every compile.
