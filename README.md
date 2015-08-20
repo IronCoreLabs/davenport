@@ -97,9 +97,9 @@ We presently only support a single bucket, although multiple-bucket support shou
 
 First, in your `build.sbt` file, you will want to reference davenport like so:
 
-    resolvers += "IronCore BinTray Repo" at "http://dl.bintray.com/ironcorelabs/releases"
+    resolvers += "IronCore BinTray Repo" at "http://dl.bintray.com/ironcorelabs/maven"
     libraryDependencies ++= Seq(
-        "com.ironcorelabs" %% "davenport" % "0.0.5-alpha",
+        "default" %% "davenport" % "0.5.11",
         "org.scalaz" %% "scalaz-core" % "7.1.2", // for type awesomeness
         "org.scalaz" %% "scalaz-concurrent" % "7.1.2", // for type awesomeness
         "io.argonaut" %% "argonaut" % "6.1" // json (de)serialization scalaz style
