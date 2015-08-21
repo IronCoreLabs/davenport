@@ -6,10 +6,6 @@ scala:
 - 2.11.7
 jdk:
 - oraclejdk8
-addons:
-  apt:
-    packages:
-    - graphviz
 cache:
   directories:
   - "$HOME/.ivy2/cache"
@@ -23,12 +19,9 @@ env:
 before_install:
 - docker pull zmre/couchbase-enterprise-ubuntu:4.0.0-beta
 - docker run --name couchbase -p 8091:8091 -p 8092:8092 -p 8093:8093 -p 11207:11207 -p 11210:11210 -p 11211:11211 -p 18091:18091 -p 18092:18092 -h couchbase.local -d zmre/couchbase-enterprise-ubuntu:4.0.0-beta
-- docker -v
-- docker ps
-- docker exec --help
-- docker exec -it couchbase /usr/local/bin/couchbase-setup.sh
 
 script:
+- docker exec couchbase /usr/local/bin/couchbase-setup.sh
 - sbt ++$TRAVIS_SCALA_VERSION coverage tut test
   #"test-only -- -l com.ironcorelabs.davenport.tags.RequiresCouch"
 
