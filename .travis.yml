@@ -1,7 +1,5 @@
 language: scala
-sudo: required
-services:
-- docker
+sudo: false
 scala:
 - 2.11.7
 jdk:
@@ -16,24 +14,7 @@ env:
   - secure: PcTVdEXFwSGJ8WgMDSKMVeF8eJ7jOmQfGcdpb3C+fIgs3Gp5YOoJwusjgG6t35TK/hheUN4yujG0IeUmThCQXkW3/49tLnBtYmg7lWEdaMMrxpHvQTEoKE7J5pr+YjMExMVXxr/6NnI6HaE1mIG4Pk0iXzfrLbMBm/Zn/ezSajZRjCNN1X4TtHfKZ9iWEsoY2LAQL2LhkHMtgqpVNv3GcqFhmth5jKD7HZlSxzn0NpZZPVmcdg7Vbpd2HJjhBuaxhxXnqBFdFqqwgww41tQjvwYheBlr4CbgudCf/avqwSaXHuYGtre6Y7PdUCpKVnqIImt0nRXAdZCoJvSDiYr3Po7T41v7V8uks0nFLrAy4RhU5nGRpIe48He2EHylLXEX0wETL/sgq2quSxQw4DAGsR+tGiQ+/qrj78QpvYogDBxq1z8xhAb5I0Jk86iQN/yVVSk32fTUOqB6qQAsoUuILhEcclGjvDNKjFdHa5fVNW2XTMZkHQhOjkgj0+xh2USj256NKcmD0UHofoF0KYOA0JzHxu/p61y7bCL7M3QyJpaMrjUg8ANtr20Q9tVhpssBwD2gGyTPX81MWkE15fO2nUB4GGVWUStcfFtfnMYs7UZWQ38MboQTwWQwJTQRzU6I+NC0ZPBogQzqpGzyYHAcaS5M7XmWJNe4omSn/HVqDbA=
   - secure: ZrUewegoiLST+K/OHAQv4QXvXTBo7Bei4crOslDOqm0Nl9VS/jf5t3sWCwaZA6c3Lybc71WJG6DyFPl1YXUSAmXzBkLO9JDE8gfgZtP1vZRjgAKcA6ptOIud4dLgU10mLLvWpipu9DsXC6rFFOm1pc7YKwM9XpZ7AZCWDXe5i6I5o0RLAe6gGmLps+awqfcz4yQf/LwXNygI4NFNaBTyqrTwFEqPBBrlkpKXYuWcq54kkCAfoDbueRvUC7BQmKvl4167wwmbODi9rJ84R92gLJ/eemk208y0mZpwxOheWFLLSUuaJGsoJ0nfrJhrD2z3B75IMZp3GXOBTkbxTLyCzPfnB90DzVNdPI/D86FqDIoSg+BF2EtRnvYQxGhXNovePWqpbUtCMndOREr5x9xOGflGBPW8+kv7U95EmP0hnDZQ8qZVeKiP7rvFVT0Cnu/MSzJmqj69/qJdyp9CiawAZop5Iem3MVCKTtZr7XcMS/7+RlSkNTjHkQvzhooyj8VLTJsGbUeer3nZ84Kaxg6I05vhcfVTSEpEoJMq5Oh57n3/3xGk78a1VWKO4K3ASc38HgTWQW+7jki/sScoXKjQzjs4LsVLTG8C0/n/wisrf1qZVgHw9ngJJjbrokergD2/T6LdqvANXAXV4eR6xMoxaTqaK5H7UD+KHawOvm45WCQ=
 
-before_install:
-- docker pull zmre/couchbase-enterprise-ubuntu:4.0.0-beta
-- docker run --name couchbase -p 8091:8091 -p 8092:8092 -p 8093:8093 -p 11207:11207 -p 11210:11210 -p 11211:11211 -p 18091:18091 -p 18092:18092 -h couchbase.local -d zmre/couchbase-enterprise-ubuntu:4.0.0-beta
-- sleep 5
-# Initialize Node
-- curl -v -X POST http://127.0.0.1:8091/nodes/self/controller/settings --data-urlencode path=/opt/couchbase/var/lib/couchbase/data --data-urlencode index_path=/opt/couchbase/var/lib/couchbase/data
-# Name the host
-#- curl -v -X POST http://127.0.0.1:8091/node/controller/rename -d hostname=${HOSTNAME}
-# Setup Services
-- curl -v -X POST http://127.0.0.1:8091/node/controller/setupServices --data-urlencode "services=kv,n1ql,index"
-# Setup bucket memory
-- curl -v -X POST http://127.0.0.1:8091/pools/default -d indexMemoryQuota=256 -d memoryQuota=2048
-# Setup default bucket
-- curl -v -X POST http://127.0.0.1:8091/pools/default/buckets -d flushEnabled=1 -d ramQuotaMB=2048 -d name="default" -d replicaIndex=0 -d evictionPolicy=valueOnly -d replicaNumber=0 -d threadsNumber=3 -d otherBucketsRamQuotaMB=0 -d authType=sasl -d saslPassword=
-# Setup Administrator username and password
-- curl -v -X POST http://127.0.0.1:8091/settings/web --data-urlencode password="cb1234" --data-urlencode username="Administrator" -d port=SAME
-- sleep 5
-- curl -v -X POST http://127.0.0.1:8093/query/service -d statement="CREATE PRIMARY INDEX defaultidx on default USING GSI"
+install: .travis/install-dependencies.sh
 
 script:
 - sbt ++$TRAVIS_SCALA_VERSION coverage tut test
@@ -42,8 +23,6 @@ script:
 after_script:
 - find $HOME/.sbt -name "*.lock" | xargs rm
 - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
-- docker stop couchbase
-- docker rm couchbase
 
 after_success:
 - bash <(curl -s https://codecov.io/bash)
