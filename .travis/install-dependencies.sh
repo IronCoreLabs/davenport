@@ -1,7 +1,8 @@
 #!/bin/sh
 
-export CB_SERVER_VERSION="4.0.0-beta"
-export CB_SERVER_FILE="couchbase-server-enterprise_${CB_SERVER_VERSION}-ubuntu14.04_amd64.deb"
+# couchbase-server-enterprise_3.1.0-ubuntu12.04_amd64.deb
+export CB_SERVER_VERSION="3.1.0"
+export CB_SERVER_FILE="couchbase-server-enterprise_${CB_SERVER_VERSION}-ubuntu12.04_amd64.deb"
 export CB_SERVER_URL="http://packages.couchbase.com/releases/${CB_SERVER_VERSION}/${CB_SERVER_FILE}"
 
 wget "${CB_SERVER_URL}"
