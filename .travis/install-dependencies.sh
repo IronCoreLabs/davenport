@@ -22,8 +22,8 @@ cd -
 ulimit -n 40960        # nofile: max number of open files
 
 # Start couchbase
-echo "Starting Couchbase Server -- Web UI available at http://<ip>:8091"
-/opt/couchbase/bin/couchbase-server &
+#echo "Starting Couchbase Server -- Web UI available at http://<ip>:8091"
+#/opt/couchbase/bin/couchbase-server &
 
 sleep 5
 
