@@ -21,12 +21,12 @@ env:
   - secure: ZrUewegoiLST+K/OHAQv4QXvXTBo7Bei4crOslDOqm0Nl9VS/jf5t3sWCwaZA6c3Lybc71WJG6DyFPl1YXUSAmXzBkLO9JDE8gfgZtP1vZRjgAKcA6ptOIud4dLgU10mLLvWpipu9DsXC6rFFOm1pc7YKwM9XpZ7AZCWDXe5i6I5o0RLAe6gGmLps+awqfcz4yQf/LwXNygI4NFNaBTyqrTwFEqPBBrlkpKXYuWcq54kkCAfoDbueRvUC7BQmKvl4167wwmbODi9rJ84R92gLJ/eemk208y0mZpwxOheWFLLSUuaJGsoJ0nfrJhrD2z3B75IMZp3GXOBTkbxTLyCzPfnB90DzVNdPI/D86FqDIoSg+BF2EtRnvYQxGhXNovePWqpbUtCMndOREr5x9xOGflGBPW8+kv7U95EmP0hnDZQ8qZVeKiP7rvFVT0Cnu/MSzJmqj69/qJdyp9CiawAZop5Iem3MVCKTtZr7XcMS/7+RlSkNTjHkQvzhooyj8VLTJsGbUeer3nZ84Kaxg6I05vhcfVTSEpEoJMq5Oh57n3/3xGk78a1VWKO4K3ASc38HgTWQW+7jki/sScoXKjQzjs4LsVLTG8C0/n/wisrf1qZVgHw9ngJJjbrokergD2/T6LdqvANXAXV4eR6xMoxaTqaK5H7UD+KHawOvm45WCQ=
 
 before_install:
-    - docker pull zmre/couchbase-enterprise-ubuntu:4.0.0-beta
-    - docker run --name couchbase -p 8091:8091 -p 8092:8092 -p 8093:8093 -p 11207:11207 -p 11210:11210 -p 11211:11211 -p 18091:18091 -p 18092:18092 -h couchbase.local -d zmre/couchbase-enterprise-ubuntu:4.0.0-beta
-  - docker -v
-  - docker ps
-  - docker exec --help
-  - docker exec -it couchbase /usr/local/bin/couchbase-setup.sh
+- docker pull zmre/couchbase-enterprise-ubuntu:4.0.0-beta
+- docker run --name couchbase -p 8091:8091 -p 8092:8092 -p 8093:8093 -p 11207:11207 -p 11210:11210 -p 11211:11211 -p 18091:18091 -p 18092:18092 -h couchbase.local -d zmre/couchbase-enterprise-ubuntu:4.0.0-beta
+- docker -v
+- docker ps
+- docker exec --help
+- docker exec -it couchbase /usr/local/bin/couchbase-setup.sh
 
 script:
 - sbt ++$TRAVIS_SCALA_VERSION coverage tut test
