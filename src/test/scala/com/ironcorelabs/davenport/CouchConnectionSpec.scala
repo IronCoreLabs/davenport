@@ -29,7 +29,7 @@ class CouchConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll 
   override def beforeAll() = {
     // Connect and make sure test key is not in db in case of
     // bad cleanup on last run
-    CouchConnection.connect
+    println(CouchConnection.connect)
     cleanup
     ()
   }
