@@ -22,8 +22,8 @@ env:
 
 before_install:
     - docker pull zmre/couchbase-enterprise-ubuntu:4.0.0-beta
-    - a=`docker run -p 8091:8091 -p 8092:8092 -p 8093:8093 -p 11207:11207 -p 11210:11210 -p 11211:11211 -p 18091:18091 -p 18092:18092 -h couchbase.local -d zmre/couchbase-enterprise-ubuntu:4.0.0-beta`
-    - docker exec $a /usr/local/bin/couchbase-setup.sh
+    - docker run --name couchbase -p 8091:8091 -p 8092:8092 -p 8093:8093 -p 11207:11207 -p 11210:11210 -p 11211:11211 -p 18091:18091 -p 18092:18092 -h couchbase.local -d zmre/couchbase-enterprise-ubuntu:4.0.0-beta
+    - docker exec couchbase /usr/local/bin/couchbase-setup.sh
 
 script:
 - sbt ++$TRAVIS_SCALA_VERSION coverage tut test
@@ -32,6 +32,7 @@ script:
 after_script:
 - find $HOME/.sbt -name "*.lock" | xargs rm
 - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
+- docker stop couchbase
 
 after_success:
 - bash <(curl -s https://codecov.io/bash)
