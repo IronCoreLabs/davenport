@@ -28,23 +28,21 @@ ulimit -n 40960        # nofile: max number of open files
 sleep 15
 
 # Initialize Node
-curl -v -X POST http://127.0.0.1:8091/nodes/self/controller/settings --data-urlencode path=/opt/couchbase/var/lib/couchbase/data --data-urlencode index_path=/opt/couchbase/var/lib/couchbase/data
+curl -v -X POST http://127.0.0.1:8091/nodes/self/controller/settings --data-urlencode path=/opt/couchbase/var/lib/couchbase/data
 
 # Name the host
-#- curl -v -X POST http://127.0.0.1:8091/node/controller/rename -d hostname=${HOSTNAME}
+curl -v -X POST http://127.0.0.1:8091/node/controller/rename -d hostname=127.0.0.1
 
 # Setup Services
-curl -v -X POST http://127.0.0.1:8091/node/controller/setupServices --data-urlencode "services=kv,n1ql,index"
+curl -v -X POST http://127.0.0.1:8091/node/controller/setupServices --data-urlencode "services=kv"
 
 # Setup bucket memory
-curl -v -X POST http://127.0.0.1:8091/pools/default -d indexMemoryQuota=256 -d memoryQuota=2048
+curl -v -X POST http://127.0.0.1:8091/pools/default -d memoryQuota=1196
 
 # Setup default bucket
-curl -v -X POST http://127.0.0.1:8091/pools/default/buckets -d flushEnabled=1 -d ramQuotaMB=2048 -d name="default" -d replicaIndex=0 -d evictionPolicy=valueOnly -d replicaNumber=0 -d threadsNumber=3 -d otherBucketsRamQuotaMB=0 -d authType=sasl -d saslPassword=
+curl -v -X POST http://127.0.0.1:8091/pools/default/buckets -d flushEnabled=1 -d ramQuotaMB=1196 -d name="default" -d replicaIndex=0 -d evictionPolicy=valueOnly -d replicaNumber=0 -d threadsNumber=3 -d otherBucketsRamQuotaMB=0 -d authType=sasl -d saslPassword=
 
 # Setup Administrator username and password
 curl -v -X POST http://127.0.0.1:8091/settings/web --data-urlencode password="cb1234" --data-urlencode username="Administrator" -d port=SAME
 sleep 5
-
-#curl -v -X POST http://127.0.0.1:8093/query/service -d statement="CREATE PRIMARY INDEX defaultidx on default USING GSI"
 
