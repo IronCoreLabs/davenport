@@ -25,7 +25,7 @@ ulimit -n 40960        # nofile: max number of open files
 #echo "Starting Couchbase Server -- Web UI available at http://<ip>:8091"
 #/opt/couchbase/bin/couchbase-server &
 
-sleep 5
+sleep 15
 
 # Initialize Node
 curl -v -X POST http://127.0.0.1:8091/nodes/self/controller/settings --data-urlencode path=/opt/couchbase/var/lib/couchbase/data --data-urlencode index_path=/opt/couchbase/var/lib/couchbase/data
@@ -46,5 +46,5 @@ curl -v -X POST http://127.0.0.1:8091/pools/default/buckets -d flushEnabled=1 -d
 curl -v -X POST http://127.0.0.1:8091/settings/web --data-urlencode password="cb1234" --data-urlencode username="Administrator" -d port=SAME
 sleep 5
 
-curl -v -X POST http://127.0.0.1:8093/query/service -d statement="CREATE PRIMARY INDEX defaultidx on default USING GSI"
+#curl -v -X POST http://127.0.0.1:8093/query/service -d statement="CREATE PRIMARY INDEX defaultidx on default USING GSI"
 
