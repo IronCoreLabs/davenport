@@ -55,7 +55,7 @@ object CouchConnection extends AbstractConnection {
       cfg.lookup[String]("cdb.host") getOrElse "couchbase.local",
       cfg.lookup[String]("cdb.bucketName") getOrElse "default",
       DefaultCouchbaseEnvironment.builder()
-        .queryEnabled(cfg.lookup[Boolean]("cdb.queryEnabled") getOrElse false)
+        // .queryEnabled(cfg.lookup[Boolean]("cdb.queryEnabled") getOrElse false)
         .ioPoolSize(cfg.lookup[Int]("cdb.ioPoolSize") getOrElse 4)
         .computationPoolSize(cfg.lookup[Int]("cdb.computationPoolSize") getOrElse 4)
         .kvEndpoints(cfg.lookup[Int]("cdb.kvEndpoints") getOrElse 2)
@@ -68,6 +68,7 @@ object CouchConnection extends AbstractConnection {
    */
   def connect: Throwable \/ Unit = dbconfig.map { cfg =>
     try {
+      println("Attempting connection to "+cfg.host)
       val cluster = CouchbaseCluster.create(cfg.env, cfg.host)
       currentConnection = Some(CouchConnectionInfo(
         cluster,

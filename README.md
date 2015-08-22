@@ -53,7 +53,7 @@ Suppose you have a User class that has some basic fields:
 
 We prefer not to adulterate the underlying class, but instead to wrap it in a class that can persist it to/from the database.  We do so by creating an interface that by convention we call `DBUser`:
 
-```tut
+```scala
 case class DBUser(val key: Key, val data: User, val cas: Long) extends DBDocument[User] {
   // ...
 }
@@ -82,7 +82,7 @@ def get(k: Key): DBProg[_]
 
 Generally speaking, these are pretty boilerplate.  One thing to note is that the `genKey` method returns a `DBProg`.  This is in case the key itself depends on the database, as in the case where you are using an incrementing index as the key.  If you are deriving the key from the underlying class, you just wrap the result into a `DBProg`.  In our case, our key for a `User` will be `user::<email>`, so statically derived.  Here's a fuller implementation:
 
-```tut
+```scala
 import com.ironcorelabs.davenport._, DB._
 import scalaz._, Scalaz._, scalaz.concurrent.Task
 import argonaut._, Argonaut._
@@ -119,7 +119,7 @@ Anyone wanting to factor out some of the boilerplate -- please be my guest, we'd
 
 Now that we have a nice abstraction for persisting our user class, lets try it out:
 
-```tut
+```scala
 val addTwoNewUsers = for {
   newu1 <- DBUser.create(User("User", "One", "readyplayerone@example.com", System.currentTimeMillis()))
   newu2 <- DBUser.create(User("User", "Two", "readyplayertwo@example.com", System.currentTimeMillis()))
@@ -131,13 +131,12 @@ val users: Throwable \/ List[DBUser] = MemConnection.exec(addTwoNewUsers)
 
 Feel free to test against Couchbase as well.  We'll keep illustrating with the MemConnection for now to show how you can easily experiment and write unit tests.  As an alternative to calling `MemConnection.exec` you can call `MemConnection.run`.  This is not part of the common interface dictated by `AbstractConnection`, but is special to the memory implementation.  `run` takes an optional `Map` and returns a tuple with the `Map` and the results.  You can then use this `Map` as your state and as a starting point for a database with known values in it.  Building on our example above, we could instead do this:
 
-```tut
+```scala
 val (db: MemConnection.KVMap, users: \/[Throwable, List[DBUser]]) = MemConnection.run(addTwoNewUsers)
 
 // Fetch one of the users out of the database
 val (db2, u1) = MemConnection.run(DBUser.get(Key("user::readyplayerone@example.com")), db)
-// u1: scalaz.\/[Throwable,DBUser]] = \/-(DBUser(Key(user::readyplayerone@example.com),
-» User(User,One,readyplayerone@example.com,1439940334529),2111310807))
+// u1: scalaz.\/[Throwable,DBUser]] = \/-(DBUser(Key(user::readyplayerone@example.com), User(User,One,readyplayerone@example.com,1439940334529),2111310807))
 ```
 
 We expect that the primitives with `RawJsonString` will generally not be used outside of the `DBDocument` classes.
@@ -149,7 +148,7 @@ We expect that the primitives with `RawJsonString` will generally not be used ou
 
 * Uses a Free Grammar abstraction based on [scalaz](https://github.com/scalaz/scalaz)'s `Free` monads.This means that you string together a bunch of database instructions, but delay executing them until you're ready.  When you do execute them, you get to choose your interpreter.  All interpreters must handle all instructions.  Consequently, you can choose to execute your program against multiple backends.  In Davenport, we provide an in-memory local option as well as Couchbase.  The advantage here is testing: fast unit tests that don't require a Couchbase server or any cleanup.  For example:
 
-```tut
+```scala
 import com.ironcorelabs.davenport.DB._
 import com.ironcorelabs.davenport.{ MemConnection, CouchConnection }
 
@@ -179,7 +178,7 @@ val finalResult = CouchConnection.exec(operations)
 * This also has some nice short-circuiting properties. If you have a DB error early on, continued DB operations will halt (unless you prefer otherwise).
 * You can map over the DB and inject whatever other functions you like into the process.  As a more complex example, you can make an operation that copies a json field from one stored document to another:
 
-```tut
+```scala
 import com.ironcorelabs.davenport.DB._
 import argonaut._, Argonaut._
 

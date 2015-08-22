@@ -10,8 +10,9 @@ licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
 
 bintrayOrganization := Some("ironcorelabs")
 bintrayPackageLabels := Seq("scala", "couchbase", "functional", "functional programming", "reasonable")
-bintrayRepository := "maven"
-bintrayPackage := "davenport"
+// bintrayRepository := "maven"
+// bintrayPackage := "davenport"
+publishMavenStyle := true
 
 resolvers ++= Seq(
   "Typesafe repository" at "http://repo.typesafe.com/typesafe/release/",
@@ -39,7 +40,7 @@ libraryDependencies ++= Seq(
 // Code coverage checks
 
 // Until we get couchbase running on travis-ci, ignore couchconnection
-coverageExcludedPackages := "<empty>;.*CouchConnection.*"
+//coverageExcludedPackages := "<empty>;.*CouchConnection.*"
 
 coverageMinimum := 70
 
