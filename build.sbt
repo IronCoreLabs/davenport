@@ -22,8 +22,8 @@ resolvers ++= Seq(
 
 // Production
 libraryDependencies ++= Seq(
-  "org.scalaz" %% "scalaz-core" % "7.1.2", // for type awesomeness
-  "org.scalaz" %% "scalaz-concurrent" % "7.1.2", // for type awesomeness
+  "org.scalaz" %% "scalaz-core" % "7.1.3", // for type awesomeness
+  "org.scalaz" %% "scalaz-concurrent" % "7.1.3", // for type awesomeness
   "com.couchbase.client" % "java-client" % "2.1.4", // interacting with couch
   "io.reactivex" %% "rxscala" % "0.25.0", // to better work with the couchbase java client
   //"org.slf4j" % "slf4j-nop" % "1.6.4", // logging fun
