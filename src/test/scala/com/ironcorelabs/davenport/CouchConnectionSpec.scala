@@ -12,7 +12,6 @@ import DisjunctionValues._
 import scala.language.postfixOps
 import DB._
 import com.ironcorelabs.davenport.tags.RequiresCouch
-// import com.ironcorelabs.davenport.tagobjects.RequiresCouch
 import scala.concurrent.duration._
 
 @RequiresCouch
