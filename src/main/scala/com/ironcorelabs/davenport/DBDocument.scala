@@ -23,7 +23,7 @@ import argonaut._, Argonaut._
 
 import DB._
 
-abstract trait DBDocument[T] {
+trait DBDocument[T] {
   val key: Key
   val data: T
   val cas: Long
