@@ -68,7 +68,7 @@ object CouchConnection extends AbstractConnection {
    */
   def connect: Throwable \/ Unit = dbconfig.map { cfg =>
     try {
-      println("Attempting connection to "+cfg.host)
+      println("Attempting connection to " + cfg.host)
       val cluster = CouchbaseCluster.create(cfg.env, cfg.host)
       currentConnection = Some(CouchConnectionInfo(
         cluster,
