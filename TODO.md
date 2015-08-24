@@ -5,7 +5,7 @@
 - [ ] Setup github pages site with documentation
     - See https://github.com/oncue/knobs/tree/master/docs
     - Remember to use tut
-- [ ] Add [scaladoc comments](http://docs.scala-lang.org/style/scaladoc.html)
+- [x] Add [scaladoc comments](http://docs.scala-lang.org/style/scaladoc.html)
 - [ ] Add scaladocs to the github pages site (via unidoc?)
 
 ## Build
@@ -13,7 +13,7 @@
 - [ ] Move snapshots to Sonatype
 - [ ] Cross-compile against different scala versions - at least 2.10 and 2.11
 - [ ] Setup release process using [sbt-release](https://github.com/sbt/sbt-release)
-- [ ] Setup travis to use docker image so couchbase tests can run. Links:
+- [x] Setup travis to use docker image so couchbase tests can run. Links:
     - http://docs.travis-ci.com/user/docker/
     - https://github.com/travis-ci/docker-sinatra/blob/master/Dockerfile
     - https://hub.docker.com/r/zmre/couchbase-enterprise-ubuntu/
@@ -24,13 +24,14 @@
 ## Code
 
 - [ ] Resolve codacy concerns
-- [ ] Remove dead code
+- [x] Remove dead code
 - [ ] Add extra test coverage
     - Test `execAsync` and `execTask` for MemConnection
     - Create tests for DBDocument and Companion
     - Test getCounter and bad (string?) counter val on increment in MemConnection
     - Remove runAndPrint from Memconnection?
-- [ ] Remove unused implicits in DB
+- [x] Remove unused implicits in DB
+- [ ] Implement DbBatchError instead of pair of num and error string
 
 ## Announce
 

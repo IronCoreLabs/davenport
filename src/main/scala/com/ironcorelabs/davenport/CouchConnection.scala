@@ -26,23 +26,32 @@ import rx.lang.scala.Notification._
 import knobs.{ Required, Optional, FileResource, Config, ClassPathResource }
 import java.io.File
 
+/** Connect to Couchbase and interpret [[DB.DBProg]]s */
 object CouchConnection extends AbstractConnection {
-  /*
-   * Building block types for couchbase connection
-   */
+  //
+  //
+  // Building block types for couchbase connection
+  //
+  //
+
   private case class CouchConnectionConfig(host: String, bucketName: String, env: CouchbaseEnvironment)
   private case class CouchConnectionInfo(cluster: CouchbaseCluster, bucket: Bucket, env: CouchbaseEnvironment)
 
-  /*
-   * Stateful connection details
-   */
+  //
+  //
+  // Stateful connection details
+  //
+  //
   private var currentConnection: Option[CouchConnectionInfo] = None
   private var testConnection: Option[CouchConnectionInfo] = None
   private def bucketOrError: Throwable \/ Bucket = currentConnection.map(_.bucket) \/> new Exception("Not connected")
 
-  /*
-   * Configuration
-   */
+  //
+  //
+  // Configuration
+  //
+  //
+
   private val configFileName = "couchbase.cfg"
   private val configFileDevName = "couchbase-dev.cfg"
   private val config: Task[Config] = knobs.loadImmutable(
@@ -63,8 +72,22 @@ object CouchConnection extends AbstractConnection {
     )
   }
 
-  /*
-   * Connect and disconnect state methods
+  //
+  //
+  // Connect and disconnect state methods
+  //
+  //
+
+  /**
+   * Connect to couchbase using the on-disk configuration
+   *
+   *  Configuration details should be specified in `couchbase.cfg`
+   *  located in the classpath, or `couchbase-dev.cfg` located
+   *  in the root of the project.
+   *
+   *  This is done on a global (static) object as the underlying
+   *  couchbase libraries require at most one connection and then
+   *  pool requests to that endpoint.
    */
   def connect: Throwable \/ Unit = dbconfig.map { cfg =>
     try {
@@ -84,6 +107,7 @@ object CouchConnection extends AbstractConnection {
     }
   }.attemptRun.join
 
+  /** Safely disconnect from couchbase */
   def disconnect(): Unit = {
     currentConnection.map { c =>
       c.cluster.disconnect
@@ -93,13 +117,30 @@ object CouchConnection extends AbstractConnection {
     ()
   }
 
+  /**
+   * Check if a connection is currently open
+   *
+   *  Note: this is no guarantee that the connection remains
+   *  open. This indicates a previous successful connection
+   *  and no disconnect. Should the server go down after
+   *  connect, for example, this will return `true` though
+   *  attempts to use the connection will fail.
+   */
   def connected: Boolean = !currentConnection.isEmpty
 
-  /*
-   * Free grammar implementation to run a DBProg using couchbase backend
+  /**
+   * Free grammar implementation to run a `DBProg` using couchbase backend
+   */
+  def exec[A](db: DBProg[A]): Throwable \/ A = execTask(db).attemptRun.join
+
+  /**
+   * an alias to exec
    */
   def apply[A](db: DBProg[A]): Throwable \/ A = exec(db)
-  def exec[A](db: DBProg[A]): Throwable \/ A = execTask(db).attemptRun.join
+
+  /**
+   * Wrap the execution of the [[DB.DBProg]] in a `scalaz.concurrent.Task`
+   */
   def execTask[A](db: DBProg[A]): Task[Throwable \/ A] = if (connected) {
     Free.runFC[DBOp, Task, Throwable \/ A](db.run)(couchRunner)
   } else {
@@ -108,13 +149,15 @@ object CouchConnection extends AbstractConnection {
     Task.fail(new Exception("Not connected"))
   }
 
-  /*
-   * We use co-yoneda to run our Free.
-   * In this case, the couchRunner object transforms DBOp to Task
+  /**
+   * We use co-yoneda to run our `scalaz.Free`.
+   *
+   * In this case, the couchRunner object transforms [[DB.DBOp]] to
+   * `scalaz.concurrent.Task`.
    * The only public method, apply, is what gets called as the grammar
-   * is executed, calling it to transform DBOps to functions.
+   * is executed, calling it to transform [[DB.DBOps]] to functions.
    */
-  def couchRunner = new (DBOp ~> Task) {
+  private def couchRunner = new (DBOp ~> Task) {
     def apply[A](dbp: DBOp[A]): Task[A] = dbp match {
       case GetDoc(k: Key) => getDoc(k)
       case CreateDoc(k: Key, v: RawJsonString) => createDoc(k, v)
@@ -165,7 +208,7 @@ object CouchConnection extends AbstractConnection {
     /*
      * Helpers for batchCreateDocs
      */
-    def batchStream2StreamOfResults(st: DBBatchStream): Iterator[DBBatchResults] =
+    private def batchStream2StreamOfResults(st: DBBatchStream): Iterator[DBBatchResults] =
       st.zipWithIndex.map {
         (altogether: (Throwable \/ (DBProg[Key], RawJsonString), Int)) =>
           val (rec, idx) = altogether
@@ -180,10 +223,10 @@ object CouchConnection extends AbstractConnection {
           })
       }
 
-    def disj2BatchResult[A](res: Throwable \/ A, idx: Int, f: A => DBBatchResults): DBBatchResults =
+    private def disj2BatchResult[A](res: Throwable \/ A, idx: Int, f: A => DBBatchResults): DBBatchResults =
       res.fold(e => batchFailed(idx, e), a => f(a))
 
-    def stopIteratingWhenContinueFunctionFails(st: Iterator[DBBatchResults], continue: Throwable => Boolean): Iterator[DBBatchResults] = {
+    private def stopIteratingWhenContinueFunctionFails(st: Iterator[DBBatchResults], continue: Throwable => Boolean): Iterator[DBBatchResults] = {
       var lastLineAndError = none[DBBatchResults]
       st.takeWhile {
         case \&/.This(ilist: IList[(Int, Throwable)]) => ilist.headOption.fold(true) {
@@ -199,7 +242,7 @@ object CouchConnection extends AbstractConnection {
       } ++ lastLineAndError.toIterator
     }
 
-    def evalBatchStream(st: Iterator[DBBatchResults], continue: (Throwable => Boolean)): Task[DBBatchResults] = {
+    private def evalBatchStream(st: Iterator[DBBatchResults], continue: (Throwable => Boolean)): Task[DBBatchResults] = {
       val emptyResult: DBBatchResults = IList[Int]().wrapThat[IList[(Int, Throwable)]]
       Task.delay(
         stopIteratingWhenContinueFunctionFails(st, continue)
@@ -245,7 +288,6 @@ object CouchConnection extends AbstractConnection {
     // with when composing and reasoning about functions and operations.
     private def obs2Task[A](o: Observable[A]): Task[A] = {
       Task.async[A](k => {
-        // o.take(1).single.subscribe(
         o.firstOrElse(throw new DocumentDoesNotExistException()).subscribe(
           n => k(n.right),
           e => k(e.left),
@@ -256,41 +298,19 @@ object CouchConnection extends AbstractConnection {
     }
   }
 
-  /*
-   * Next two functions provided for unit tests
+  /**
+   * Used for testing a failed connection without having
+   * to disconnect from the database first.
    */
   def fakeDisconnect() = {
     testConnection = currentConnection
     currentConnection = None
   }
+  /**
+   * Restores the connected session state
+   */
   def fakeDisconnectRevert() = {
     currentConnection = testConnection
   }
 
 }
-
-/*
- *
- * Modeling signatures in Couchbase -- a tour of the options.
- *
- * 1. Embed signatures into PgpKey.  So the signer PgpKey would have a list of
- *    outbound signatures and would get a List[PgpSignature].  Inbound signatures
- *    would require a view.
- *
- * 2. Put signatures into their own keyspace like
- *    "PgpSignature::signer-signee-created" although there is no way to scan
- *    or find this list without views or some other index back.  But could have
- *    references to the sigs from PgpKeys.
- *
- * 3. Put signatures in their own documents in a key space under the signer key
- *    so they can be predictably fetched.  In this scenario, we would have a
- *    document like: "Key::signerkeyid::signatures_count" that contained the
- *    number of outbound signatures and we'd have an incrementing counter:
- *    "Key::signerkeyid::signatures::incrid"
- *
- *    In this way we could paginate through and predict keys reliably.
- *
- *    Could also do something similar for inbound signatures, but just
- *    referencing the source key.
- */
-
