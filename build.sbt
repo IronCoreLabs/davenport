@@ -38,10 +38,6 @@ libraryDependencies ++= Seq(
 )
 
 // Code coverage checks
-
-// Until we get couchbase running on travis-ci, ignore couchconnection
-//coverageExcludedPackages := "<empty>;.*CouchConnection.*"
-
 coverageMinimum := 70
 
 coverageFailOnMinimum := false
@@ -53,6 +49,14 @@ coverageHighlighting := {
 
 tutSettings
 unidocSettings
+site.settings
+ghpages.settings
+site.includeScaladoc()
+
+
+// site.addMappingsToSiteDir(mappings in (ScalaUnidoc, packageDoc), "latest/api")
+
+git.remoteRepo := "git@github.com:IronCoreLabs/davenport.git"
 
 // Apply default Scalariform formatting.
 // Reformat at every compile.
