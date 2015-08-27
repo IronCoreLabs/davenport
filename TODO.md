@@ -2,11 +2,11 @@
 
 ## Documentation
 
-- [ ] Setup github pages site with documentation
+- [x] Setup github pages site with documentation
     - See https://github.com/oncue/knobs/tree/master/docs
     - Remember to use tut
 - [x] Add [scaladoc comments](http://docs.scala-lang.org/style/scaladoc.html)
-- [ ] Add scaladocs to the github pages site (via unidoc?)
+- [x] Add scaladocs to the github pages site (via unidoc?)
 
 ## Build
 
@@ -31,7 +31,7 @@
     - Test getCounter and bad (string?) counter val on increment in MemConnection
     - Remove runAndPrint from Memconnection?
 - [x] Remove unused implicits in DB
-- [ ] Implement DbBatchError instead of pair of num and error string
+- [x] Implement DbBatchError instead of pair of num and error string
 
 ## Announce
 

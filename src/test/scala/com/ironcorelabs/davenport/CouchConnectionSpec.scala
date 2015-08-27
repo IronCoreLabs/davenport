@@ -145,10 +145,10 @@ class CouchConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll 
       // or Both. For this test, we're expecting only to have This, which
       // is essentially the Left. We extract this left side with onlyThis,
       // which returns an option. So we use .get on that. Then we have an
-      // IList of index and exception pairs. But IList doesn't have a forall
-      // method so we convert to list. Inside the forall we look to _2,
-      // which is the error. Ugly, but there you go.
-      res.value.onlyThis.get.toList.forall(_._2.getClass == classOf[DocumentAlreadyExistsException]) should ===(true)
+      // IList DbBatchErrors. But IList doesn't have a forall
+      // method so we convert to list. Inside the forall we look to error,
+      // Ugly, but there you go.
+      res.value.onlyThis.get.toList.forall(_.error.getClass == classOf[DocumentAlreadyExistsException]) should ===(true)
     }
     "fail after first error if we pass in a halting function" in {
       val res = CouchConnection(batchCreateDocs(tenrowdbs, _ => false))

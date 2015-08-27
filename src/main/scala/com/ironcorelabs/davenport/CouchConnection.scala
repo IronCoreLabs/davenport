@@ -218,7 +218,7 @@ object CouchConnection extends AbstractConnection {
             val (edbpk, v) = progKeyAndV
             disj2BatchResult(exec(edbpk), idx, { k: Key =>
               createDoc(k, v).attemptRun
-                .toThese.bimap(e => IList((idx, e)), _ => IList(idx))
+                .toThese.bimap(e => IList(DbBatchError(idx, e)), _ => IList(idx))
             })
           })
       }
@@ -229,8 +229,8 @@ object CouchConnection extends AbstractConnection {
     private def stopIteratingWhenContinueFunctionFails(st: Iterator[DBBatchResults], continue: Throwable => Boolean): Iterator[DBBatchResults] = {
       var lastLineAndError = none[DBBatchResults]
       st.takeWhile {
-        case \&/.This(ilist: IList[(Int, Throwable)]) => ilist.headOption.fold(true) {
-          case (idx, e) => continue(e) || {
+        case \&/.This(ilist: IList[DbBatchError]) => ilist.headOption.fold(true) {
+          case DbBatchError(idx, e) => continue(e) || {
             lastLineAndError = batchFailed(idx, e).some
             false
           }
@@ -243,7 +243,7 @@ object CouchConnection extends AbstractConnection {
     }
 
     private def evalBatchStream(st: Iterator[DBBatchResults], continue: (Throwable => Boolean)): Task[DBBatchResults] = {
-      val emptyResult: DBBatchResults = IList[Int]().wrapThat[IList[(Int, Throwable)]]
+      val emptyResult: DBBatchResults = IList[Int]().wrapThat[IList[DbBatchError]]
       Task.delay(
         stopIteratingWhenContinueFunctionFails(st, continue)
           .reduceOption(_ |+| _)

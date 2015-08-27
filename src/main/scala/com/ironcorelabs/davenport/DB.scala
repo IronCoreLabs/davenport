@@ -41,14 +41,6 @@ object DB {
   /** Just a string and a hashver */
   final case class DbValue(jsonString: RawJsonString, hashVer: HashVer)
 
-  /**
-   * A batch error gives a record number and an error string
-   *
-   *  When importing a lot of data, this will store accrued errors
-   *  indicating their source.
-   */
-  final case class DbBatchError(recordNum: Int, errorString: String)
-
   //
   //
   // 2. Type aliases for simpler function signatures
@@ -69,13 +61,21 @@ object DB {
   type DBProg[A] = EitherT[DBOps, Throwable, A]
 
   /**
+   * A batch error gives a record number and an error string
+   *
+   *  When importing a lot of data, this will store accrued errors
+   *  indicating their source.
+   */
+  final case class DbBatchError(recordNum: Int, error: Throwable)
+
+  /**
    * Makes use of `scalaz.These` (`\&/`) to accumulate successes and failures
    *
    *  `\&/.This` will capture a list of encountered errors and their line nums
    *
    *  `\&/.That` will capture a list of successfully imported line nums
    */
-  type DBBatchResults = (IList[(Int, Throwable)] \&/ IList[Int])
+  type DBBatchResults = (IList[DbBatchError] \&/ IList[Int])
 
   /**
    * Transform incoming data into this type
@@ -214,9 +214,9 @@ object DB {
 
   /** Generate a [[DBBatchResults]] error */
   def batchFailed(idx: Int, e: Throwable): DBBatchResults =
-    IList((idx, e)).wrapThis[IList[Int]]
+    IList(DbBatchError(idx, e)).wrapThis[IList[Int]]
 
   /** Generate a [[DBBatchResults]] success */
   def batchSucceeded(idx: Int): DBBatchResults =
-    IList(idx).wrapThat[IList[(Int, Throwable)]]
+    IList(idx).wrapThat[IList[DbBatchError]]
 }

@@ -92,7 +92,7 @@ object MemConnection extends AbstractConnection {
               scala.collection.mutable.Map() ++ m
 
             val emptyResult: DBBatchResults =
-              IList[Int]().wrapThat[IList[(Int, Throwable)]]
+              IList[Int]().wrapThat[IList[DbBatchError]]
 
             // TODO: get smart and flatmap this stuff below. or peal out to
             // functions
@@ -139,8 +139,8 @@ object MemConnection extends AbstractConnection {
       // requires a bit of mutability
       var lastLineAndError = none[DBBatchResults]
       st.takeWhile {
-        case \&/.This(ilist: IList[(Int, Throwable)]) => ilist.headOption.fold(true) {
-          case (idx, e) => continue(e) || {
+        case \&/.This(ilist: IList[DbBatchError]) => ilist.headOption.fold(true) {
+          case DbBatchError(idx, e) => continue(e) || {
             lastLineAndError = batchFailed(idx, e).some
             false
           }
