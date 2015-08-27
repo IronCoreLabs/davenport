@@ -1,5 +1,15 @@
 # Contributor Guide
 
+## Code Coverage Checks (local)
+
+Make sure any pull requests have adequate unit test code coverage.  You can check this without waiting for travis and codecov.io to do their thing by doing this:
+
+```bash
+> sbt coverage tut test
+```
+
+And then open up the file `target/scala-2.11/scoverage-report/index.html` in your browser.
+
 ## Updating Documentation and Website
 
 Tutorials should be added to the `src/tutsrc` directory.  Code blocks should typically use `\`\`\`tuts` instead of `\`\`\`scala` to add code.  This will ensure the code blocks are checked by the compiler and the output shown inline.  See [tpolecat/tut](https://github.com/tpolecat/tut) for details.
