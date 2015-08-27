@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" prefix="og: http://ogp.me/ns#" itemscope itemtype="http://schema.org/Article">
+  <head>
+    {% include meta.html %}
+
+    <link rel="stylesheet" href="/css/styles.css">
+  </head>
+  <body>
+    {% include nav.html %}
+
+    {{ content }}
+
+    {% include footer.html %}
+
+    <!-- <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.7/highlight.min.js"></script> -->
+    <script src="/js/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+    <script>
+      hljs.configure({
+        tabReplace: '    ', // 4 spaces
+        languages: ['scala', 'json', 'bash']
+      });
+      var smallblocks = document.getElementsByTagName("code");
+      var bigblocks = document.getElementsByClassName("code");
+      _.each(smallblocks, hljs.highlightBlock);
+      _.each(bigblocks, hljs.highlightBlock);
+    </script>
+  </body>
+</html>

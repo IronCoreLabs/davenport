@@ -1,0 +1,114 @@
+---
+---
+
+$font-stack:       Roboto, 'Helvetica Neue', Helvetica, Arial, sans-serif
+$font-code:        'Source Sans Pro', 'Courier New', monospace
+$primary-color:    #333
+$nav-color:        rgb(119, 119, 119)
+$nav-color-active: rgb(51, 51, 51)
+$nav-font-size:    13px
+$foot-font-size:   13px
+$font-size:        16px
+$page-width:       1020px
+
+@import url(http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700)
+@import url(http://fonts.googleapis.com/css?family=Roboto:100,300,400,700,300italic,700italic)
+
+body
+  font-family: $font-stack
+  font-size: $font-size
+  color: $primary-color
+  font-weight: 300
+  line-height: 1.6
+  letter-spacing: -.02em
+
+.container
+  width: $page-width
+  margin: 0 auto
+  position: relative
+  overflow: auto
+  &:after
+    content: ""
+    display: table
+    clear: both
+
+a
+  color: $primary-color
+
+nav
+  margin-top: 20px
+  padding: 0 10px
+  font-size: $nav-font-size
+  line-height: 1.8
+  div
+    float: left
+
+  a
+    text-transform: uppercase
+    text-decoration: none
+    color: $nav-color
+    white-space: nowrap
+
+  ul
+    float: right
+    margin: 0
+    padding: 0
+    .active a, a:active, a:hover
+      color: $nav-color-active
+    li
+      display: inline-block
+      list-style: none
+      float: right
+      padding-left: 2em
+
+.subnav
+  margin-top: 0
+  padding-top: 0
+  h4
+    margin: 0
+    padding: 0
+  nav
+    padding: 0
+    margin-top: 0
+
+footer
+  text-align: center
+  font-size: $foot-font-size
+  margin-top: 5em
+
+h1.title
+  color: black
+  font-size: 5.5em
+  margin-top: 2.5em
+  font-weight: 300
+  letter-spacing: .15em
+  line-height: 1
+  text-transform: uppercase
+  text-align: center
+  .subtitle
+    display: block
+    font-size: 21px
+    line-height: 1.6
+    text-transform: none
+    letter-spacing: -0.02em
+
+.logo
+  display: block
+  margin: 0 auto
+
+blockquote
+  font-size: 20px
+
+pre, code, .code
+  font-family: $font-code
+  font-weight: 400
+  letter-spacing: .04em
+  line-height: 1.4
+
+code.hljs
+  display: inline
+  padding: 0.1em 0.4em
+
+@import url(//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.7/styles/default.min.css)
+// @import url(//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.7/styles/zenburn.min.css)
+// @import url(//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.7/styles/solarized_light.min.css)

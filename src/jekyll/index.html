@@ -1,0 +1,29 @@
+---
+layout: default
+---
+
+<h1 class="title">
+  {{ site.name }}
+  <span class="subtitle">{{ site.description }}</span>
+</h1>
+
+<img class="logo" src="img/davenport-logo.png" alt="{{ site.name }}" >
+
+<div class="container">
+  <p>
+    Davenport brings Free Monads to interactions with Couchbase. You don't need to know or understand what these are as they can remain under the hood.  The key takeaway is that you assemble together a set of functions and database operations, but you delay execution of this.  When you're ready, you pass the set of instructions to a connection.  We currently support an in-memory Map and Couchbase as connections.  This makes testing and reasoning about your database operations far simpler.
+  </p>
+
+  <p>
+    There are other libraries for interfacing with Couchbase from scala that we're aware of:
+  </p>
+
+  <ul>
+    <li><a href="http://reactivecouchbase.org">Reactive Couchbase</a></li>
+    <li><a href="https://github.com/giabao/couchbase-scala">Couchbase-Scala</a></li>
+  </ul>
+
+  <p>
+    These are perfectly good libraries and you should evaluate them.  This library takes a different approach, which has its pluses and minuses, as described in the Benefits and Drawbacks section of this README.  In summary, this is a new project and light on advanced Couchbase features, but strong on composability and testability.  You can parallelize things as well using composable scalaz Tasks as desired.
+  </p>
+</div>

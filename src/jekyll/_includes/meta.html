@@ -1,0 +1,41 @@
+      <!-- META META 1 -->
+
+    {% if page.title %}
+      {% capture title_basic %}{{ page.title }}{% endcapture %}
+      {% capture title %}{{ title_basic }} - {% endcapture %}
+    {% endif %}
+
+    {% capture title %}{{ title }}{{ site.name }}{% endcapture %}
+
+    {% if page.url == '/index.html' or page.url == '/davenport/index.html' or page.title  == false %}
+      {% capture title %}{{ title }} – {{ site.description }} {% endcapture %}
+    {% endif %}
+
+    {% capture title_length %}{{ title | size | minus:70 }}{% endcapture %}
+    {% capture title_basic_length %}{{ title_basic | size | minus:70 }}{% endcapture %}
+
+    {% if title_length contains '-' %}
+      {% capture title_short %}{{ title }}{% endcapture %}
+    {% elsif title_basic_length contains '-' %}
+      {% capture title_short %}{{ title_basic }}{% endcapture %}
+    {% else %}
+      {% capture title_short %}{{ title_basic | truncate: 65, '...' }}{% endcapture %}
+    {% endif %}
+
+    <title>{{ title_short }}</title>
+
+  <!-- The important stuff -->
+    <meta charset="utf-8" >
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+{% if page.url != '/404.html' %}
+  {% if page.excerpt %}
+    <meta name="description" content="{{ page.excerpt| strip_html }}" >
+  {% else %}
+    <meta name="description" content="{{ site.long_description }}">
+  {% endif %}
+
+{% endif %}

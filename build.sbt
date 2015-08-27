@@ -42,17 +42,26 @@ coverageMinimum := 70
 
 coverageFailOnMinimum := false
 
-coverageHighlighting := {
-    if(scalaBinaryVersion.value == "2.11") true
-    else false
-}
+coverageHighlighting := scalaBinaryVersion.value == "2.11"
 
 tutSettings
 unidocSettings
 site.settings
 ghpages.settings
 site.includeScaladoc()
+com.typesafe.sbt.site.JekyllSupport.requiredGems := Map(
+  "jekyll" -> "2.4.0",
+  "kramdown" -> "1.5.0",
+  "jemoji" -> "0.4.0",
+  "jekyll-sass-converter" -> "1.2.0",
+  "jekyll-mentions" -> "0.2.1"
+)
+site.jekyllSupport()
+// Enable this when you're convinced every publish should update docs
+// site.publishSite
 
+tutSourceDirectory := sourceDirectory.value / "tutsrc"
+tutTargetDirectory := sourceDirectory.value / "jekyll" / "_tutorials"
 
 // site.addMappingsToSiteDir(mappings in (ScalaUnidoc, packageDoc), "latest/api")
 

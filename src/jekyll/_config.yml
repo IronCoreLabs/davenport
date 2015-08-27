@@ -1,0 +1,79 @@
+# Name of your site (displayed in the header)
+name: Davenport
+
+# Short bio or description (displayed in the header)
+description: A principled Couchbase library for Scala
+long_description: Davenport brings Free Monads to interactions with Couchbase. You don't need to know or understand what these are as they can remain under the hood. The key takeaway is that you assemble together a set of functions and database operations, but you delay execution of this. When you're ready, you pass the set of instructions to a connection. We currently support an in-memory Map and Couchbase as connections. This makes testing and reasoning about your database operations far simpler.
+
+timezone: America/Denver
+
+mode: production
+
+# Following two configs forced by github -- might as well test with them
+safe: true
+lsi: false
+
+
+nav:
+  -
+    url: "https://github.com/IronCoreLabs/davenport"
+    text: "Github"
+  -
+    url: "/latest/api"
+    text: "Scaladocs"
+  -
+    url: "/tutorials/getting-started.html"
+    text: "Tutorials"
+  -
+    url: "/"
+    text: "Overview"
+
+collections:
+  tutorials:
+    output: true
+    # permalink: /tutorials/:path/:name
+
+defaults:
+  -
+    scope:
+      path: ""
+      type: "tutorials"
+    values:
+      layout: "tutorial"
+  -
+    scope:
+      path: ""
+    values:
+      layout: "default"
+
+sass:
+  sass_dir: _sass
+  #style: :expanded # You might prefer to debug using :expanded
+  style: :compressed
+  sourcemap: true
+  line_comments: false
+
+redcarpet:
+  extensions: ["tables", "autolink", "smart", "no_intra_emphasis"]
+
+kramdown:
+  input:          GFM
+  auto_ids:       true
+  auto_id_stripping: true
+  footnote_nr:    1
+  entity_output:  as_char
+  toc_levels:     1..6
+  smart_quotes:   lsquo,rsquo,ldquo,rdquo
+  enable_coderay: true
+  coderay_wrap:              div
+  coderay_line_numbers:      nil
+  coderay_tab_width:         4
+  coderay_bold_every:        10
+  coderay_css:               class
+  coderay_default_lang:      scala
+
+# Use the following plug-ins
+gems:
+  - jemoji
+  - jekyll-mentions
+  - jekyll-redirect-from

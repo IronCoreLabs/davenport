@@ -1,0 +1,25 @@
+---
+layout: default
+---
+
+<div class="container subnav">
+  <nav>
+    <ul>
+      {% capture current_url %}{{ page.url | replace: 'index.html', '' }}{% endcapture %}
+      {% for tutorial in site.tutorials %}
+        <li {% if tutorial.url == current_url %}class="active"{% endif %}>
+          <a href="{{ tutorial.url }}">{{ tutorial.title }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </nav>
+</div>
+<div class="container">
+  <article class="page">
+    <h1>{{ page.title }}</h1>
+
+    <div class="entry">
+      {{ content }}
+    </div>
+  </article>
+</div>
