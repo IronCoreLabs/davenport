@@ -16,7 +16,11 @@ There are other libraries for interfacing with Couchbase from scala that we're a
 These are perfectly good libraries and you should evaluate them.  This library takes a different approach, which has its pluses and minuses, as described in the Benefits and Drawbacks section of this README.  In summary, this is a new project and light on advanced Couchbase features, but strong on composability and testability.  You can parallelize things as well using composable scalaz Tasks as desired.
 
 
+## More Information
 
+* [Davenport](https://ironcorelabs.com/davenport) project site
+* [Scaladocs](https://ironcorelabs.com/davenport/latest/api)
+* [Getting Started](https://ironcorelabs.com/davenport/tutorials/getting-started.html) instructions and examples
 
 ---
 

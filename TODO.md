@@ -40,6 +40,7 @@
 - [ ] Add to [awesome](https://github.com/lauris/awesome-scala)
 - [ ] Add to [implicitly](http://notes.implicit.ly)
     - [ ] Also add infrastructure for [autopublishing on update](https://github.com/n8han/herald)
+- [ ] Add to the tuts list of implementers
 
 ## Misc
 
