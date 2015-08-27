@@ -46,13 +46,13 @@
   
   <ul>
     
-    <li ><a href="/davenporthttps://github.com/IronCoreLabs/davenport">Github</a></li>
+    <li ><a href="https://github.com/IronCoreLabs/davenport">Github</a></li>
     
-    <li ><a href="/latest/api">Scaladocs</a></li>
+    <li ><a href="/davenport/latest/api">Scaladocs</a></li>
     
-    <li class="active"><a href="/tutorials/getting-started.html">Tutorials</a></li>
+    <li class="active"><a href="/davenport/tutorials/getting-started.html">Tutorials</a></li>
     
-    <li ><a href="/">Overview</a></li>
+    <li ><a href="/davenport/">Overview</a></li>
     
   </ul>
 </nav>
@@ -180,7 +180,7 @@ scala&gt; val addTwoNewUsers = for {
 addTwoNewUsers: scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,Throwable,List[Example.DBUser]] = EitherT(Gosub())
 
 scala&gt; val users: Throwable \/ List[DBUser] = MemConnection.exec(addTwoNewUsers)
-users: scalaz.\/[Throwable,List[Example.DBUser]] = \/-(List(DBUser(Key(user::readyplayerone@example.com),User(User,One,readyplayerone@example.com,1440695792346),-940350950), DBUser(Key(user::readyplayertwo@example.com),User(User,Two,readyplayertwo@example.com,1440695792610),703406083)))
+users: scalaz.\/[Throwable,List[Example.DBUser]] = \/-(List(DBUser(Key(user::readyplayerone@example.com),User(User,One,readyplayerone@example.com,1440697068010),1705542438), DBUser(Key(user::readyplayertwo@example.com),User(User,Two,readyplayertwo@example.com,1440697068212),1666720598)))
 </pre></div>
 </div>
 </div>
@@ -189,13 +189,13 @@ users: scalaz.\/[Throwable,List[Example.DBUser]] = \/-(List(DBUser(Key(user::rea
 
 <div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre>scala&gt; val (db: MemConnection.KVMap, users: \/[Throwable, List[DBUser]]) = MemConnection.run(addTwoNewUsers)
-db: com.ironcorelabs.davenport.MemConnection.KVMap = Map(Key(user::readyplayerone@example.com) -&gt; RawJsonString({&quot;firstName&quot;:&quot;User&quot;,&quot;lastName&quot;:&quot;One&quot;,&quot;email&quot;:&quot;readyplayerone@example.com&quot;,&quot;createdDate&quot;:1440695792346}), Key(user::readyplayertwo@example.com) -&gt; RawJsonString({&quot;firstName&quot;:&quot;User&quot;,&quot;lastName&quot;:&quot;Two&quot;,&quot;email&quot;:&quot;readyplayertwo@example.com&quot;,&quot;createdDate&quot;:1440695792899}))
-users: scalaz.\/[Throwable,List[Example.DBUser]] = \/-(List(DBUser(Key(user::readyplayerone@example.com),User(User,One,readyplayerone@example.com,1440695792346),-940350950), DBUser(Key(user::readyplayertwo@example.com),User(User,Two,readyplayertwo@example.com,1440695792899),961852670)))
+db: com.ironcorelabs.davenport.MemConnection.KVMap = Map(Key(user::readyplayerone@example.com) -&gt; RawJsonString({&quot;firstName&quot;:&quot;User&quot;,&quot;lastName&quot;:&quot;One&quot;,&quot;email&quot;:&quot;readyplayerone@example.com&quot;,&quot;createdDate&quot;:1440697068010}), Key(user::readyplayertwo@example.com) -&gt; RawJsonString({&quot;firstName&quot;:&quot;User&quot;,&quot;lastName&quot;:&quot;Two&quot;,&quot;email&quot;:&quot;readyplayertwo@example.com&quot;,&quot;createdDate&quot;:1440697068536}))
+users: scalaz.\/[Throwable,List[Example.DBUser]] = \/-(List(DBUser(Key(user::readyplayerone@example.com),User(User,One,readyplayerone@example.com,1440697068010),1705542438), DBUser(Key(user::readyplayertwo@example.com),User(User,Two,readyplayertwo@example.com,1440697068536),1985783451)))
 
 scala&gt; // Fetch one of the users out of the database
      | val (db2, u1) = MemConnection.run(DBUser.get(Key(&quot;user::readyplayerone@example.com&quot;)), db)
-db2: com.ironcorelabs.davenport.MemConnection.KVMap = Map(Key(user::readyplayerone@example.com) -&gt; RawJsonString({&quot;firstName&quot;:&quot;User&quot;,&quot;lastName&quot;:&quot;One&quot;,&quot;email&quot;:&quot;readyplayerone@example.com&quot;,&quot;createdDate&quot;:1440695792346}), Key(user::readyplayertwo@example.com) -&gt; RawJsonString({&quot;firstName&quot;:&quot;User&quot;,&quot;lastName&quot;:&quot;Two&quot;,&quot;email&quot;:&quot;readyplayertwo@example.com&quot;,&quot;createdDate&quot;:1440695792899}))
-u1: scalaz.\/[Throwable,Example.DBUser] = \/-(DBUser(Key(user::readyplayerone@example.com),User(User,One,readyplayerone@example.com,1440695792346),-940350950))
+db2: com.ironcorelabs.davenport.MemConnection.KVMap = Map(Key(user::readyplayerone@example.com) -&gt; RawJsonString({&quot;firstName&quot;:&quot;User&quot;,&quot;lastName&quot;:&quot;One&quot;,&quot;email&quot;:&quot;readyplayerone@example.com&quot;,&quot;createdDate&quot;:1440697068010}), Key(user::readyplayertwo@example.com) -&gt; RawJsonString({&quot;firstName&quot;:&quot;User&quot;,&quot;lastName&quot;:&quot;Two&quot;,&quot;email&quot;:&quot;readyplayertwo@example.com&quot;,&quot;createdDate&quot;:1440697068536}))
+u1: scalaz.\/[Throwable,Example.DBUser] = \/-(DBUser(Key(user::readyplayerone@example.com),User(User,One,readyplayerone@example.com,1440697068010),1705542438))
 </pre></div>
 </div>
 </div>
