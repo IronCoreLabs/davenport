@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en" prefix="og: http://ogp.me/ns#" itemscope itemtype="http://schema.org/Article">
+  <head>
+          <!-- META META 1 -->
+
+    
+      
+      
+    
+
+    
+
+    
+
+    
+    
+
+    
+      
+    
+
+    <title>Storing and Retrieving Case Classes - Davenport</title>
+
+  <!-- The important stuff -->
+    <meta charset="utf-8" >
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+
+  
+    <meta name="description" content="Davenport brings Free Monads to interactions with Couchbase. You don't need to know or understand what these are as they can remain under the hood. The key takeaway is that you assemble together a set of functions and database operations, but you delay execution of this. When you're ready, you pass the set of instructions to a connection. We currently support an in-memory Map and Couchbase as connections. This makes testing and reasoning about your database operations far simpler.">
+  
+
+
+
+
+    <link rel="stylesheet" href="/css/styles.css">
+  </head>
+  <body>
+    <nav class="container" role="navigation">
+  <div>
+    <a href="/davenport">Davenport</a>
+  </div>
+  
+  <ul>
+    
+      <li ><a href="https://github.com/IronCoreLabs/davenport">Github</a></li>
+    
+      <li ><a href="/latest/api">Scaladocs</a></li>
+    
+      <li class="active"><a href="/tutorials/getting-started.html">Tutorials</a></li>
+    
+      <li ><a href="/">Overview</a></li>
+    
+  </ul>
+</nav>
+
+
+
+    <div class="container subnav">
+  <nav>
+    <ul>
+      
+      
+        <li >
+          <a href="/tutorials/free-grammar-usage.html">Free Grammar Implementation</a>
+        </li>
+      
+        <li >
+          <a href="/tutorials/getting-started.html">Getting Started</a>
+        </li>
+      
+        <li class="active">
+          <a href="/tutorials/storing-and-retrieving-wrappers.html">Storing and Retrieving Case Classes</a>
+        </li>
+      
+    </ul>
+  </nav>
+</div>
+<div class="container">
+  <article class="page">
+    <h1>Storing and Retrieving Case Classes</h1>
+
+    <div class="entry">
+      <p>Suppose you have a User class that has some basic fields:</p>
+
+<div class="highlighter-coderay"><div class="CodeRay">
+  <div class="code"><pre>case class User(firstName: String, lastName: String, email: String, createdDate: Long)
+</pre></div>
+</div>
+</div>
+
+<p>We prefer not to adulterate the underlying class, but instead to wrap it in a class that can persist it to/from the database.  We do so by creating an interface that by convention we call <code>DBUser</code>:</p>
+
+<div class="highlighter-coderay"><div class="CodeRay">
+  <div class="code"><pre>case class DBUser(key: Key, data: User, cas: Long) extends DBDocument[User] {
+  // ...
+}
+object DBUser extends DBDocumentCompanion[User] {
+  // ...
+}
+</pre></div>
+</div>
+</div>
+
+<p>In wrapping the User class, we put the concerns such as the key that is used, the check-and-store (cas) value (used to make sure someone else hasn’t updated the database since we last fetched a record) and implementations for serializing/deserializing outside of the core concerns for the class itself.</p>
+
+<p>In terms of implementation, the instantiated document needs to support one function:</p>
+
+<div class="highlighter-coderay"><div class="CodeRay">
+  <div class="code"><pre>def dataJson: Throwable \/ RawJsonString
+</pre></div>
+</div>
+</div>
+
+<p>And the companion object needs to support a few more:</p>
+
+<div class="highlighter-coderay"><div class="CodeRay">
+  <div class="code"><pre>implicit def codec: CodecJson[T]
+def genKey(d: T): DBProg[Key]
+def fromJson(s: RawJsonString): Throwable \/ T
+def create(d: T): DBProg[_]
+def get(k: Key): DBProg[_]
+</pre></div>
+</div>
+</div>
+
+<p>Generally speaking, these are pretty boilerplate.  One thing to note is that the <code>genKey</code> method returns a <code>DBProg</code>.  This is in case the key itself depends on the database, as in the case where you are using an incrementing index as the key.  If you are deriving the key from the underlying class, you just wrap the result into a <code>DBProg</code>.  In our case, our key for a <code>User</code> will be <code>user::&lt;email&gt;</code>, so statically derived.  Here’s a fuller implementation:</p>
+
+<div class="highlighter-coderay"><div class="CodeRay">
+  <div class="code"><pre>import com.ironcorelabs.davenport._, DB._
+import scalaz._, Scalaz._, scalaz.concurrent.Task
+import argonaut._, Argonaut._
+
+case class User(firstName: String, lastName: String, email: String, createdDate: Long)
+
+object Example {
+  case class DBUser(key: Key, data: User, cas: Long) extends DBDocument[User] {
+    def dataJson: Throwable \/ RawJsonString =
+      \/.fromTryCatchNonFatal(DBUser.toJsonString(data)(DBUser.codec))
+  }
+  object DBUser extends DBDocumentCompanion[User] {
+    implicit def codec: CodecJson[User] = casecodec4(User.apply, User.unapply)(
+      &quot;firstName&quot;, &quot;lastName&quot;, &quot;email&quot;, &quot;createdDate&quot;
+    )
+    def genKey(u: User): DBProg[Key] = liftIntoDBProg(Key(s&quot;user::${u.email}&quot;).right[Throwable])
+    def fromJson(s: RawJsonString): Throwable \/ User =
+      fromJsonString(s.value) \/&gt; new Exception(&quot;Failed to decode json to User&quot;)
+    def create(u: User): DBProg[DBUser] = for {
+      json &lt;- liftIntoDBProg(\/.fromTryCatchNonFatal(toJsonString(u)))
+      key &lt;- genKey(u)
+      newdoc &lt;- createDoc(key, json)
+      cas = newdoc.hashVer.value
+    } yield DBUser(key, u, cas)
+    def get(key: Key): DBProg[DBUser] = for {
+      doc &lt;- getDoc(key)
+      u &lt;- liftIntoDBProg(fromJson(doc.jsonString))
+      cas = doc.hashVer.value
+    } yield DBUser(key, u, cas)
+  }
+}
+</pre></div>
+</div>
+</div>
+
+<p>Anyone wanting to factor out some of the boilerplate – please be my guest, we’d love the pull requests.</p>
+
+<p>Now that we have a nice abstraction for persisting our user class, lets try it out:</p>
+
+<div class="highlighter-coderay"><div class="CodeRay">
+  <div class="code"><pre>scala&gt; import Example._
+import Example._
+
+scala&gt; val addTwoNewUsers = for {
+     |   newu1 &lt;- DBUser.create(User(&quot;User&quot;, &quot;One&quot;, &quot;readyplayerone@example.com&quot;, System.currentTimeMillis()))
+     |   newu2 &lt;- DBUser.create(User(&quot;User&quot;, &quot;Two&quot;, &quot;readyplayertwo@example.com&quot;, System.currentTimeMillis()))
+     | } yield List(newu1, newu2)
+addTwoNewUsers: scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,Throwable,List[Example.DBUser]] = EitherT(Gosub())
+
+scala&gt; val users: Throwable \/ List[DBUser] = MemConnection.exec(addTwoNewUsers)
+users: scalaz.\/[Throwable,List[Example.DBUser]] = \/-(List(DBUser(Key(user::readyplayerone@example.com),User(User,One,readyplayerone@example.com,1440637062437),-566231857), DBUser(Key(user::readyplayertwo@example.com),User(User,Two,readyplayertwo@example.com,1440637062695),-920983399)))
+</pre></div>
+</div>
+</div>
+
+<p>Feel free to test against Couchbase as well.  We’ll keep illustrating with the MemConnection for now to show how you can easily experiment and write unit tests.  As an alternative to calling <code>MemConnection.exec</code> you can call <code>MemConnection.run</code>.  This is not part of the common interface dictated by <code>AbstractConnection</code>, but is special to the memory implementation.  <code>run</code> takes an optional <code>Map</code> and returns a tuple with the <code>Map</code> and the results.  You can then use this <code>Map</code> as your state and as a starting point for a database with known values in it.  Building on our example above, we could instead do this:</p>
+
+<div class="highlighter-coderay"><div class="CodeRay">
+  <div class="code"><pre>scala&gt; val (db: MemConnection.KVMap, users: \/[Throwable, List[DBUser]]) = MemConnection.run(addTwoNewUsers)
+db: com.ironcorelabs.davenport.MemConnection.KVMap = Map(Key(user::readyplayerone@example.com) -&gt; RawJsonString({&quot;firstName&quot;:&quot;User&quot;,&quot;lastName&quot;:&quot;One&quot;,&quot;email&quot;:&quot;readyplayerone@example.com&quot;,&quot;createdDate&quot;:1440637062437}), Key(user::readyplayertwo@example.com) -&gt; RawJsonString({&quot;firstName&quot;:&quot;User&quot;,&quot;lastName&quot;:&quot;Two&quot;,&quot;email&quot;:&quot;readyplayertwo@example.com&quot;,&quot;createdDate&quot;:1440637063063}))
+users: scalaz.\/[Throwable,List[Example.DBUser]] = \/-(List(DBUser(Key(user::readyplayerone@example.com),User(User,One,readyplayerone@example.com,1440637062437),-566231857), DBUser(Key(user::readyplayertwo@example.com),User(User,Two,readyplayertwo@example.com,1440637063063),2114791735)))
+
+scala&gt; // Fetch one of the users out of the database
+     | val (db2, u1) = MemConnection.run(DBUser.get(Key(&quot;user::readyplayerone@example.com&quot;)), db)
+db2: com.ironcorelabs.davenport.MemConnection.KVMap = Map(Key(user::readyplayerone@example.com) -&gt; RawJsonString({&quot;firstName&quot;:&quot;User&quot;,&quot;lastName&quot;:&quot;One&quot;,&quot;email&quot;:&quot;readyplayerone@example.com&quot;,&quot;createdDate&quot;:1440637062437}), Key(user::readyplayertwo@example.com) -&gt; RawJsonString({&quot;firstName&quot;:&quot;User&quot;,&quot;lastName&quot;:&quot;Two&quot;,&quot;email&quot;:&quot;readyplayertwo@example.com&quot;,&quot;createdDate&quot;:1440637063063}))
+u1: scalaz.\/[Throwable,Example.DBUser] = \/-(DBUser(Key(user::readyplayerone@example.com),User(User,One,readyplayerone@example.com,1440637062437),-566231857))
+</pre></div>
+</div>
+</div>
+
+<p>We expect that the primitives with <code>RawJsonString</code> will generally not be used outside of the <code>DBDocument</code> classes.</p>
+
+
+    </div>
+  </article>
+</div>
+
+
+    
+    <footer class="container center-text">
+            Copyright &copy;
+            <time datetime="2015">2015</time>
+            IronCore Labs, Inc.
+            All rights reserved.
+    </footer>
+
+
+
+
+    <!-- <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.7/highlight.min.js"></script> -->
+    <script src="/js/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+    <script>
+      hljs.configure({
+        tabReplace: '    ', // 4 spaces
+        languages: ['scala', 'json', 'bash']
+      });
+      var smallblocks = document.getElementsByTagName("code");
+      var bigblocks = document.getElementsByClassName("code");
+      _.each(smallblocks, hljs.highlightBlock);
+      _.each(bigblocks, hljs.highlightBlock);
+    </script>
+  </body>
+</html>

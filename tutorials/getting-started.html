@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" prefix="og: http://ogp.me/ns#" itemscope itemtype="http://schema.org/Article">
+  <head>
+          <!-- META META 1 -->
+
+    
+      
+      
+    
+
+    
+
+    
+
+    
+    
+
+    
+      
+    
+
+    <title>Getting Started - Davenport</title>
+
+  <!-- The important stuff -->
+    <meta charset="utf-8" >
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+
+  
+    <meta name="description" content="Davenport brings Free Monads to interactions with Couchbase. You don't need to know or understand what these are as they can remain under the hood. The key takeaway is that you assemble together a set of functions and database operations, but you delay execution of this. When you're ready, you pass the set of instructions to a connection. We currently support an in-memory Map and Couchbase as connections. This makes testing and reasoning about your database operations far simpler.">
+  
+
+
+
+
+    <link rel="stylesheet" href="/css/styles.css">
+  </head>
+  <body>
+    <nav class="container" role="navigation">
+  <div>
+    <a href="/davenport">Davenport</a>
+  </div>
+  
+  <ul>
+    
+      <li ><a href="https://github.com/IronCoreLabs/davenport">Github</a></li>
+    
+      <li ><a href="/latest/api">Scaladocs</a></li>
+    
+      <li class="active"><a href="/tutorials/getting-started.html">Tutorials</a></li>
+    
+      <li ><a href="/">Overview</a></li>
+    
+  </ul>
+</nav>
+
+
+
+    <div class="container subnav">
+  <nav>
+    <ul>
+      
+      
+        <li >
+          <a href="/tutorials/free-grammar-usage.html">Free Grammar Implementation</a>
+        </li>
+      
+        <li class="active">
+          <a href="/tutorials/getting-started.html">Getting Started</a>
+        </li>
+      
+        <li >
+          <a href="/tutorials/storing-and-retrieving-wrappers.html">Storing and Retrieving Case Classes</a>
+        </li>
+      
+    </ul>
+  </nav>
+</div>
+<div class="container">
+  <article class="page">
+    <h1>Getting Started</h1>
+
+    <div class="entry">
+      <h2 id="sbt">sbt</h2>
+
+<p>First, in your <code>build.sbt</code> file, you will want to reference davenport like so:</p>
+
+<div class="highlighter-coderay"><div class="CodeRay">
+  <div class="code"><pre>resolvers += &quot;IronCore BinTray Repo&quot; at &quot;http://dl.bintray.com/ironcorelabs/maven&quot;
+libraryDependencies ++= Seq(
+    &quot;default&quot; %% &quot;davenport&quot; % &quot;0.5.11&quot;,
+    &quot;org.scalaz&quot; %% &quot;scalaz-core&quot; % &quot;7.1.2&quot;, // for type awesomeness
+    &quot;org.scalaz&quot; %% &quot;scalaz-concurrent&quot; % &quot;7.1.2&quot;, // for type awesomeness
+    &quot;io.argonaut&quot; %% &quot;argonaut&quot; % &quot;6.1&quot; // json (de)serialization scalaz style
+)
+</pre></div>
+</div>
+</div>
+
+<p><strong>Note:</strong> argonaut is not actually required.  You may use any json serialization that you prefer, but you will need argonaut to follow along with our example and getting started code.</p>
+
+<h2 id="setup-couchbase">Setup Couchbase</h2>
+
+<p>If you already have Couchbase installed in some way you’re happy with, skip to the next section.  If not, then <a href="http://www.lmgtfy.com/?q=install+docker&amp;l=1">install Docker</a> and then follow these steps for a quick setup:</p>
+
+<div class="highlighter-coderay"><div class="CodeRay">
+  <div class="code"><pre>&gt; docker pull zmre/couchbase-enterprise-ubuntu:4.0.0-beta
+&gt; docker run --name couchbase -p 8091:8091 -p 8092:8092 -p 8093:8093 -p 11207:11207 -p 11210:11210 -p 11211:11211 -p 18091:18091 -p 18092:18092 -h couchbase.local -d zmre/couchbase-enterprise-ubuntu:4.0.0-beta
+&gt; docker exec -it couchbase /usr/local/bin/couchbase-setup.sh
+</pre></div>
+</div>
+</div>
+
+<h2 id="configuration">Configuration</h2>
+
+<p>We only support a few configuration parameters at the moment.  Please do submit pull requests for enhancements to <code>CouchConnection.scala</code> to add more powerful configuration options.  Within your repo, you can add a <code>couchbase.cfg</code> file into your classpath.  We recommend using the <code>./src/main/resources</code> path if you’re unsure.  This config file will be checked in and used by all developers of your repo.  If developers want to override the default configuration stored in the repo, they should add <code>couchbase-dev.cfg</code> to their <code>.gitignore</code> file and add a <code>couchbase-dev.cfg</code> file to the root of the project.  Any values in that dev file will overwrite the values in the config file in the classpath.  Here is an example config file:</p>
+
+<div class="highlighter-coderay"><div class="CodeRay">
+  <div class="code"><pre>cdb {
+  host = &quot;couchbase.local&quot;
+  bucketName = &quot;default&quot;
+  queryEnabled = false
+  ioPoolSize = 4
+  computationPoolSize = 4
+  kvEndpoints = 2
+}
+</pre></div>
+</div>
+</div>
+
+
+    </div>
+  </article>
+</div>
+
+
+    
+    <footer class="container center-text">
+            Copyright &copy;
+            <time datetime="2015">2015</time>
+            IronCore Labs, Inc.
+            All rights reserved.
+    </footer>
+
+
+
+
+    <!-- <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.7/highlight.min.js"></script> -->
+    <script src="/js/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+    <script>
+      hljs.configure({
+        tabReplace: '    ', // 4 spaces
+        languages: ['scala', 'json', 'bash']
+      });
+      var smallblocks = document.getElementsByTagName("code");
+      var bigblocks = document.getElementsByClassName("code");
+      _.each(smallblocks, hljs.highlightBlock);
+      _.each(bigblocks, hljs.highlightBlock);
+    </script>
+  </body>
+</html>

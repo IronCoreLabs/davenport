@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en" prefix="og: http://ogp.me/ns#" itemscope itemtype="http://schema.org/Article">
+  <head>
+          <!-- META META 1 -->
+
+    
+      
+      
+    
+
+    
+
+    
+
+    
+    
+
+    
+      
+    
+
+    <title>Free Grammar Implementation - Davenport</title>
+
+  <!-- The important stuff -->
+    <meta charset="utf-8" >
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+
+  
+    <meta name="description" content="Davenport brings Free Monads to interactions with Couchbase. You don't need to know or understand what these are as they can remain under the hood. The key takeaway is that you assemble together a set of functions and database operations, but you delay execution of this. When you're ready, you pass the set of instructions to a connection. We currently support an in-memory Map and Couchbase as connections. This makes testing and reasoning about your database operations far simpler.">
+  
+
+
+
+
+    <link rel="stylesheet" href="/css/styles.css">
+  </head>
+  <body>
+    <nav class="container" role="navigation">
+  <div>
+    <a href="/davenport">Davenport</a>
+  </div>
+  
+  <ul>
+    
+      <li ><a href="https://github.com/IronCoreLabs/davenport">Github</a></li>
+    
+      <li ><a href="/latest/api">Scaladocs</a></li>
+    
+      <li class="active"><a href="/tutorials/getting-started.html">Tutorials</a></li>
+    
+      <li ><a href="/">Overview</a></li>
+    
+  </ul>
+</nav>
+
+
+
+    <div class="container subnav">
+  <nav>
+    <ul>
+      
+      
+        <li class="active">
+          <a href="/tutorials/free-grammar-usage.html">Free Grammar Implementation</a>
+        </li>
+      
+        <li >
+          <a href="/tutorials/getting-started.html">Getting Started</a>
+        </li>
+      
+        <li >
+          <a href="/tutorials/storing-and-retrieving-wrappers.html">Storing and Retrieving Case Classes</a>
+        </li>
+      
+    </ul>
+  </nav>
+</div>
+<div class="container">
+  <article class="page">
+    <h1>Free Grammar Implementation</h1>
+
+    <div class="entry">
+      <p>Davenport uses a Free Grammar abstraction based on <a href="https://github.com/scalaz/scalaz">scalaz</a>’s <code>Free</code> monads. This means that you string together a bunch of database instructions, but delay executing them until you’re ready.  When you do execute them, you get to choose your interpreter.  All interpreters must handle all instructions.</p>
+
+<p>In Davenport, we provide an in-memory local option as well as Couchbase, but someone could implement the grammar against any backend and none of your code would change except the reference to the connection class.  The immediate advantage is testing: you get fast unit tests via the MemConnection that verify functionality without needing a Couchbase server or connection setup and teardown.  For example:</p>
+
+<div class="highlighter-coderay"><div class="CodeRay">
+  <div class="code"><pre>import com.ironcorelabs.davenport.DB._
+import com.ironcorelabs.davenport.{ MemConnection, CouchConnection }
+
+// Some definitions that should help understand the code below
+//   case class Key(value: String)
+//   case class RawJsonString(value: String)
+//   case class HashVer(value: String)
+//   case class DbValue(jsonString: RawJsonString, hashVer: HashVer)
+
+// Write something to the DB, then fetch it (we're ignoring the fact that we return
+// the written value from the update command to make a point)
+val k = Key(&quot;Record1&quot;)
+val v = RawJsonString(&quot;&quot;&quot;{ &quot;field1&quot;: &quot;value1&quot;, &quot;field2&quot;: &quot;value2&quot; }&quot;&quot;&quot;)
+val operations = for {
+  newDoc &lt;- createDoc(k, v)
+  fetchedDoc &lt;- getDoc(k)
+} yield fetchedDoc
+
+// Now we can execute those operations using Couch or Mem.  Either:
+val finalResult = MemConnection.exec(operations)
+
+// or: val finalResult = CouchConnection.exec(operations)
+// and in either case the result will be the same except for the hashVer
+</pre></div>
+</div>
+</div>
+
+<ul>
+  <li>This also has some nice short-circuiting properties. If you have a DB error early on, continued DB operations will halt (unless you prefer otherwise).</li>
+  <li>You can map over the DB and inject whatever other functions you like into the process.  As a more complex example, you can make an operation that copies a json field from one stored document to another:</li>
+</ul>
+
+<div class="highlighter-coderay"><div class="CodeRay">
+  <div class="code"><pre>     | import com.ironcorelabs.davenport.DB._
+import com.ironcorelabs.davenport.DB._
+
+scala&gt; import argonaut._, Argonaut._
+import argonaut._
+import Argonaut._
+
+scala&gt; // This function is just argonaut magic and not really important for our use case
+     | // We parse the strings, and if the source is a json object and the field exists
+     | // and if the destination is a json object, then rework the json to copy in the
+     | // new field and value from src to dst.
+     | def copyFieldJson(field: String, srcJson: RawJsonString, dstJson: RawJsonString): Option[RawJsonString] = for {
+     |   jsd &lt;- Parse.parseOption(dstJson.value)
+     |   jss &lt;- Parse.parseOption(srcJson.value)
+     |   lens = jObjectPL &gt;=&gt; jsonObjectPL(field)
+     |   fieldval &lt;- lens.get(jss)
+     | } yield RawJsonString(((field, fieldval) -&gt;: jsd).nospaces)
+copyFieldJson: (field: String, srcJson: com.ironcorelabs.davenport.DB.RawJsonString, dstJson: com.ironcorelabs.davenport.DB.RawJsonString)Option[com.ironcorelabs.davenport.DB.RawJsonString]
+
+scala&gt; // This shows how to use the above copy operation on data from the db
+     | // any errors along the way (such as a failure to find a document with the key)
+     | // will abort the whole thing (short circuit) and result in an error when
+     | // the DBProg is executed
+     | def copyFieldInDb(field: String, srcKey: Key, dstKey: Key): DBProg[DbValue] = for {
+     |   src &lt;- getDoc(srcKey)
+     |   dst &lt;- getDoc(dstKey)
+     |   newjson &lt;- liftIntoDBProg(copyFieldJson(field, src.jsonString, dst.jsonString))
+     |   updatedDst &lt;- updateDoc(dstKey, newjson, dst.hashVer)
+     | } yield updatedDst
+copyFieldInDb: (field: String, srcKey: com.ironcorelabs.davenport.DB.Key, dstKey: com.ironcorelabs.davenport.DB.Key)com.ironcorelabs.davenport.DB.DBProg[com.ironcorelabs.davenport.DB.DbValue]
+
+scala&gt; // in this case, the result will be an error since docA and docB have not been created
+     | val finalResult = MemConnection.exec(copyFieldInDb(&quot;a&quot;, Key(&quot;docA&quot;), Key(&quot;docB&quot;)))
+finalResult: scalaz.\/[Throwable,com.ironcorelabs.davenport.DB.DbValue] = -\/(java.lang.Exception: No value found for key 'docA')
+
+scala&gt; // in this case, the result will be a successful new docB with a:1, c: 2, d: 2
+     | val finalResult = MemConnection.exec(for {
+     |   docA &lt;- createDoc(Key(&quot;docA&quot;), RawJsonString(&quot;&quot;&quot;{ &quot;a&quot;: 1, &quot;b&quot;: 1, &quot;c&quot;: 1 }&quot;&quot;&quot;))
+     |   docB &lt;- createDoc(Key(&quot;docB&quot;), RawJsonString(&quot;&quot;&quot;{ &quot;c&quot;: 2, &quot;d&quot;: 2 }&quot;&quot;&quot;))
+     |   newB &lt;- copyFieldInDb(&quot;a&quot;, Key(&quot;docA&quot;), Key(&quot;docB&quot;))
+     | } yield newB)
+finalResult: scalaz.\/[Throwable,com.ironcorelabs.davenport.DB.DbValue] = \/-(DbValue(RawJsonString({&quot;c&quot;:2,&quot;d&quot;:2,&quot;a&quot;:1}),HashVer(1113126735)))
+</pre></div>
+</div>
+</div>
+
+<p>This implementation uses scalaz Disjunctions (<code>\/</code>) and scalaz <code>Tasks</code>. You can choose to call <code>execTask</code> on any interpreter and then spin off the task asynchronously or combine it with other async events such as service calls.</p>
+
+<p>Errors are nicely handled with returned exceptions (as opposed to thrown exceptions) to give insight into any issues while retaining type safety.</p>
+
+<p>Note: this is not meant to be used with raw json and keys. Instead, this solution was built to work with thin DB wrappers around case classes that manage persistence of classes.  See the other tutorials for more details on how that works.</p>
+
+
+    </div>
+  </article>
+</div>
+
+
+    
+    <footer class="container center-text">
+            Copyright &copy;
+            <time datetime="2015">2015</time>
+            IronCore Labs, Inc.
+            All rights reserved.
+    </footer>
+
+
+
+
+    <!-- <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.7/highlight.min.js"></script> -->
+    <script src="/js/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+    <script>
+      hljs.configure({
+        tabReplace: '    ', // 4 spaces
+        languages: ['scala', 'json', 'bash']
+      });
+      var smallblocks = document.getElementsByTagName("code");
+      var bigblocks = document.getElementsByClassName("code");
+      _.each(smallblocks, hljs.highlightBlock);
+      _.each(bigblocks, hljs.highlightBlock);
+    </script>
+  </body>
+</html>
