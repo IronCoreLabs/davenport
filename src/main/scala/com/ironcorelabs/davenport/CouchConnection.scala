@@ -89,7 +89,11 @@ object CouchConnection extends AbstractConnection {
    *  couchbase libraries require at most one connection and then
    *  pool requests to that endpoint.
    */
-  def connect: Throwable \/ Unit = dbconfig.map { cfg =>
+  def connect: Throwable \/ Unit = connectWithConfig(dbconfig)
+  def connectToHost(host: String): Throwable \/ Unit = connectWithConfig(dbconfig.map { cfg =>
+    cfg.copy(host = host)
+  })
+  def connectWithConfig(dbcfg: Task[CouchConnectionConfig]): Throwable \/ Unit = dbcfg.map { cfg =>
     try {
       println("Attempting connection to " + cfg.host)
       val cluster = CouchbaseCluster.create(cfg.env, cfg.host)

@@ -37,6 +37,11 @@ class MemConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll wi
     // Test basic create/get/update operations
     //
 
+    "fake connect and disconnect" in {
+      MemConnection.connect
+      MemConnection.connected should be(true)
+      MemConnection.disconnect
+    }
     "get a doc that exists" in {
       val testRead = getDoc(k)
       val res = MemConnection(testRead, seedData)
@@ -129,6 +134,20 @@ class MemConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll wi
         c <- incrementCounter(k, 9)
       } yield c)
       res.value should ===(10L)
+    }
+    "fail to get counter when counter is actually a string" in {
+      val steps = for {
+        _ <- createDoc(k, v)
+        c <- getCounter(k)
+      } yield c
+      MemConnection(steps) should be(left)
+    }
+    "fail to increment counter when counter is actually a string" in {
+      val steps = for {
+        _ <- createDoc(k, v)
+        c <- incrementCounter(k)
+      } yield c
+      MemConnection(steps) should be(left)
     }
 
     //

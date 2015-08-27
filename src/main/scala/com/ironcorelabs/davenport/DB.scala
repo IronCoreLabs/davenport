@@ -113,7 +113,7 @@ object DB {
    *  This will most often be used when using for comprehensions mixing [[DBOp]]
    *  operations with other data extraction such as json de/serialization.
    */
-  def liftIntoDBProg[A](opt: Option[A]): DBProg[A] = EitherT.eitherT(Monad[DBOps].point(opt \/> new Exception("Value not found")))
+  def liftIntoDBProg[A](opt: Option[A]): DBProg[A] = liftIntoDBProg(opt, "Value not found")
 
   /**
    * The `liftIntoDBProg` operations allow any function or value to be deferred to

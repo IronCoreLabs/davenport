@@ -7,6 +7,7 @@ package com.ironcorelabs.davenport
 
 import scalaz._, Scalaz._, scalaz.concurrent.Task
 import org.scalatest.{ WordSpec, Matchers, BeforeAndAfterAll, OptionValues, Tag }
+import org.scalatest.concurrent.AsyncAssertions
 import org.typelevel.scalatest._
 import DisjunctionValues._
 import scala.language.postfixOps
@@ -15,7 +16,7 @@ import com.ironcorelabs.davenport.tags.RequiresCouch
 import scala.concurrent.duration._
 
 @RequiresCouch
-class CouchConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll with DisjunctionMatchers with OptionValues {
+class CouchConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll with DisjunctionMatchers with OptionValues with AsyncAssertions {
   val k = Key("test")
   val k404 = Key("test404")
   val v = RawJsonString("value")
@@ -194,10 +195,7 @@ class CouchConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll 
       val finalres = handled.attemptRun.join
       finalres.value.jsonString should ===(newvalue)
     }
-    /*
-     * TODO: No idea why this doesn't work. Punting until later.
-     */
-    "simulate a connection failure and recover from it" ignore {
+    "handle a failed connection" in {
       // Save off bucket and then ditch it
       CouchConnection.fakeDisconnect
 
@@ -205,13 +203,41 @@ class CouchConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll 
       val connectionfail = CouchConnection.execTask(getDoc(k))
       connectionfail.attemptRun.join.leftValue.getMessage should ===("Not connected")
 
+      CouchConnection.fakeDisconnectRevert
+    }
+    /*
+     * TODO: No idea why this doesn't work. Punting until later.
+     */
+    "simulate a connection failure and recover from it using Task retry" ignore {
+      // handle async fun
+      val w = new Waiter
+
+      // Save off bucket and then hide it
+      CouchConnection.fakeDisconnect
+
+      val connectionfail = CouchConnection.execTask(getDoc(k))
+
       // Setup a retry.  Within the retry, resolve the problem
-      val retry = connectionfail.retry(Seq(155.millis, 125.millis, 100.millis), { t =>
+      val retry = connectionfail.retryAccumulating(Seq(155.millis, 1025.millis), { t =>
         println("***** Retrying")
         CouchConnection.fakeDisconnectRevert
         t.getMessage == "Not connected" // return true to retry if not connected
       })
-      retry.attemptRun.join should be(right)
+      val res = retry.attemptRun
+      println(res)
+      res should be(right)
+    }
+    "attempt connect to bad host and fail" in {
+      // Store off good connection
+      CouchConnection.fakeDisconnect
+
+      // Attempt to connect with bogus config
+      val res = CouchConnection.connectToHost("127.0.0.5")
+
+      // Get error in return
+      res should be(left)
+
+      CouchConnection.fakeDisconnectRevert
     }
   }
 }
