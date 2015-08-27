@@ -5,7 +5,7 @@
   {% capture current_url %}{{ page.url | replace: 'index.html', '' }}{% endcapture %}
   <ul>
     {% for e in site.nav %}
-      <li {% if e.url == current_url or (e.url contains "tutorials" and page.collection == "tutorials") %}class="active"{% endif %}><a href="{{ site.baseurl }}{{ e.url }}">{{ e.text }}</a></li>
+    <li {% if e.url == current_url or (e.url contains "tutorials" and page.collection == "tutorials") %}class="active"{% endif %}><a href="{% if e.offsite != true %}{{ site.baseurl }}{% endif %}{{ e.url }}">{{ e.text }}</a></li>
     {% endfor %}
   </ul>
 </nav>

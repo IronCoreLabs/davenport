@@ -19,15 +19,19 @@ nav:
   -
     url: "https://github.com/IronCoreLabs/davenport"
     text: "Github"
+    offsite: true
   -
     url: "/latest/api"
     text: "Scaladocs"
+    offsite: false
   -
     url: "/tutorials/getting-started.html"
     text: "Tutorials"
+    offsite: false
   -
     url: "/"
     text: "Overview"
+    offsite: false
 
 collections:
   tutorials:
