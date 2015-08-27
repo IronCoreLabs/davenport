@@ -232,7 +232,7 @@ class CouchConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll 
       CouchConnection.fakeDisconnect
 
       // Attempt to connect with bogus config
-      val res = CouchConnection.connectToHost("127.0.0.5")
+      val res = CouchConnection.connectToHost("badhostnocookie.local")
 
       // Get error in return
       res should be(left)
