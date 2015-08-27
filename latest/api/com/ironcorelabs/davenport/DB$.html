@@ -101,7 +101,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="DB$$BatchCreateDocs.html"><span class="name">BatchCreateDocs</span></a><span class="params">(<span name="st">st: <a href="#DBBatchStream=Iterator[scalaz.\/[Throwable,(com.ironcorelabs.davenport.DB.DBProg[com.ironcorelabs.davenport.DB.Key],com.ironcorelabs.davenport.DB.RawJsonString)]]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBBatchStream">DBBatchStream</a></span>, <span name="continue">continue: (<span class="extype" name="scala.Throwable">Throwable</span>) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result"> extends <a href="DB$$DBOp.html" class="extype" name="com.ironcorelabs.davenport.DB.DBOp">DBOp</a>[<span class="extype" name="scalaz.\/">\/</span>[<span class="extype" name="scala.Throwable">Throwable</span>, <a href="#DBBatchResults=scalaz.\&amp;/[scalaz.IList[(Int,Throwable)],scalaz.IList[Int]]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBBatchResults">DBBatchResults</a>]] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <a href="DB$$BatchCreateDocs.html"><span class="name">BatchCreateDocs</span></a><span class="params">(<span name="st">st: <a href="#DBBatchStream=Iterator[scalaz.\/[Throwable,(com.ironcorelabs.davenport.DB.DBProg[com.ironcorelabs.davenport.DB.Key],com.ironcorelabs.davenport.DB.RawJsonString)]]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBBatchStream">DBBatchStream</a></span>, <span name="continue">continue: (<span class="extype" name="scala.Throwable">Throwable</span>) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result"> extends <a href="DB$$DBOp.html" class="extype" name="com.ironcorelabs.davenport.DB.DBOp">DBOp</a>[<span class="extype" name="scalaz.\/">\/</span>[<span class="extype" name="scala.Throwable">Throwable</span>, <a href="#DBBatchResults=scalaz.\&amp;/[scalaz.IList[com.ironcorelabs.davenport.DB.DbBatchError],scalaz.IList[Int]]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBBatchResults">DBBatchResults</a>]] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4><span class="permalink">
       <a href="../../../index.html#com.ironcorelabs.davenport.DB$@BatchCreateDocsextendsDB.DBOp[scalaz.\/[Throwable,com.ironcorelabs.davenport.DB.DBBatchResults]]withProductwithSerializable" title="Permalink" target="_top">
@@ -127,7 +127,7 @@
     </span>
       
     </li><li name="com.ironcorelabs.davenport.DB.DBBatchResults" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="DBBatchResults=scalaz.\&amp;/[scalaz.IList[(Int,Throwable)],scalaz.IList[Int]]"></a>
+      <a id="DBBatchResults=scalaz.\&amp;/[scalaz.IList[com.ironcorelabs.davenport.DB.DbBatchError],scalaz.IList[Int]]"></a>
       <a id="DBBatchResults:DBBatchResults"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -135,10 +135,10 @@
         <span class="kind">type</span>
       </span>
       <span class="symbol">
-        <span class="name">DBBatchResults</span><span class="result"> = <span class="extype" name="scalaz.\&amp;/">\&amp;/</span>[<span class="extype" name="scalaz.IList">IList</span>[(<span class="extype" name="scala.Int">Int</span>, <span class="extype" name="scala.Throwable">Throwable</span>)], <span class="extype" name="scalaz.IList">IList</span>[<span class="extype" name="scala.Int">Int</span>]]</span>
+        <span class="name">DBBatchResults</span><span class="result"> = <span class="extype" name="scalaz.\&amp;/">\&amp;/</span>[<span class="extype" name="scalaz.IList">IList</span>[<a href="DB$$DbBatchError.html" class="extype" name="com.ironcorelabs.davenport.DB.DbBatchError">DbBatchError</a>], <span class="extype" name="scalaz.IList">IList</span>[<span class="extype" name="scala.Int">Int</span>]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@DBBatchResults=scalaz.\&amp;/[scalaz.IList[(Int,Throwable)],scalaz.IList[Int]]" title="Permalink" target="_top">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@DBBatchResults=scalaz.\&amp;/[scalaz.IList[com.ironcorelabs.davenport.DB.DbBatchError],scalaz.IList[Int]]" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -232,7 +232,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="DB$$DbBatchError.html"><span class="name">DbBatchError</span></a><span class="params">(<span name="recordNum">recordNum: <span class="extype" name="scala.Int">Int</span></span>, <span name="errorString">errorString: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <a href="DB$$DbBatchError.html"><span class="name">DbBatchError</span></a><span class="params">(<span name="recordNum">recordNum: <span class="extype" name="scala.Int">Int</span></span>, <span name="error">error: <span class="extype" name="scala.Throwable">Throwable</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4><span class="permalink">
       <a href="../../../index.html#com.ironcorelabs.davenport.DB$@DbBatchErrorextendsProductwithSerializable" title="Permalink" target="_top">
@@ -500,7 +500,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">batchCreateDocs</span><span class="params">(<span name="st">st: <a href="#DBBatchStream=Iterator[scalaz.\/[Throwable,(com.ironcorelabs.davenport.DB.DBProg[com.ironcorelabs.davenport.DB.Key],com.ironcorelabs.davenport.DB.RawJsonString)]]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBBatchStream">DBBatchStream</a></span>, <span name="continue">continue: (<span class="extype" name="scala.Throwable">Throwable</span>) ⇒ <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">_ =&gt; true</span></span>)</span><span class="result">: <a href="#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,Throwable,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DBProg</a>[<a href="#DBBatchResults=scalaz.\&amp;/[scalaz.IList[(Int,Throwable)],scalaz.IList[Int]]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBBatchResults">DBBatchResults</a>]</span>
+        <span class="name">batchCreateDocs</span><span class="params">(<span name="st">st: <a href="#DBBatchStream=Iterator[scalaz.\/[Throwable,(com.ironcorelabs.davenport.DB.DBProg[com.ironcorelabs.davenport.DB.Key],com.ironcorelabs.davenport.DB.RawJsonString)]]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBBatchStream">DBBatchStream</a></span>, <span name="continue">continue: (<span class="extype" name="scala.Throwable">Throwable</span>) ⇒ <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">_ =&gt; true</span></span>)</span><span class="result">: <a href="#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,Throwable,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DBProg</a>[<a href="#DBBatchResults=scalaz.\&amp;/[scalaz.IList[com.ironcorelabs.davenport.DB.DbBatchError],scalaz.IList[Int]]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBBatchResults">DBBatchResults</a>]</span>
       </span>
       </h4><span class="permalink">
       <a href="../../../index.html#com.ironcorelabs.davenport.DB$@batchCreateDocs(st:com.ironcorelabs.davenport.DB.DBBatchStream,continue:Throwable=&gt;Boolean):com.ironcorelabs.davenport.DB.DBProg[com.ironcorelabs.davenport.DB.DBBatchResults]" title="Permalink" target="_top">
@@ -522,14 +522,14 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">batchFailed</span><span class="params">(<span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>, <span name="e">e: <span class="extype" name="scala.Throwable">Throwable</span></span>)</span><span class="result">: <a href="#DBBatchResults=scalaz.\&amp;/[scalaz.IList[(Int,Throwable)],scalaz.IList[Int]]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBBatchResults">DBBatchResults</a></span>
+        <span class="name">batchFailed</span><span class="params">(<span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>, <span name="e">e: <span class="extype" name="scala.Throwable">Throwable</span></span>)</span><span class="result">: <a href="#DBBatchResults=scalaz.\&amp;/[scalaz.IList[com.ironcorelabs.davenport.DB.DbBatchError],scalaz.IList[Int]]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBBatchResults">DBBatchResults</a></span>
       </span>
       </h4><span class="permalink">
       <a href="../../../index.html#com.ironcorelabs.davenport.DB$@batchFailed(idx:Int,e:Throwable):com.ironcorelabs.davenport.DB.DBBatchResults" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Generate a <a href="#DBBatchResults=scalaz.\&amp;/[scalaz.IList[(Int,Throwable)],scalaz.IList[Int]]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBBatchResults">DBBatchResults</a> error</p>
+      <p class="shortcomment cmt">Generate a <a href="#DBBatchResults=scalaz.\&amp;/[scalaz.IList[com.ironcorelabs.davenport.DB.DbBatchError],scalaz.IList[Int]]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBBatchResults">DBBatchResults</a> error</p>
     </li><li name="com.ironcorelabs.davenport.DB#batchSucceeded" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="batchSucceeded(idx:Int):com.ironcorelabs.davenport.DB.DBBatchResults"></a>
       <a id="batchSucceeded(Int):DBBatchResults"></a>
@@ -539,14 +539,14 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">batchSucceeded</span><span class="params">(<span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <a href="#DBBatchResults=scalaz.\&amp;/[scalaz.IList[(Int,Throwable)],scalaz.IList[Int]]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBBatchResults">DBBatchResults</a></span>
+        <span class="name">batchSucceeded</span><span class="params">(<span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <a href="#DBBatchResults=scalaz.\&amp;/[scalaz.IList[com.ironcorelabs.davenport.DB.DbBatchError],scalaz.IList[Int]]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBBatchResults">DBBatchResults</a></span>
       </span>
       </h4><span class="permalink">
       <a href="../../../index.html#com.ironcorelabs.davenport.DB$@batchSucceeded(idx:Int):com.ironcorelabs.davenport.DB.DBBatchResults" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Generate a <a href="#DBBatchResults=scalaz.\&amp;/[scalaz.IList[(Int,Throwable)],scalaz.IList[Int]]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBBatchResults">DBBatchResults</a> success</p>
+      <p class="shortcomment cmt">Generate a <a href="#DBBatchResults=scalaz.\&amp;/[scalaz.IList[com.ironcorelabs.davenport.DB.DbBatchError],scalaz.IList[Int]]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBBatchResults">DBBatchResults</a> success</p>
     </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a>
       <a id="clone():AnyRef"></a>
