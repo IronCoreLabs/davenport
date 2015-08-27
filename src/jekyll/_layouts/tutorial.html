@@ -8,7 +8,7 @@ layout: default
       {% capture current_url %}{{ page.url | replace: 'index.html', '' }}{% endcapture %}
       {% for tutorial in site.tutorials %}
         <li {% if tutorial.url == current_url %}class="active"{% endif %}>
-          <a href="{{ tutorial.url }}">{{ tutorial.title }}</a>
+          <a href="{{ site.baseurl }}{{ tutorial.url }}">{{ tutorial.title }}</a>
         </li>
       {% endfor %}
     </ul>

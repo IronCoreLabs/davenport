@@ -13,6 +13,7 @@ mode: production
 safe: true
 lsi: false
 
+baseurl: "/davenport"
 
 nav:
   -

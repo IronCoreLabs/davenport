@@ -1,11 +1,11 @@
 <nav class="container" role="navigation">
   <div>
-    <a href="/davenport">{{ site.name }}</a>
+    <a href="{{ site.baseurl }}">{{ site.name }}</a>
   </div>
   {% capture current_url %}{{ page.url | replace: 'index.html', '' }}{% endcapture %}
   <ul>
     {% for e in site.nav %}
-      <li {% if e.url == current_url or (e.url contains "tutorials" and page.collection == "tutorials") %}class="active"{% endif %}><a href="{{ e.url }}">{{ e.text }}</a></li>
+      <li {% if e.url == current_url or (e.url contains "tutorials" and page.collection == "tutorials") %}class="active"{% endif %}><a href="{{ site.baseurl }}{{ e.url }}">{{ e.text }}</a></li>
     {% endfor %}
   </ul>
 </nav>
