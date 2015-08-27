@@ -7,13 +7,19 @@ package com.ironcorelabs.davenport
 
 import scalaz._, Scalaz._, scalaz.concurrent.Task
 import org.scalatest.{ WordSpec, Matchers, BeforeAndAfterAll, OptionValues }
+import org.scalatest.concurrent.AsyncAssertions
 import org.typelevel.scalatest._
 import DisjunctionValues._
 import scala.language.postfixOps
 import DB._
 
-class MemConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll with DisjunctionMatchers with OptionValues {
+class MemConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll with DisjunctionMatchers with OptionValues with AsyncAssertions {
   "MemConnection" should {
+
+    //
+    // Setup shared test data
+    //
+
     import MemConnection.KVMap
     val k = Key("test")
     val v = RawJsonString("value")
@@ -27,9 +33,10 @@ class MemConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll wi
     // def tenrowdbs: DBBatchStream = tenrows.map(_.right[Throwable]).toIterator
     def tenrowdbs: DBBatchStream = tenrows.map(_.mapElements(k => liftIntoDBProg(k.right)).right[Throwable]).toIterator
 
-    "reliably generate hashvers" ignore {
-      // TODO!
-    }
+    //
+    // Test basic create/get/update operations
+    //
+
     "get a doc that exists" in {
       val testRead = getDoc(k)
       val res = MemConnection(testRead, seedData)
@@ -46,11 +53,21 @@ class MemConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll wi
       res should be(right)
       data should equal(seedData)
     }
+    "work with an async call on task" in {
+      val testCreate = createDoc(k, v)
+      val w = new Waiter
+      MemConnection.execAsync(testCreate, { res: Throwable \/ DbValue =>
+        w {
+          res.value should ===(DbValue(v, hv))
+        }
+        w.dismiss()
+      })
+      w.await()
+    }
     "fail to create a doc if it already exists" in {
       val testCreate = createDoc(k, newvalue)
       val (data, res) = MemConnection.run(testCreate, seedData)
       res should be(left)
-      data should equal(seedData)
     }
     "update a doc that exists with correct hashver" in {
       val testUpdate = updateDoc(k, newvalue, hv)
@@ -93,6 +110,11 @@ class MemConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll wi
       val (data, res) = MemConnection.run(testModify)
       res should be(left)
     }
+
+    //
+    // Test counters
+    //
+
     "get zero when retrieving non-existent counter" in {
       val (data, res) = MemConnection.run(getCounter(k))
       res.value should ===(0L)
@@ -108,6 +130,11 @@ class MemConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll wi
       } yield c)
       res.value should ===(10L)
     }
+
+    //
+    // Test batch import
+    //
+
     "be happy doing initial batch import" in {
       val res = MemConnection(batchCreateDocs(tenrowdbs))
       res.value.isThat should ===(true)
