@@ -1,18 +1,18 @@
 name := "davenport"
 
+organization := "com.ironcorelabs"
+
 scalaVersion := "2.11.7"
 
 // crossScalaVersions := Seq("2.10.4")
 
-version := "0.5"
+// version := "0.6"
 
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
 
-bintrayOrganization := Some("ironcorelabs")
-bintrayPackageLabels := Seq("scala", "couchbase", "functional", "functional programming", "reasonable")
+// bintrayPackageLabels := Seq("scala", "couchbase", "functional", "functional programming", "reasonable")
 // bintrayRepository := "maven"
 // bintrayPackage := "davenport"
-publishMavenStyle := true
 
 resolvers ++= Seq(
   "Typesafe repository" at "http://repo.typesafe.com/typesafe/release/",
@@ -40,7 +40,7 @@ libraryDependencies ++= Seq(
 // Code coverage checks
 coverageMinimum := 70
 
-coverageFailOnMinimum := false
+coverageFailOnMinimum := true
 
 coverageHighlighting := scalaBinaryVersion.value == "2.11"
 
@@ -49,6 +49,7 @@ unidocSettings
 site.settings
 ghpages.settings
 site.includeScaladoc()
+releaseVersionBump := sbtrelease.Version.Bump.Bugfix
 com.typesafe.sbt.site.JekyllSupport.requiredGems := Map(
   "jekyll" -> "2.4.0",
   "kramdown" -> "1.5.0",
@@ -57,13 +58,11 @@ com.typesafe.sbt.site.JekyllSupport.requiredGems := Map(
   "jekyll-mentions" -> "0.2.1"
 )
 site.jekyllSupport()
-// Enable this when you're convinced every publish should update docs
+// Enable this if you're convinced every publish should update docs
 // site.publishSite
 
 tutSourceDirectory := sourceDirectory.value / "tutsrc"
 tutTargetDirectory := sourceDirectory.value / "jekyll" / "_tutorials"
-
-// site.addMappingsToSiteDir(mappings in (ScalaUnidoc, packageDoc), "latest/api")
 
 git.remoteRepo := "git@github.com:IronCoreLabs/davenport.git"
 
