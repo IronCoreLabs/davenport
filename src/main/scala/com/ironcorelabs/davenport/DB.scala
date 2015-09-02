@@ -7,6 +7,8 @@ package com.ironcorelabs.davenport
 
 import scalaz._, Scalaz._, scalaz.concurrent.Task
 import scala.language.implicitConversions
+import scalaz.stream.Process
+import scala.language.higherKinds
 
 /**
  * Contains the primitives for building DBProg programs for later execution by
@@ -59,23 +61,6 @@ object DB {
    *  `MemConnection.exec`, these are executed.
    */
   type DBProg[A] = EitherT[DBOps, Throwable, A]
-
-  /**
-   * A batch error gives a record number and an error string
-   *
-   *  When importing a lot of data, this will store accrued errors
-   *  indicating their source.
-   */
-  final case class DbBatchError(recordNum: Int, error: Throwable)
-
-  /**
-   * Makes use of `scalaz.These` (`\&/`) to accumulate successes and failures
-   *
-   *  `\&/.This` will capture a list of encountered errors and their line nums
-   *
-   *  `\&/.That` will capture a list of successfully imported line nums
-   */
-  type DBBatchResults = (IList[DbBatchError] \&/ IList[Int])
 
   /**
    * Transform incoming data into this type
@@ -138,9 +123,6 @@ object DB {
     EitherT.eitherT(free)
   }
 
-  /** Convenience for converting an exception into a [[DBProg]] operation */
-  def dbProgFail[A](e: Throwable): DBProg[A] = liftIntoDBProg(e.left)
-
   //
   //
   // 4. Algebraic Data Type of DB operations. (A persistence grammar of sorts.)
@@ -155,7 +137,6 @@ object DB {
   case class RemoveKey(key: Key) extends DBOp[Throwable \/ Unit]
   case class GetCounter(key: Key) extends DBOp[Throwable \/ Long]
   case class IncrementCounter(key: Key, delta: Long = 1) extends DBOp[Throwable \/ Long]
-  case class BatchCreateDocs(st: DBBatchStream, continue: Throwable => Boolean) extends DBOp[Throwable \/ DBBatchResults]
 
   //
   //
@@ -185,18 +166,6 @@ object DB {
     liftToFreeEitherT(IncrementCounter(k, delta))
 
   /**
-   * Process a stream of records into new database documents
-   *
-   *  Pass in a continue function to control what happens on error. For example,
-   *  if you want to abort imports on certain errors or after a certain number
-   *  of errors, use a custom `continue` function. By default, the processing of
-   *  the incoming records does not stop until the end of the records are
-   *  reached.
-   */
-  def batchCreateDocs(st: DBBatchStream, continue: Throwable => Boolean = _ => true): DBProg[DBBatchResults] =
-    liftToFreeEitherT(BatchCreateDocs(st, continue))
-
-  /**
    * Convenience function to fetch a doc and transform it via a function `f`
    *
    *  In practice, this is more an example showing how to build a function like
@@ -208,15 +177,17 @@ object DB {
     res <- updateDoc(k, f(t.jsonString), t.hashVer)
   } yield res
 
-  //
-  // Other type conveniences
-  //
-
-  /** Generate a [[DBBatchResults]] error */
-  def batchFailed(idx: Int, e: Throwable): DBBatchResults =
-    IList(DbBatchError(idx, e)).wrapThis[IList[Int]]
-
-  /** Generate a [[DBBatchResults]] success */
-  def batchSucceeded(idx: Int): DBBatchResults =
-    IList(idx).wrapThat[IList[DbBatchError]]
+  /**
+   * Object that contains batch operations for DB. They have been separated out because they cannot be mixed with `DBProg` operations
+   * without first lifting them into a process via `liftToProcess`.
+   */
+  object batch {
+    def liftToProcess[A](prog: DBProg[A]): Process[DBOps, Throwable \/ A] = Process.eval(prog.run)
+    /**
+     * Create all values in the Foldable F.
+     */
+    def batchCreateDocs[F[_]](foldable: F[(Key, RawJsonString)])(implicit F: Foldable[F]): Process[DBOps, Throwable \/ DbValue] = {
+      Process.emitAll(foldable.toList).evalMap { case (key, json) => createDoc(key, json).run }
+    }
+  }
 }

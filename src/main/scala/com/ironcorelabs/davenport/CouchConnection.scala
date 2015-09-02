@@ -8,6 +8,7 @@ package com.ironcorelabs.davenport
 import scalaz._, Scalaz._, scalaz.concurrent.Task
 import scala.language.implicitConversions
 import DB._
+import scalaz.stream.Process
 
 // Couchbase
 import com.couchbase.client.core._
@@ -72,6 +73,13 @@ object CouchConnection extends AbstractConnection {
     )
   }
 
+  //Natural transformation from DbOps to Task allowing the replacement of DBOps
+  //as the Monad in a Process.
+  private val translate: DBOps ~> Task = new (DBOps ~> Task) {
+    def apply[A](db: DBOps[A]): Task[A] = {
+      Free.runFC[DBOp, Task, A](db)(couchRunner)
+    }
+  }
   //
   //
   // Connect and disconnect state methods
@@ -137,6 +145,10 @@ object CouchConnection extends AbstractConnection {
    */
   def exec[A](db: DBProg[A]): Throwable \/ A = execTask(db).attemptRun.join
 
+  def translateProcess[A](db: Process[DBOps, A]): Process[Task, A] = {
+    db.translate(translate)
+  }
+
   /**
    * an alias to exec
    */
@@ -169,26 +181,24 @@ object CouchConnection extends AbstractConnection {
       case IncrementCounter(k: Key, delta: Long) => incrementCounter(k, delta)
       case RemoveKey(k: Key) => removeKey(k)
       case UpdateDoc(k: Key, v: RawJsonString, h: HashVer) => updateDoc(k, v, h)
-      case BatchCreateDocs(st: DBBatchStream, continue: (Throwable => Boolean)) =>
-        batchCreateDocs(st, continue)
     }
 
     /*
      * Helpers for the grammar interpreter
      */
     private def getDoc(k: Key): Task[Throwable \/ DbValue] =
-      couchOp2DbV(_.get(k.value, classOf[RawJsonDocument]))
+      couchOpToDBValue(_.get(k.value, classOf[RawJsonDocument]))
 
     private def createDoc(k: Key, v: RawJsonString): Task[Throwable \/ DbValue] =
-      couchOp2DbV(_.insert(
+      couchOpToDBValue(_.insert(
         RawJsonDocument.create(k.value, 0, v.value, 0)
       ))
 
     private def getCounter(k: Key): Task[Throwable \/ Long] =
-      couchOp2Long(_.counter(k.value, 0, 0, 0))
+      couchOpToLong(_.counter(k.value, 0, 0, 0))
 
     private def incrementCounter(k: Key, delta: Long): Task[Throwable \/ Long] =
-      couchOp2Long(
+      couchOpToLong(
         // here we use delta as the default, so if you want an increment
         // by one on a key that doesn't exist, we'll give you a 1 back
         // and if you want an increment by 10 on a key that doesn't exist,
@@ -197,92 +207,34 @@ object CouchConnection extends AbstractConnection {
       )
 
     private def removeKey(k: Key): Task[Throwable \/ Unit] =
-      couchOp2DbV(
+      couchOpToA[Unit, String](
         _.remove(k.value, classOf[RawJsonDocument])
-      ).map(_ => ().right)
+      )(_ => ().right)
 
     private def updateDoc(k: Key, v: RawJsonString, h: HashVer): Task[Throwable \/ DbValue] =
-      couchOp2DbV(_.replace(
+      couchOpToA(_.replace(
         RawJsonDocument.create(k.value, 0, v.value, h.value.toLong)
-      ))
+      ))(doc => DbValue(RawJsonString(doc.content), HashVer(doc.cas)).right)
 
-    private def batchCreateDocs(st: DBBatchStream, continue: (Throwable => Boolean)): Task[Throwable \/ DBBatchResults] =
-      evalBatchStream(batchStream2StreamOfResults(st), continue).map(_.right)
-
-    /*
-     * Helpers for batchCreateDocs
-     */
-    private def batchStream2StreamOfResults(st: DBBatchStream): Iterator[DBBatchResults] =
-      st.zipWithIndex.map {
-        (altogether: (Throwable \/ (DBProg[Key], RawJsonString), Int)) =>
-          val (rec, idx) = altogether
-          // We have nested disjunctions. Will unwind these to
-          // the DBBatchResult error summary format
-          disj2BatchResult(rec, idx, { progKeyAndV: (DBProg[Key], RawJsonString) =>
-            val (edbpk, v) = progKeyAndV
-            disj2BatchResult(exec(edbpk), idx, { k: Key =>
-              createDoc(k, v).attemptRun
-                .toThese.bimap(e => IList(DbBatchError(idx, e)), _ => IList(idx))
-            })
-          })
-      }
-
-    private def disj2BatchResult[A](res: Throwable \/ A, idx: Int, f: A => DBBatchResults): DBBatchResults =
-      res.fold(e => batchFailed(idx, e), a => f(a))
-
-    private def stopIteratingWhenContinueFunctionFails(st: Iterator[DBBatchResults], continue: Throwable => Boolean): Iterator[DBBatchResults] = {
-      var lastLineAndError = none[DBBatchResults]
-      st.takeWhile {
-        case \&/.This(ilist: IList[DbBatchError]) => ilist.headOption.fold(true) {
-          case DbBatchError(idx, e) => continue(e) || {
-            lastLineAndError = batchFailed(idx, e).some
-            false
-          }
-          case _ => true
-        }
-        case _ => true
-        // hack to return the last error when the continue function
-        // aborts further processing (takeWhile won't return it)
-      } ++ lastLineAndError.toIterator
+    private def couchOpToLong(fetchOp: AsyncBucket => Observable[JsonLongDocument]): Task[Throwable \/ Long] = {
+      couchOpToA(fetchOp)(doc => \/.fromTryCatchNonFatal(doc.content.toLong))
     }
 
-    private def evalBatchStream(st: Iterator[DBBatchResults], continue: (Throwable => Boolean)): Task[DBBatchResults] = {
-      val emptyResult: DBBatchResults = IList[Int]().wrapThat[IList[DbBatchError]]
-      Task.delay(
-        stopIteratingWhenContinueFunctionFails(st, continue)
-          .reduceOption(_ |+| _)
-          .getOrElse(emptyResult)
-      )
-    }
+    private def couchOpToDBValue(fetchOp: AsyncBucket => Observable[RawJsonDocument]): Task[Throwable \/ DbValue] =
+      couchOpToA(fetchOp)(doc => DbValue(RawJsonString(doc.content), HashVer(doc.cas)).right)
 
-    // Convenience for taking an observable, handling errors and wrapping
-    // the results up into a DbValue (json string + version hash) result
-    // wrapped in a task with explicit errors
-    private def couchOp2DbV(f: AsyncBucket => Observable[RawJsonDocument]): Task[Throwable \/ DbValue] = {
-      val eOrT: Throwable \/ Task[RawJsonDocument] = for {
+    private def couchOpToA[A, B](fetchOp: AsyncBucket => Observable[AbstractDocument[B]])(f: AbstractDocument[B] => Throwable \/ A): Task[Throwable \/ A] = {
+      val eOrT: Throwable \/ Task[Throwable \/ AbstractDocument[B]] = for {
         b <- bucketOrError
         ba = b.async
-      } yield obs2Task(f(ba))
+      } yield obs2Task(fetchOp(ba))
       // Take my Throwable \/ Task[RawJsonDocument] (eOrT) and convert to
       // Task[Throwable \/ DbValue]
       eOrT.fold(
         Task.fail(_),
-        _.map { doc =>
-          DbValue(RawJsonString(doc.content), HashVer(doc.cas)).right
+        _.map { docOrError =>
+          docOrError.flatMap(f)
         }
-      )
-    }
-
-    // Convenience for taking an observable, handling errors and wrapping
-    // the results up into a Long wrapped in a task with explicit errors
-    private def couchOp2Long(f: AsyncBucket => Observable[JsonLongDocument]): Task[Throwable \/ Long] = {
-      val eOrT: Throwable \/ Task[JsonLongDocument] = for {
-        b <- bucketOrError
-        ba = b.async
-      } yield obs2Task(f(ba))
-      eOrT.fold(
-        Task.fail(_),
-        _.map(doc => \/.fromTryCatchNonFatal(doc.content.toLong))
       )
     }
 
@@ -290,15 +242,15 @@ object CouchConnection extends AbstractConnection {
     // -- far more efficient then using the blocking observables. This converts
     // the callbacks from the observable into a task, which is easier to work
     // with when composing and reasoning about functions and operations.
-    private def obs2Task[A](o: Observable[A]): Task[A] = {
+    private def obs2Task[A](o: Observable[A]): Task[Throwable \/ A] = {
       Task.async[A](k => {
-        o.firstOrElse(throw new DocumentDoesNotExistException()).subscribe(
-          n => k(n.right),
+        o.headOption.subscribe(
+          n => k(n.map(_.right).getOrElse(new DocumentDoesNotExistException().left)),
           e => k(e.left),
           () => ()
         )
         ()
-      })
+      }).attempt
     }
   }
 

@@ -12,6 +12,7 @@ import org.typelevel.scalatest._
 import DisjunctionValues._
 import scala.language.postfixOps
 import DB._
+import DB.batch._
 
 class MemConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll with DisjunctionMatchers with OptionValues with AsyncAssertions {
   "MemConnection" should {
@@ -29,9 +30,10 @@ class MemConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll wi
     val emptyData: KVMap = Map()
     val tenrows = (1 to 10).map { i =>
       (Key("key" + i) -> RawJsonString("val" + i))
-    }
-    // def tenrowdbs: DBBatchStream = tenrows.map(_.right[Throwable]).toIterator
-    def tenrowdbs: DBBatchStream = tenrows.map(_.mapElements(k => liftIntoDBProg(k.right)).right[Throwable]).toIterator
+    }.toList
+    val fiveMoreRows = (20 until 25).map { i =>
+      (Key("key" + i) -> RawJsonString("val" + i))
+    }.toList
 
     //
     // Test basic create/get/update operations
@@ -55,7 +57,6 @@ class MemConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll wi
     "create a doc that doesn't exist" in {
       val testCreate = createDoc(k, v)
       val (data, res) = MemConnection.run(testCreate)
-      res should be(right)
       data should equal(seedData)
     }
     "work with an async call on task" in {
@@ -71,49 +72,38 @@ class MemConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll wi
     }
     "fail to create a doc if it already exists" in {
       val testCreate = createDoc(k, newvalue)
-      val (data, res) = MemConnection.run(testCreate, seedData)
-      res should be(left)
+      MemConnection.run(testCreate, seedData)._2 should be(left)
     }
     "update a doc that exists with correct hashver" in {
       val testUpdate = updateDoc(k, newvalue, hv)
       val (data, res) = MemConnection.run(testUpdate, seedData)
-      res should be(right)
       data.get(k) should ===(Some(newvalue))
     }
     "fail updating a doc that doesn't exist" in {
       val testUpdate = updateDoc(k, newvalue, hv)
-      val (data, res) = MemConnection.run(testUpdate)
-      res should be(left)
-      data should ===(emptyData)
+      MemConnection.run(testUpdate)._2 should be(left)
     }
     "fail updating a doc when using incorrect hashver" in {
       val testUpdate = updateDoc(k, newvalue, HashVer(0))
-      val (data, res) = MemConnection.run(testUpdate, seedData)
-      res should be(left)
-      data should ===(seedData)
+      MemConnection.run(testUpdate, seedData)._2 should be(left)
     }
     "remove a key that exists" in {
       val testRemove = removeKey(k)
       val (data, res) = MemConnection.run(testRemove, seedData)
-      res should be(right)
       data should ===(emptyData)
     }
     "fail removing a key that doesn't exist" in {
       val testRemove = removeKey(k)
-      val (data, res) = MemConnection.run(testRemove)
-      res should be(left)
-      data should ===(emptyData)
+      MemConnection.run(testRemove)._2 should be(left)
     }
     "modify map" in {
       val testModify = modifyDoc(k, j => newvalue)
       val (data, res) = MemConnection.run(testModify, seedData)
-      res should be(right)
       data.get(k) should ===(Some(newvalue))
     }
     "modify map fails if key is not in db" in {
       val testModify = modifyDoc(k, j => newvalue)
-      val (data, res) = MemConnection.run(testModify)
-      res should be(left)
+      MemConnection.run(testModify)._2 should be(left)
     }
 
     //
@@ -155,37 +145,30 @@ class MemConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll wi
     //
 
     "be happy doing initial batch import" in {
-      val res = MemConnection(batchCreateDocs(tenrowdbs))
-      res.value.isThat should ===(true)
-      res.value.onlyThat should ===((0 to 9).toList.toIList.some)
+      val (map, res) = MemConnection.runProcess(batchCreateDocs(tenrows)).value
+      res.toList.separate._2.length should ===(tenrows.length)
     }
     "return errors batch importing the same items again" in {
-      val (data, res1) = MemConnection.run(batchCreateDocs(tenrowdbs))
-      val res = MemConnection(batchCreateDocs(tenrowdbs), data)
-      res should be(right)
-      res.value.isThis should ===(true)
-      res.value.onlyThis.value.length should ===(10)
+      val (data, result) = MemConnection.runProcess(batchCreateDocs(tenrows)).value
+      val p = batchCreateDocs(tenrows ++ fiveMoreRows)
+      val (map, res) = MemConnection.runProcess(p, data).value
+      res.length should ===(tenrows.length + fiveMoreRows.length)
+      val (lefts, rights) = res.toList.separate
+      lefts.length should ===(tenrows.length)
+      rights.length should ===(fiveMoreRows.length)
     }
-    "fail after first error if we pass in a halting function" in {
-      val (data, res1) = MemConnection.run(batchCreateDocs(tenrowdbs))
-      val res = MemConnection(batchCreateDocs(tenrowdbs, _ => false), data)
-      res should be(right)
-      res.value.isThis should ===(true)
-      res.value.onlyThis.value.length should ===(1)
+    "fail after on first error if we pass in a halting function" in {
+      val (data, res1) = MemConnection.runProcess(batchCreateDocs(tenrows)).value
+      val (_, res) = MemConnection.runProcess(batchCreateDocs(tenrows).takeWhile(_.isRight), data).value
+      res.length should ===(0)
     }
-    "return an error when we pass in an error in the stream" in {
-      val err: DBBatchStream = Seq((new Throwable("bad input")).left).toIterator
-      val res = MemConnection(batchCreateDocs(err))
-      res should be(right)
-      res.value.isThis should ===(true)
-      res.value.onlyThis.value.length should ===(1)
+
+    "don't try and insert first 5 and return 5 errors" in {
+      val (data, res) = MemConnection.runProcess(batchCreateDocs(tenrows.drop(5))).value
+      res.length should ===(5)
+      res.toList.separate._2.length should ===(5)
     }
-    "skip first 5 and return 5 errors" in {
-      val res = MemConnection(batchCreateDocs(tenrowdbs.drop(5), _ => true))
-      res should be(right)
-      res.value.isThat should ===(true)
-      res.value.onlyThat.value.length should ===(5)
-    }
+
   }
 }
 

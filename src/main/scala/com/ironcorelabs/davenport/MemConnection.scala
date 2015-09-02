@@ -8,6 +8,7 @@ package com.ironcorelabs.davenport
 import scalaz._, Scalaz._
 import scalaz.concurrent.Task
 import DB._
+import scala.language.higherKinds
 
 /** Use an in-memory map to interpret DBOps */
 object MemConnection extends AbstractConnection {
@@ -24,24 +25,47 @@ object MemConnection extends AbstractConnection {
 
   /** Backend of the memory store is a Map from Key -> RawJsonString */
   type KVMap = Map[Key, RawJsonString]
-  /** Use scalaz state to safely evolve the map for most operations */
-  type KVState[A] = State[KVMap, A]
-
+  /** Use scalaz state to safely evolve the map. It must be StateT because it needs a Catchable instance. */
+  type KVStateT[F[_], A] = StateT[F, KVMap, A]
+  type KVState[A] = KVStateT[Task, A]
   /** Arbitrary implementation of the hashver for records in the DB */
   def genHashVer(s: RawJsonString): HashVer =
     HashVer(scala.util.hashing.MurmurHash3.stringHash(s.value).toLong)
 
+  private val translateDBOps: DBOps ~> KVState = new (DBOps ~> KVState) {
+    def apply[A](db: DBOps[A]): KVState[A] = {
+      Free.runFC[DBOp, KVState, A](db)(toKVState)
+    }
+  }
+
+  /**
+   * Process demands that the type that it's being "run" into have a Catchable instance.
+   * KVState has a logical one, but it has to be written manually.
+   */
+  private implicit val myStateCatchable = new Catchable[KVState] {
+    def attempt[A](f: KVState[A]): KVState[Throwable \/ A] = {
+      f.map(a => Task(a).attemptRun)
+    }
+    def fail[A](err: Throwable): KVState[A] = {
+      Hoist[KVStateT].liftM(Catchable[Task].fail(err))
+    }
+  }
+
   private def modifyState(s: KVMap): (KVMap, Throwable \/ Unit) = s -> ().right
   private def modifyStateDbv(s: KVMap, j: RawJsonString, h: HashVer): (KVMap, Throwable \/ DbValue) = s -> DbValue(j, h).right
   private def error[A](s: String): Throwable \/ A = (new Exception(s)).left
+  //Convienience method to lift f into KVState.
+  private def state[A](f: KVMap => (KVMap, A)): KVState[A] = StateT[Task, KVMap, A] { map =>
+    Task.delay(f(map))
+  }
   private def toKVState: DBOp ~> KVState = new (DBOp ~> KVState) {
     def apply[A](op: DBOp[A]): KVState[A] = {
       op match {
-        case GetDoc(k: Key) => State.get.map { m: KVMap =>
-          m.get(k).map(json => DbValue(json, genHashVer(json)).right)
-            .getOrElse(error(s"No value found for key '${k.value}'"))
+        case GetDoc(k: Key) => state { m: KVMap =>
+          m.get(k).map(json => m -> DbValue(json, genHashVer(json)).right)
+            .getOrElse(m -> error(s"No value found for key '${k.value}'"))
         }
-        case UpdateDoc(k, doc, hashver) => State { m: KVMap =>
+        case UpdateDoc(k, doc, hashver) => state { m: KVMap =>
           m.get(k).map { json =>
             val storedhashver = genHashVer(json)
             if (hashver == storedhashver) {
@@ -51,14 +75,14 @@ object MemConnection extends AbstractConnection {
             }
           }.getOrElse(m -> error(s"No value found for key '${k.value}'"))
         }
-        case CreateDoc(k, doc) => State { m: KVMap =>
+        case CreateDoc(k, doc) => state { m: KVMap =>
           m.get(k).map(_ => m -> error(s"Can't create since '${k.value}' already exists")).getOrElse(modifyStateDbv(m + (k -> doc), doc, genHashVer(doc)))
         }
-        case RemoveKey(k) => State { m: KVMap =>
+        case RemoveKey(k) => state { m: KVMap =>
           val keyOrError = m.get(k).map(_ => k.right).getOrElse(error("Can't remove non-existent document"))
           keyOrError.fold(t => m -> t.left, key => modifyState(m - k))
         }
-        case GetCounter(k) => State { m: KVMap =>
+        case GetCounter(k) => state { m: KVMap =>
           m.get(k).map { json =>
             try {
               (m -> json.value.toLong.right)
@@ -69,7 +93,7 @@ object MemConnection extends AbstractConnection {
             (m + (k -> RawJsonString("0")) -> 0L.right)
           }
         }
-        case IncrementCounter(k, delta) => State { m: KVMap =>
+        case IncrementCounter(k, delta) => state { m: KVMap =>
           m.get(k).map { json =>
             // convert to long and increment by delta
             try {
@@ -83,83 +107,24 @@ object MemConnection extends AbstractConnection {
             (m + (k -> RawJsonString(delta.toString)), delta.right)
           }
         }
-        case BatchCreateDocs(st: DBBatchStream, continue: (Throwable => Boolean)) => State { m: KVMap =>
-          {
-            // Sadly, we're using a mutable map internally here, seeded
-            // with anything passed in and returned later as new immutable
-            // state
-            var tmpMap: scala.collection.mutable.Map[Key, RawJsonString] =
-              scala.collection.mutable.Map() ++ m
-
-            val emptyResult: DBBatchResults =
-              IList[Int]().wrapThat[IList[DbBatchError]]
-
-            // TODO: get smart and flatmap this stuff below. or peal out to
-            // functions
-            val tdbres: Iterator[DBBatchResults] = st.zipWithIndex.map {
-              (altogether: (Throwable \/ (DBProg[Key], RawJsonString), Int)) =>
-                {
-                  val (record, idx) = altogether
-                  disj2BatchResult(record, idx, { progKeyAndV: (DBProg[Key], RawJsonString) =>
-                    val (edbpk, doc) = progKeyAndV
-                    disj2BatchResult(exec(edbpk), idx, { k: Key =>
-                      tmpMap.get(k) match {
-                        case Some(_) => batchFailed(idx, new Throwable(s"Can't create since '${k.value}' already exists"))
-                        case None => {
-                          tmpMap += (k -> doc)
-                          batchSucceeded(idx)
-                        }
-                      }
-                    })
-                  })
-                }
-            }
-
-            // Note: the tmpMap doesn't mutate until after we call reduceOption
-            //       (since we're mapping on an iterator and so everything is lazy)
-            val res = stopIteratingWhenContinueFunctionFails(tdbres, continue)
-              .reduceOption(_ |+| _)
-              .getOrElse(emptyResult).right
-
-            tmpMap.toMap -> res
-          }
-        }
       }
-    }
-
-    /*
-     * Helpers for the grammar interpreter
-     */
-    private def disj2BatchResult[A](res: Throwable \/ A, idx: Int, f: A => DBBatchResults): DBBatchResults =
-      res.fold(e => batchFailed(idx, e), a => f(a))
-
-    private def stopIteratingWhenContinueFunctionFails(st: Iterator[DBBatchResults], continue: Throwable => Boolean): Iterator[DBBatchResults] = {
-      // For continuation, we want to include results from the first error
-      // even if we cancel at that time, which is tricky and sadly
-      // requires a bit of mutability
-      var lastLineAndError = none[DBBatchResults]
-      st.takeWhile {
-        case \&/.This(ilist: IList[DbBatchError]) => ilist.headOption.fold(true) {
-          case DbBatchError(idx, e) => continue(e) || {
-            lastLineAndError = batchFailed(idx, e).some
-            false
-          }
-          case _ => true
-        }
-        case _ => true
-        // hack to return the last error when the continue function
-        // aborts further processing (takeWhile won't return it)
-      } ++ lastLineAndError.toIterator
     }
   }
 
   /** Passes through to run, but returns only the result */
   def apply[A](prog: DBProg[A], m: KVMap = Map()): Throwable \/ A = run(prog, m)._2
 
+  def runProcess[A](prog: scalaz.stream.Process[DBOps, A], m: KVMap = Map()): Throwable \/ (KVMap, IndexedSeq[A]) = {
+    val x = prog.translate(translateDBOps)
+    x.runLog.run(m).attemptRun
+  }
+
   /**
    * Executes the DBProg and returns both the result and the Map showing db
    *  state
    */
-  def run[A](prog: DBProg[A], m: KVMap = Map()): (KVMap, Throwable \/ A) =
-    Free.runFC[DBOp, KVState, Throwable \/ A](prog.run)(toKVState).apply(m)
+  def run[A](prog: DBProg[A], m: KVMap = Map()): (KVMap, Throwable \/ A) = {
+    //Run should be safe here because we're not actually doing anything with Task.
+    Free.runFC[DBOp, KVState, Throwable \/ A](prog.run)(toKVState).apply(m).run
+  }
 }

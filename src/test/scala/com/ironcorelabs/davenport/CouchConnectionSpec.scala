@@ -12,6 +12,7 @@ import org.typelevel.scalatest._
 import DisjunctionValues._
 import scala.language.postfixOps
 import DB._
+import DB.batch._
 import com.ironcorelabs.davenport.tags.RequiresCouch
 import scala.concurrent.duration._
 
@@ -23,7 +24,7 @@ class CouchConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll 
   val newvalue = RawJsonString("some other value")
   val tenrows = (1 to 10).map { i =>
     (Key("key" + i) -> RawJsonString("val" + i))
-  }
+  }.toList
   def tenrowdbs: DBBatchStream = tenrows.map(_.mapElements(k => liftIntoDBProg(k.right)).right[Throwable]).toIterator
 
   override def beforeAll() = {
@@ -129,46 +130,34 @@ class CouchConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll 
       res.value should ===(10L)
     }
     "be happy doing initial batch import" in {
-      val res = CouchConnection(batchCreateDocs(tenrowdbs))
-      res.value.isThat should ===(true)
-      res.value.onlyThat should ===((0 to 9).toList.toIList.some)
+      val res = CouchConnection.translateProcess(batchCreateDocs(tenrows)).runLog.attemptRun.value
+      val (lefts, rights) = res.toList.separate
+      lefts.length should ===(0)
+      rights.length should ===(tenrows.length)
+
     }
+    "error on single create after batch" in {
+      val res = CouchConnection.execTask(tenrows.map { case (key, value) => createDoc(key, value) }.head).attemptRun.value
+      res.leftValue
+      ()
+    }
+
     "return errors batch importing the same items again" in {
-      val res = CouchConnection(batchCreateDocs(tenrowdbs))
-      res should be(right)
-      res.value.isThis should ===(true)
-      res.value.onlyThis.get.length should ===(10)
-      // OK, yeah, this is damn ugly.  Let me break it down.
-      // res is Throwable \/ DBBatchResults. We shouldn't ever
-      // have a .left here, but the way I built the system, we have
-      // to have a disjunction. Sorry.
-      // Then we have the DBBatchResults, which is one of This, That
-      // or Both. For this test, we're expecting only to have This, which
-      // is essentially the Left. We extract this left side with onlyThis,
-      // which returns an option. So we use .get on that. Then we have an
-      // IList DbBatchErrors. But IList doesn't have a forall
-      // method so we convert to list. Inside the forall we look to error,
-      // Ugly, but there you go.
-      res.value.onlyThis.get.toList.forall(_.error.getClass == classOf[DocumentAlreadyExistsException]) should ===(true)
+      val res = CouchConnection.translateProcess(batchCreateDocs(tenrows)).runLog.attemptRun.value
+      val (lefts, rights) = res.toList.separate
+      rights.length should ===(0)
+      lefts.length should ===(tenrows.length)
+
+      lefts.foldMap {
+        case _: DocumentAlreadyExistsException => 1
+        case _ => 0
+      } should ===(tenrows.length)
     }
     "fail after first error if we pass in a halting function" in {
-      val res = CouchConnection(batchCreateDocs(tenrowdbs, _ => false))
-      res should be(right)
-      res.value.isThis should ===(true)
-      res.value.onlyThis.value.length should ===(1)
-    }
-    "skip first 5 and return 5 errors" in {
-      val res = CouchConnection(batchCreateDocs(tenrowdbs.drop(5), _ => true))
-      res should be(right)
-      res.value.isThis should ===(true)
-      res.value.onlyThis.value.length should ===(5)
-    }
-    "return an error when we pass in an error in the stream" in {
-      val err: DBBatchStream = Seq((new Throwable("bad input")).left).toIterator
-      val res = CouchConnection(batchCreateDocs(err))
-      res should be(right)
-      res.value.isThis should ===(true)
-      res.value.onlyThis.value.length should ===(1)
+      val res = CouchConnection.translateProcess(batchCreateDocs(tenrows).takeWhile(_.isRight)).runLog.attemptRun.value
+      val (lefts, rights) = res.toList.separate
+      lefts.length should ===(0) //Check with Patrick if these semantics are OK.
+      rights.length should ===(0)
     }
 
     "attempt to recover from a bad CAS error by refetching and retrying" in {
@@ -186,15 +175,21 @@ class CouchConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll 
       res.attemptRun.join should be(left)
 
       // Generate a task that handles CAS errors and run and verify
-      val handled: Task[Throwable \/ DbValue] = res.handleWith {
-        case e: CASMismatchException => CouchConnection.execTask(for {
-          v <- getDoc(k)
-          u <- upd(v.hashVer.value)
-        } yield u)
-      }
-      val finalres = handled.attemptRun.join
-      finalres.value.jsonString should ===(newvalue)
+      val handled: Task[Throwable \/ DbValue] = res.map(_.handleError {
+        case e: CASMismatchException =>
+          println(s"Dealing with $e")
+          CouchConnection.execTask(for {
+            v <- getDoc(k)
+            u <- upd(v.hashVer.value)
+          } yield u).attemptRun.join
+        case x => x.left
+
+      })
+
+      val finalres = handled.attemptRun.join.value
+      finalres.jsonString should ===(newvalue)
     }
+
     "handle a failed connection" in {
       // Save off bucket and then ditch it
       CouchConnection.fakeDisconnect
