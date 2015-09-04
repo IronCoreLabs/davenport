@@ -75,7 +75,7 @@ object Example {
 
 Anyone wanting to factor out some of the boilerplate -- please be my guest, we'd love the pull requests.
 
-Now that we have a nice abstraction for persisting our user class, lets try it out:
+Now that we have a nice abstraction for persisting our user class, let's try it out:
 
 ```tut
 import Example._
