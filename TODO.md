@@ -5,12 +5,12 @@
 - [x] Move snapshots to Sonatype
 - [ ] Cross-compile against different scala versions - at least 2.10 and 2.11
 - [x] Setup release process using [sbt-release](https://github.com/sbt/sbt-release)
-- [ ] PGP sign package
+- [x] PGP sign package
 - [ ] Setup sbt updates check: https://github.com/rtimush/sbt-updates
 
 ## Code
 
-- [ ] Resolve codacy concerns
+- [x] Resolve codacy concerns
 
 ## Announce
 

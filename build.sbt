@@ -1,18 +1,6 @@
-name := "davenport"
-
-organization := "com.ironcorelabs"
-
 scalaVersion := "2.11.7"
 
 // crossScalaVersions := Seq("2.10.4")
-
-// version := "0.6"
-
-licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
-
-// bintrayPackageLabels := Seq("scala", "couchbase", "functional", "functional programming", "reasonable")
-// bintrayRepository := "maven"
-// bintrayPackage := "davenport"
 
 resolvers ++= Seq(
   "Typesafe repository" at "http://repo.typesafe.com/typesafe/release/",
@@ -65,6 +53,8 @@ tutSourceDirectory := sourceDirectory.value / "tutsrc"
 tutTargetDirectory := sourceDirectory.value / "jekyll" / "_tutorials"
 
 git.remoteRepo := "git@github.com:IronCoreLabs/davenport.git"
+
+releasePublishArtifactsAction := PgpKeys.publishSigned.value
 
 // Apply default Scalariform formatting.
 // Reformat at every compile.

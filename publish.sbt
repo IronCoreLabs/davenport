@@ -1,6 +1,22 @@
+name := "davenport"
+
+organization := "com.ironcorelabs"
+
 publishMavenStyle := true
 
+publishArtifact in Test := false
+
+// homepage := Some(url("https://ironcorelabs.com/davenport"))
+
 pomIncludeRepository := { _ => false }
+
+useGpg := true
+
+// useGpgAgent := false
+
+// PgpKeys.gpgCommand := "/usr/local/MacGPG2/bin/gpg2"
+
+usePgpKeyHex("E84BBF42")
 
 publishTo := {
   val nexus = "https://oss.sonatype.org/"
