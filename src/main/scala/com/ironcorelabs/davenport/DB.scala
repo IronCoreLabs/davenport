@@ -62,27 +62,6 @@ object DB {
    */
   type DBProg[A] = EitherT[DBOps, Throwable, A]
 
-  /**
-   * Transform incoming data into this type
-   *
-   *  If a failure happens, for example, reading data from a file,
-   *  pass that failure along in the form of an Exception. Otherwise
-   *  pass in a key and a json string.
-   *
-   *  Note: the key must be encapsulated in [[DBProg]]. This allows you
-   *  to increment a counter in the DB for the next key. But if your
-   *  key is statically derived from the data, use the appropriate lift
-   *  function, like this:
-   *
-   *  {{{
-   *  liftIntoDBProg(Key("mykey").right)
-   *  }}}
-   *
-   *  If you have an issue generating a key or it fails validation of
-   *  some kind, lift your error into [[DBProg]] instead.
-   */
-  type DBBatchStream = Iterator[Throwable \/ (DBProg[Key], RawJsonString)]
-
   //
   //
   // 3. Lifts required for dealing with Coyoneda and wrapper types
@@ -181,12 +160,22 @@ object DB {
    * Object that contains batch operations for DB. They have been separated out because they cannot be mixed with `DBProg` operations
    * without first lifting them into a process via `liftToProcess`.
    */
-  object batch {
+  object Batch {
+    def createFromProg(keyProg: DBProg[Key], value: RawJsonString): Process[DBOps, Throwable \/ DbValue] = {
+      //Literally any DBProg can be constructed here
+      val createProg = for {
+        key <- keyProg
+        createDoc <- createDoc(key, value)
+      } yield createDoc
+      //Lift it up!
+      liftToProcess(createProg)
+    }
+
     def liftToProcess[A](prog: DBProg[A]): Process[DBOps, Throwable \/ A] = Process.eval(prog.run)
     /**
      * Create all values in the Foldable F.
      */
-    def batchCreateDocs[F[_]](foldable: F[(Key, RawJsonString)])(implicit F: Foldable[F]): Process[DBOps, Throwable \/ DbValue] = {
+    def createDocs[F[_]](foldable: F[(Key, RawJsonString)])(implicit F: Foldable[F]): Process[DBOps, Throwable \/ DbValue] = {
       Process.emitAll(foldable.toList).evalMap { case (key, json) => createDoc(key, json).run }
     }
   }

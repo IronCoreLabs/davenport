@@ -12,7 +12,7 @@ import org.typelevel.scalatest._
 import DisjunctionValues._
 import scala.language.postfixOps
 import DB._
-import DB.batch._
+import DB.Batch._
 import com.ironcorelabs.davenport.tags.RequiresCouch
 import scala.concurrent.duration._
 
@@ -25,7 +25,6 @@ class CouchConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll 
   val tenrows = (1 to 10).map { i =>
     (Key("key" + i) -> RawJsonString("val" + i))
   }.toList
-  def tenrowdbs: DBBatchStream = tenrows.map(_.mapElements(k => liftIntoDBProg(k.right)).right[Throwable]).toIterator
 
   override def beforeAll() = {
     // Connect and make sure test key is not in db in case of
@@ -130,7 +129,7 @@ class CouchConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll 
       res.value should ===(10L)
     }
     "be happy doing initial batch import" in {
-      val res = CouchConnection.translateProcess(batchCreateDocs(tenrows)).runLog.attemptRun.value
+      val res = CouchConnection.translateProcess(createDocs(tenrows)).runLog.attemptRun.value
       val (lefts, rights) = res.toList.separate
       lefts.length should ===(0)
       rights.length should ===(tenrows.length)
@@ -143,7 +142,7 @@ class CouchConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll 
     }
 
     "return errors batch importing the same items again" in {
-      val res = CouchConnection.translateProcess(batchCreateDocs(tenrows)).runLog.attemptRun.value
+      val res = CouchConnection.translateProcess(createDocs(tenrows)).runLog.attemptRun.value
       val (lefts, rights) = res.toList.separate
       rights.length should ===(0)
       lefts.length should ===(tenrows.length)
@@ -154,7 +153,7 @@ class CouchConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll 
       } should ===(tenrows.length)
     }
     "fail after first error if we pass in a halting function" in {
-      val res = CouchConnection.translateProcess(batchCreateDocs(tenrows).takeWhile(_.isRight)).runLog.attemptRun.value
+      val res = CouchConnection.translateProcess(createDocs(tenrows).takeWhile(_.isRight)).runLog.attemptRun.value
       val (lefts, rights) = res.toList.separate
       lefts.length should ===(0) //Check with Patrick if these semantics are OK.
       rights.length should ===(0)

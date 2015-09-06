@@ -12,7 +12,7 @@ import org.typelevel.scalatest._
 import DisjunctionValues._
 import scala.language.postfixOps
 import DB._
-import DB.batch._
+import DB.Batch._
 
 class MemConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll with DisjunctionMatchers with OptionValues with AsyncAssertions {
   "MemConnection" should {
@@ -145,12 +145,12 @@ class MemConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll wi
     //
 
     "be happy doing initial batch import" in {
-      val (map, res) = MemConnection.runProcess(batchCreateDocs(tenrows)).value
+      val (map, res) = MemConnection.runProcess(createDocs(tenrows)).value
       res.toList.separate._2.length should ===(tenrows.length)
     }
     "return errors batch importing the same items again" in {
-      val (data, result) = MemConnection.runProcess(batchCreateDocs(tenrows)).value
-      val p = batchCreateDocs(tenrows ++ fiveMoreRows)
+      val (data, result) = MemConnection.runProcess(createDocs(tenrows)).value
+      val p = createDocs(tenrows ++ fiveMoreRows)
       val (map, res) = MemConnection.runProcess(p, data).value
       res.length should ===(tenrows.length + fiveMoreRows.length)
       val (lefts, rights) = res.toList.separate
@@ -158,13 +158,13 @@ class MemConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll wi
       rights.length should ===(fiveMoreRows.length)
     }
     "fail after on first error if we pass in a halting function" in {
-      val (data, res1) = MemConnection.runProcess(batchCreateDocs(tenrows)).value
-      val (_, res) = MemConnection.runProcess(batchCreateDocs(tenrows).takeWhile(_.isRight), data).value
+      val (data, res1) = MemConnection.runProcess(createDocs(tenrows)).value
+      val (_, res) = MemConnection.runProcess(createDocs(tenrows).takeWhile(_.isRight), data).value
       res.length should ===(0)
     }
 
     "don't try and insert first 5 and return 5 errors" in {
-      val (data, res) = MemConnection.runProcess(batchCreateDocs(tenrows.drop(5))).value
+      val (data, res) = MemConnection.runProcess(createDocs(tenrows.drop(5))).value
       res.length should ===(5)
       res.toList.separate._2.length should ===(5)
     }
