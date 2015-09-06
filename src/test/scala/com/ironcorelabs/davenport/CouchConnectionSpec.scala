@@ -129,7 +129,7 @@ class CouchConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll 
       res.value should ===(10L)
     }
     "be happy doing initial batch import" in {
-      val res = CouchConnection.translateProcess(createDocs(tenrows)).runLog.attemptRun.value
+      val res: IndexedSeq[Throwable \/ DbValue] = CouchConnection.translateProcess(createDocs(tenrows)).runLog.attemptRun.value
       val (lefts, rights) = res.toList.separate
       lefts.length should ===(0)
       rights.length should ===(tenrows.length)
@@ -137,8 +137,7 @@ class CouchConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll 
     }
     "error on single create after batch" in {
       val res = CouchConnection.execTask(tenrows.map { case (key, value) => createDoc(key, value) }.head).attemptRun.value
-      res.leftValue
-      ()
+      res should be(left)
     }
 
     "return errors batch importing the same items again" in {

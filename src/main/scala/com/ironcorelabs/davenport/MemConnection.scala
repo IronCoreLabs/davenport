@@ -32,9 +32,21 @@ object MemConnection extends AbstractConnection {
   def genHashVer(s: RawJsonString): HashVer =
     HashVer(scala.util.hashing.MurmurHash3.stringHash(s.value).toLong)
 
-  private val translateDBOps: DBOps ~> KVState = new (DBOps ~> KVState) {
+  /**
+   * NT which brings DBOps to KVState. Useful for translating a Process[DBOps, A] into a Process[KVState, A].
+   */
+  val translateDBOps: DBOps ~> KVState = new (DBOps ~> KVState) {
     def apply[A](db: DBOps[A]): KVState[A] = {
       Free.runFC[DBOp, KVState, A](db)(toKVState)
+    }
+  }
+
+  /**
+   * NT which brings Task to a KVState. Useful for translating a Process[Task, A] into a Process[KVState, A].
+   */
+  val taskToKVState: Task ~> KVState = new (Task ~> KVState) {
+    def apply[A](t: Task[A]): KVState[A] = {
+      StateT { m2 => t.map(x => m2 -> x) }
     }
   }
 
@@ -42,7 +54,7 @@ object MemConnection extends AbstractConnection {
    * Process demands that the type that it's being "run" into have a Catchable instance.
    * KVState has a logical one, but it has to be written manually.
    */
-  private implicit val myStateCatchable = new Catchable[KVState] {
+  implicit val myStateCatchable = new Catchable[KVState] {
     def attempt[A](f: KVState[A]): KVState[Throwable \/ A] = {
       f.map(a => Task(a).attemptRun)
     }
@@ -117,6 +129,10 @@ object MemConnection extends AbstractConnection {
   def runProcess[A](prog: scalaz.stream.Process[DBOps, A], m: KVMap = Map()): Throwable \/ (KVMap, IndexedSeq[A]) = {
     val x = prog.translate(translateDBOps)
     x.runLog.run(m).attemptRun
+  }
+
+  def translateProcess[A](prog: scalaz.stream.Process[DBOps, A]): scalaz.stream.Process[KVState, A] = {
+    prog.translate(translateDBOps)
   }
 
   /**

@@ -81,11 +81,15 @@ class MemConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll wi
     }
     "fail updating a doc that doesn't exist" in {
       val testUpdate = updateDoc(k, newvalue, hv)
-      MemConnection.run(testUpdate)._2 should be(left)
+      val (data, res) = MemConnection.run(testUpdate)
+      data should ===(emptyData)
+      res should be(left)
     }
     "fail updating a doc when using incorrect hashver" in {
       val testUpdate = updateDoc(k, newvalue, HashVer(0))
-      MemConnection.run(testUpdate, seedData)._2 should be(left)
+      val (data, res) = MemConnection.run(testUpdate, seedData)
+      data should ===(seedData)
+      res should be(left)
     }
     "remove a key that exists" in {
       val testRemove = removeKey(k)
@@ -94,7 +98,9 @@ class MemConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll wi
     }
     "fail removing a key that doesn't exist" in {
       val testRemove = removeKey(k)
-      MemConnection.run(testRemove)._2 should be(left)
+      val (data, res) = MemConnection.run(testRemove)
+      data should ===(emptyData)
+      res should be(left)
     }
     "modify map" in {
       val testModify = modifyDoc(k, j => newvalue)
@@ -103,7 +109,9 @@ class MemConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll wi
     }
     "modify map fails if key is not in db" in {
       val testModify = modifyDoc(k, j => newvalue)
-      MemConnection.run(testModify)._2 should be(left)
+      val (data, res) = MemConnection.run(testModify)
+      data should ===(emptyData)
+      res should be(left)
     }
 
     //
