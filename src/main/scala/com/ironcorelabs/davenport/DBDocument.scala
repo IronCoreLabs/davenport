@@ -5,18 +5,10 @@
 //
 package com.ironcorelabs.davenport
 
-import scalaz._, Scalaz._, scalaz.concurrent.Task
-import scala.language.implicitConversions
+import scalaz.\/
 
 // Couchbase
-import com.couchbase.client.core._
 import com.couchbase.client.java.{ ReplicateTo, PersistTo, ReplicaMode }
-import com.couchbase.client.java.document._
-
-// RxScala (Observables)
-import rx.lang.scala._
-import rx.lang.scala.JavaConversions._
-import rx.lang.scala.Notification._
 
 // Picklers
 import argonaut._, Argonaut._
