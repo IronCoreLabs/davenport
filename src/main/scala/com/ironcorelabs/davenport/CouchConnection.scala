@@ -6,7 +6,6 @@
 package com.ironcorelabs.davenport
 
 import scalaz._, Scalaz._, scalaz.concurrent.Task
-import scala.language.implicitConversions
 import DB._
 import scalaz.stream.Process
 
@@ -75,7 +74,7 @@ object CouchConnection extends AbstractConnection {
 
   //Natural transformation from DbOps to Task allowing the replacement of DBOps
   //as the Monad in a Process.
-  private val translate: DBOps ~> Task = new (DBOps ~> Task) {
+  private val dbOpsToTask: DBOps ~> Task = new (DBOps ~> Task) {
     def apply[A](db: DBOps[A]): Task[A] = {
       Free.runFC[DBOp, Task, A](db)(couchRunner)
     }
@@ -146,7 +145,7 @@ object CouchConnection extends AbstractConnection {
   def exec[A](db: DBProg[A]): Throwable \/ A = execTask(db).attemptRun.join
 
   def translateProcess[A](db: Process[DBOps, A]): Process[Task, A] = {
-    db.translate(translate)
+    db.translate(dbOpsToTask)
   }
 
   /**
@@ -173,7 +172,7 @@ object CouchConnection extends AbstractConnection {
    * The only public method, apply, is what gets called as the grammar
    * is executed, calling it to transform [[DB.DBOps]] to functions.
    */
-  private def couchRunner = new (DBOp ~> Task) {
+  private val couchRunner = new (DBOp ~> Task) {
     def apply[A](dbp: DBOp[A]): Task[A] = dbp match {
       case GetDoc(k: Key) => getDoc(k)
       case CreateDoc(k: Key, v: RawJsonString) => createDoc(k, v)

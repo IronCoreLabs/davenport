@@ -26,6 +26,8 @@ libraryDependencies ++= Seq(
   "org.typelevel" %% "scalaz-scalatest" % "0.2.2" % "test"
 )
 
+addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.6.3")
+
 // Code coverage checks
 coverageMinimum := 70
 
@@ -69,6 +71,7 @@ scalacOptions ++= Seq(
   "-encoding", "UTF-8", // yes, this is 2 args
   "-feature",
   "-unchecked",
+  "-language:higherKinds",
   "-Xfatal-warnings",
   // "-Xlog-implicits",
   "-Xlint",
