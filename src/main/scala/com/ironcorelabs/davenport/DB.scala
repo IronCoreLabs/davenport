@@ -6,9 +6,7 @@
 package com.ironcorelabs.davenport
 
 import scalaz._, Scalaz._, scalaz.concurrent.Task
-import scala.language.implicitConversions
 import scalaz.stream.Process
-import scala.language.higherKinds
 
 /**
  * Contains the primitives for building DBProg programs for later execution by
@@ -68,7 +66,7 @@ object DB {
   //
   //
 
-  implicit val MonadDBOps: Monad[DBOps] = Free.freeMonad[({ type l[a] = Coyoneda[DBOp, a] })#l]
+  implicit val MonadDBOps: Monad[DBOps] = Free.freeMonad[Coyoneda[DBOp, ?]]
 
   /**
    * The `liftIntoDBProg` operations allow any function or value to be deferred to
@@ -161,16 +159,6 @@ object DB {
    * without first lifting them into a process via `liftToProcess`.
    */
   object Batch {
-    def createFromProg(keyProg: DBProg[Key], value: RawJsonString): Process[DBOps, Throwable \/ DbValue] = {
-      //Literally any DBProg can be constructed here
-      val createProg = for {
-        key <- keyProg
-        createDoc <- createDoc(key, value)
-      } yield createDoc
-      //Lift it up!
-      liftToProcess(createProg)
-    }
-
     def liftToProcess[A](prog: DBProg[A]): Process[DBOps, Throwable \/ A] = Process.eval(prog.run)
     /**
      * Create all values in the Foldable F.

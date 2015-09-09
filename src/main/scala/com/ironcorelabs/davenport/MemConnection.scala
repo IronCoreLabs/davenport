@@ -25,9 +25,7 @@ object MemConnection extends AbstractConnection {
 
   /** Backend of the memory store is a Map from Key -> RawJsonString */
   type KVMap = Map[Key, RawJsonString]
-  /** Use scalaz state to safely evolve the map. It must be StateT because it needs a Catchable instance. */
-  type KVStateT[F[_], A] = StateT[F, KVMap, A]
-  type KVState[A] = KVStateT[Task, A]
+  type KVState[A] = StateT[Task, KVMap, A]
   /** Arbitrary implementation of the hashver for records in the DB */
   def genHashVer(s: RawJsonString): HashVer =
     HashVer(scala.util.hashing.MurmurHash3.stringHash(s.value).toLong)
@@ -59,7 +57,7 @@ object MemConnection extends AbstractConnection {
       f.map(a => Task(a).attemptRun)
     }
     def fail[A](err: Throwable): KVState[A] = {
-      Hoist[KVStateT].liftM(Catchable[Task].fail(err))
+      Hoist[StateT[?[_], KVMap, ?]].liftM(Catchable[Task].fail(err))
     }
   }
 
