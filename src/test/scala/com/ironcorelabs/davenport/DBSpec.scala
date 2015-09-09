@@ -16,8 +16,5 @@ class DBSpec extends WordSpec with Matchers with BeforeAndAfterAll with Disjunct
     "fail lifting none into dbprog" in {
       MemConnection(liftIntoDBProg(None)) should be(left)
     }
-    "fail using DBProgFail" in {
-      MemConnection(dbProgFail(new Exception("boom"))) should be(left)
-    }
   }
 }

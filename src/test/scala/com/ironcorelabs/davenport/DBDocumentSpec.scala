@@ -46,7 +46,6 @@ class DBDocumentSpec extends WordSpec with Matchers with DisjunctionMatchers wit
       val create = DBUser.create(u1)
       val (data, res) = MemConnection.run(create)
       res should be(right)
-
       // next line is basically to make sure hashver is populated and juice up
       // code coverage
       res.value.hashver.value should be > 0L
