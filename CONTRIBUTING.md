@@ -5,7 +5,7 @@
 Make sure any pull requests have adequate unit test code coverage.  You can check this without waiting for travis and codecov.io to do their thing by doing this:
 
 ```bash
-> sbt coverage tut test
+> sbt coverage test
 ```
 
 And then open up the file `target/scala-2.11/scoverage-report/index.html` in your browser.
