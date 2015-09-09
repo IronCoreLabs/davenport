@@ -8,7 +8,7 @@ package com.ironcorelabs.davenport
 import scalaz._, Scalaz._
 import scalaz.concurrent.Task
 import DB._
-import scala.language.higherKinds
+import scalaz.stream.Process
 
 /** Use an in-memory map to interpret DBOps */
 object MemConnection extends AbstractConnection {
@@ -124,12 +124,13 @@ object MemConnection extends AbstractConnection {
   /** Passes through to run, but returns only the result */
   def apply[A](prog: DBProg[A], m: KVMap = Map()): Throwable \/ A = run(prog, m)._2
 
-  def runProcess[A](prog: scalaz.stream.Process[DBOps, A], m: KVMap = Map()): Throwable \/ (KVMap, IndexedSeq[A]) = {
-    val x = prog.translate(translateDBOps)
-    x.runLog.run(m).attemptRun
+  def runProcess[A](prog: Process[DBOps, A], m: KVMap = Map()): Throwable \/ (KVMap, IndexedSeq[A]) = {
+    val process: Process[KVState, A] = prog.translate(translateDBOps)
+    //Lint complained about Any being inferred on runLog so added the manual annotation.
+    process.runLog[KVState, A].run(m).attemptRun
   }
 
-  def translateProcess[A](prog: scalaz.stream.Process[DBOps, A]): scalaz.stream.Process[KVState, A] = {
+  def translateProcess[A](prog: Process[DBOps, A]): Process[KVState, A] = {
     prog.translate(translateDBOps)
   }
 

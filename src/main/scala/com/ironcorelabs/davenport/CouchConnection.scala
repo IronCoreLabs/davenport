@@ -10,7 +10,6 @@ import DB._
 import scalaz.stream.Process
 
 // Couchbase
-import com.couchbase.client.core._
 import com.couchbase.client.java.{ ReplicateTo, PersistTo, ReplicaMode, CouchbaseCluster, Bucket, AsyncBucket }
 import com.couchbase.client.java.env.{ CouchbaseEnvironment, DefaultCouchbaseEnvironment }
 import com.couchbase.client.java.document._
@@ -20,7 +19,6 @@ import java.util.NoSuchElementException
 // RxScala (Observables) used in Couchbase client lib async calls
 import rx.lang.scala._
 import rx.lang.scala.JavaConversions._
-import rx.lang.scala.Notification._
 
 // Configuration library
 import knobs.{ Required, Optional, FileResource, Config, ClassPathResource }
@@ -212,11 +210,11 @@ object CouchConnection extends AbstractConnection {
 
     private def updateDoc(k: Key, v: RawJsonString, h: HashVer): Task[Throwable \/ DbValue] =
       couchOpToA(_.replace(
-        RawJsonDocument.create(k.value, 0, v.value, h.value.toLong)
+        RawJsonDocument.create(k.value, 0, v.value, h.value)
       ))(doc => DbValue(RawJsonString(doc.content), HashVer(doc.cas)).right)
 
     private def couchOpToLong(fetchOp: AsyncBucket => Observable[JsonLongDocument]): Task[Throwable \/ Long] = {
-      couchOpToA(fetchOp)(doc => \/.fromTryCatchNonFatal(doc.content.toLong))
+      couchOpToA(fetchOp)(doc => \/.fromTryCatchNonFatal(doc.content))
     }
 
     private def couchOpToDBValue(fetchOp: AsyncBucket => Observable[RawJsonDocument]): Task[Throwable \/ DbValue] =
