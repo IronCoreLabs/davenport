@@ -214,7 +214,7 @@ object CouchConnection extends AbstractConnection {
       ))(doc => DbValue(RawJsonString(doc.content), HashVer(doc.cas)).right)
 
     private def couchOpToLong(fetchOp: AsyncBucket => Observable[JsonLongDocument]): Task[Throwable \/ Long] = {
-      couchOpToA(fetchOp)(doc => \/.fromTryCatchNonFatal(doc.content))
+      couchOpToA(fetchOp)(doc => \/-(doc.content))
     }
 
     private def couchOpToDBValue(fetchOp: AsyncBucket => Observable[RawJsonDocument]): Task[Throwable \/ DbValue] =
