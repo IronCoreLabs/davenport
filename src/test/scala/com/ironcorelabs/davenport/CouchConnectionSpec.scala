@@ -65,6 +65,20 @@ class CouchConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll 
       val res = CouchConnection(testCreate)
       res.leftValue.getClass should ===(classOf[DocumentAlreadyExistsException])
     }
+    "fail to get counter when counter is actually a string" in {
+      val steps = for {
+        _ <- createDoc(k, v)
+        c <- getCounter(k)
+      } yield c
+      CouchConnection.execTask(steps).attemptRun.value should be(left)
+    }
+    "fail to increment counter when counter is actually a string" in {
+      val steps = for {
+        _ <- createDoc(k, v)
+        c <- incrementCounter(k)
+      } yield c
+      CouchConnection.execTask(steps).attemptRun.value should be(left)
+    }
     "update a doc that exists with correct hashver" in {
       val testUpdate = for {
         t <- getDoc(k)
