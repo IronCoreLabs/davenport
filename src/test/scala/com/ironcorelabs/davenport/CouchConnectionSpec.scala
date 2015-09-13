@@ -143,7 +143,7 @@ class CouchConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll 
       res.value should ===(10L)
     }
     "be happy doing initial batch import" in {
-      val res: IndexedSeq[Throwable \/ DbValue] = CouchConnection.translateProcess(createDocs(tenrows)).runLog.attemptRun.value
+      val res: IndexedSeq[Throwable \/ DbValue] = CouchConnection.execProcess(createDocs(tenrows)).runLog.attemptRun.value
       val (lefts, rights) = res.toList.separate
       lefts.length should ===(0)
       rights.length should ===(tenrows.length)
@@ -155,7 +155,7 @@ class CouchConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll 
     }
 
     "return errors batch importing the same items again" in {
-      val res = CouchConnection.translateProcess(createDocs(tenrows)).runLog.attemptRun.value
+      val res = CouchConnection.execProcess(createDocs(tenrows)).runLog.attemptRun.value
       val (lefts, rights) = res.toList.separate
       rights.length should ===(0)
       lefts.length should ===(tenrows.length)
@@ -166,7 +166,7 @@ class CouchConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll 
       } should ===(tenrows.length)
     }
     "fail after first error if we pass in a halting function" in {
-      val res = CouchConnection.translateProcess(createDocs(tenrows).takeWhile(_.isRight)).runLog.attemptRun.value
+      val res = CouchConnection.execProcess(createDocs(tenrows).takeWhile(_.isRight)).runLog.attemptRun.value
       val (lefts, rights) = res.toList.separate
       lefts.length should ===(0) //Check with Patrick if these semantics are OK.
       rights.length should ===(0)

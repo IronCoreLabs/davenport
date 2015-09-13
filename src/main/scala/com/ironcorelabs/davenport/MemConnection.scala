@@ -11,7 +11,7 @@ import DB._
 import scalaz.stream.Process
 
 /** Use an in-memory map to interpret DBOps */
-object MemConnection extends AbstractConnection {
+object MemConnection {
   /** Dummy function to meet the abstract connection contract */
   def connect: Throwable \/ Unit = ().right
   /** Dummy function to meet the abstract connection contract */

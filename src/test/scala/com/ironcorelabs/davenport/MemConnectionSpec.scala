@@ -62,12 +62,12 @@ class MemConnectionSpec extends WordSpec with Matchers with BeforeAndAfterAll wi
     "work with an async call on task" in {
       val testCreate = createDoc(k, v)
       val w = new Waiter
-      MemConnection.execAsync(testCreate, { res: Throwable \/ DbValue =>
+      MemConnection.execTask(testCreate).runAsync { res: Throwable \/ (Throwable \/ DbValue) =>
         w {
-          res.value should ===(DbValue(v, hv))
+          res.join.value should ===(DbValue(v, hv))
         }
         w.dismiss()
-      })
+      }
       w.await()
     }
     "fail to create a doc if it already exists" in {

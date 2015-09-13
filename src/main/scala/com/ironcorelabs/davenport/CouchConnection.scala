@@ -10,22 +10,15 @@ import DB._
 import scalaz.stream.Process
 
 // Couchbase
-import com.couchbase.client.java.{ ReplicateTo, PersistTo, ReplicaMode, CouchbaseCluster, Bucket, AsyncBucket }
+import com.couchbase.client.java.{ CouchbaseCluster, Bucket, AsyncBucket }
 import com.couchbase.client.java.env.{ CouchbaseEnvironment, DefaultCouchbaseEnvironment }
-import com.couchbase.client.java.document._
-import com.couchbase.client.java.error._
-import java.util.NoSuchElementException
-
-// RxScala (Observables) used in Couchbase client lib async calls
-import rx.lang.scala._
-import rx.lang.scala.JavaConversions._
 
 // Configuration library
 import knobs.{ Required, Optional, FileResource, Config, ClassPathResource }
 import java.io.File
 
 /** Connect to Couchbase and interpret [[DB.DBProg]]s */
-object CouchConnection extends AbstractConnection {
+object CouchConnection {
   //
   //
   // Building block types for couchbase connection
@@ -42,7 +35,7 @@ object CouchConnection extends AbstractConnection {
   //
   private var currentConnection: Option[CouchConnectionInfo] = None
   private var testConnection: Option[CouchConnectionInfo] = None
-  private def bucketOrError: Throwable \/ Bucket = currentConnection.map(_.bucket) \/> new Exception("Not connected")
+  private val bucketOrError: Task[Bucket] = Task.delay(currentConnection.map(_.bucket).getOrElse(throw new Exception("Not connected")))
 
   //
   //
@@ -70,13 +63,6 @@ object CouchConnection extends AbstractConnection {
     )
   }
 
-  //Natural transformation from DbOps to Task allowing the replacement of DBOps
-  //as the Monad in a Process.
-  private val dbOpsToTask: DBOps ~> Task = new (DBOps ~> Task) {
-    def apply[A](db: DBOps[A]): Task[A] = {
-      Free.runFC[DBOp, Task, A](db)(couchRunner)
-    }
-  }
   //
   //
   // Connect and disconnect state methods
@@ -138,120 +124,6 @@ object CouchConnection extends AbstractConnection {
   def connected: Boolean = !currentConnection.isEmpty
 
   /**
-   * Free grammar implementation to run a `DBProg` using couchbase backend
-   */
-  def exec[A](db: DBProg[A]): Throwable \/ A = execTask(db).attemptRun.join
-
-  def translateProcess[A](db: Process[DBOps, A]): Process[Task, A] = {
-    db.translate(dbOpsToTask)
-  }
-
-  /**
-   * an alias to exec
-   */
-  def apply[A](db: DBProg[A]): Throwable \/ A = exec(db)
-
-  /**
-   * Wrap the execution of the [[DB.DBProg]] in a `scalaz.concurrent.Task`
-   */
-  def execTask[A](db: DBProg[A]): Task[Throwable \/ A] = if (connected) {
-    Free.runFC[DBOp, Task, Throwable \/ A](db.run)(couchRunner)
-  } else {
-    // should I just connect, do it, then disconnect in this case?
-    // probably better to just error
-    Task.fail(new Exception("Not connected"))
-  }
-
-  /**
-   * We use co-yoneda to run our `scalaz.Free`.
-   *
-   * In this case, the couchRunner object transforms [[DB.DBOp]] to
-   * `scalaz.concurrent.Task`.
-   * The only public method, apply, is what gets called as the grammar
-   * is executed, calling it to transform [[DB.DBOps]] to functions.
-   */
-  private val couchRunner = new (DBOp ~> Task) {
-    def apply[A](dbp: DBOp[A]): Task[A] = dbp match {
-      case GetDoc(k: Key) => getDoc(k)
-      case CreateDoc(k: Key, v: RawJsonString) => createDoc(k, v)
-      case GetCounter(k: Key) => getCounter(k)
-      case IncrementCounter(k: Key, delta: Long) => incrementCounter(k, delta)
-      case RemoveKey(k: Key) => removeKey(k)
-      case UpdateDoc(k: Key, v: RawJsonString, h: HashVer) => updateDoc(k, v, h)
-    }
-
-    /*
-     * Helpers for the grammar interpreter
-     */
-    private def getDoc(k: Key): Task[Throwable \/ DbValue] =
-      couchOpToDBValue(_.get(k.value, classOf[RawJsonDocument]))
-
-    private def createDoc(k: Key, v: RawJsonString): Task[Throwable \/ DbValue] =
-      couchOpToDBValue(_.insert(
-        RawJsonDocument.create(k.value, 0, v.value, 0)
-      ))
-
-    private def getCounter(k: Key): Task[Throwable \/ Long] =
-      couchOpToLong(_.counter(k.value, 0, 0, 0))
-
-    private def incrementCounter(k: Key, delta: Long): Task[Throwable \/ Long] =
-      couchOpToLong(
-        // here we use delta as the default, so if you want an increment
-        // by one on a key that doesn't exist, we'll give you a 1 back
-        // and if you want an increment by 10 on a key that doesn't exist,
-        // we'll give you a 10 back
-        _.counter(k.value, delta, delta, 0)
-      )
-
-    private def removeKey(k: Key): Task[Throwable \/ Unit] =
-      couchOpToA[Unit, String](
-        _.remove(k.value, classOf[RawJsonDocument])
-      )(_ => ().right)
-
-    private def updateDoc(k: Key, v: RawJsonString, h: HashVer): Task[Throwable \/ DbValue] =
-      couchOpToA(_.replace(
-        RawJsonDocument.create(k.value, 0, v.value, h.value)
-      ))(doc => DbValue(RawJsonString(doc.content), HashVer(doc.cas)).right)
-
-    private def couchOpToLong(fetchOp: AsyncBucket => Observable[JsonLongDocument]): Task[Throwable \/ Long] = {
-      couchOpToA(fetchOp)(doc => \/-(doc.content))
-    }
-
-    private def couchOpToDBValue(fetchOp: AsyncBucket => Observable[RawJsonDocument]): Task[Throwable \/ DbValue] =
-      couchOpToA(fetchOp)(doc => DbValue(RawJsonString(doc.content), HashVer(doc.cas)).right)
-
-    private def couchOpToA[A, B](fetchOp: AsyncBucket => Observable[AbstractDocument[B]])(f: AbstractDocument[B] => Throwable \/ A): Task[Throwable \/ A] = {
-      val eOrT: Throwable \/ Task[Throwable \/ AbstractDocument[B]] = for {
-        b <- bucketOrError
-        ba = b.async
-      } yield obs2Task(fetchOp(ba))
-      // Take my Throwable \/ Task[RawJsonDocument] (eOrT) and convert to
-      // Task[Throwable \/ DbValue]
-      eOrT.fold(
-        Task.fail(_),
-        _.map { docOrError =>
-          docOrError.flatMap(f)
-        }
-      )
-    }
-
-    // This is the most efficient way of running things in the couchbase lib
-    // -- far more efficient then using the blocking observables. This converts
-    // the callbacks from the observable into a task, which is easier to work
-    // with when composing and reasoning about functions and operations.
-    private def obs2Task[A](o: Observable[A]): Task[Throwable \/ A] = {
-      Task.async[A](k => {
-        o.headOption.subscribe(
-          n => k(n.map(_.right).getOrElse(new DocumentDoesNotExistException().left)),
-          e => k(e.left),
-          () => ()
-        )
-        ()
-      }).attempt
-    }
-  }
-
-  /**
    * Used for testing a failed connection without having
    * to disconnect from the database first.
    */
@@ -264,6 +136,23 @@ object CouchConnection extends AbstractConnection {
    */
   def fakeDisconnectRevert() = {
     currentConnection = testConnection
+  }
+
+  def apply[A](prog: DBProg[A]): Throwable \/ A = exec(prog)
+
+  def execProcess[A](p: Process[DBOps, A]): Process[Task, A] = {
+    Process.eval(bucketOrError).flatMap { bucket =>
+      p.translate(CouchTranslator.interpret(bucket))
+    }
+  }
+
+  def exec[A](prog: DBProg[A]): Throwable \/ A = execTask(prog).attemptRun.join
+
+  def execTask[A](prog: DBProg[A]): Task[Throwable \/ A] = {
+    bucketOrError.flatMap { bucket =>
+      val progToTask = CouchTranslator.interpret(bucket)
+      progToTask(prog.run)
+    }
   }
 
 }
