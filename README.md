@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/IronCoreLabs/davenport.svg)](https://travis-ci.org/IronCoreLabs/davenport)
-[ ![Download](https://api.bintray.com/packages/ironcorelabs/maven/davenport/images/download.svg) ](https://bintray.com/ironcorelabs/maven/davenport/_latestVersion)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.ironcorelabs/davenport_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.ironcorelabs/davenport_2.11)
 [![codecov.io](http://codecov.io/github/IronCoreLabs/davenport/coverage.svg?branch=master)](http://codecov.io/github/IronCoreLabs/davenport?branch=master)
 [![Codacy Badge](https://www.codacy.com/project/badge/f9ad4d48e42d49fc851af5d9697753b8)](https://www.codacy.com/app/github-zmre/davenport)
 [![MIT Open Source License](https://img.shields.io/badge/license-MIT-blue.svg)](http://opensource.org/licenses/MIT)

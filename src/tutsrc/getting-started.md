@@ -7,15 +7,14 @@ layout: tutorial
 
 First, in your `build.sbt` file, you will want to reference davenport like so:
 
-    resolvers += "IronCore BinTray Repo" at "http://dl.bintray.com/ironcorelabs/maven"
     libraryDependencies ++= Seq(
-        "default" %% "davenport" % "0.5.11",
+        "default" %% "davenport" % "0.5.21",
         "org.scalaz" %% "scalaz-core" % "7.1.2", // for type awesomeness
         "org.scalaz" %% "scalaz-concurrent" % "7.1.2", // for type awesomeness
         "io.argonaut" %% "argonaut" % "6.1" // json (de)serialization scalaz style
     )
 
-**Note:** argonaut is not actually required.  You may use any json serialization that you prefer, but you will need argonaut to follow along with our example and getting started code.
+**Note:** see the [github page](https://github.com/ironcorelabs/davenport) for the latest stable version number to use.
 
 ## Setup Couchbase
 

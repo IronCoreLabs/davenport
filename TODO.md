@@ -24,7 +24,7 @@
 ## Misc
 
 - [ ] Add team members to
-    - Travis-CI
-    - Codacy
-    - Bintray
-    - Codecov.io
+    - Travis-CI - doesn't seem possible
+    - Codacy - done
+    - Sonatype - probably requires a jira
+    - Codecov.io - doesn't seem possible
