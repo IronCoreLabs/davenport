@@ -16,6 +16,7 @@ import com.couchbase.client.java.env.{ CouchbaseEnvironment, DefaultCouchbaseEnv
 // Configuration library
 import knobs.{ Required, Optional, FileResource, Config, ClassPathResource }
 import java.io.File
+import syntax._
 
 /** Connect to Couchbase and interpret [[DB.DBProg]]s */
 object CouchConnection {
@@ -148,11 +149,7 @@ object CouchConnection {
 
   def exec[A](prog: DBProg[A]): Throwable \/ A = execTask(prog).attemptRun.join
 
-  def execTask[A](prog: DBProg[A]): Task[Throwable \/ A] = {
-    bucketOrError.flatMap { bucket =>
-      val progToTask = CouchTranslator.interpret(bucket)
-      progToTask(prog.run)
-    }
-  }
+  def execTask[A](prog: DBProg[A]): Task[Throwable \/ A] =
+    bucketOrError flatMap prog.interpretCouch
 
 }

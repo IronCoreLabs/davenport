@@ -23,20 +23,33 @@ import rx.lang.scala.JavaConversions._
 /**
  * Things related to translating DBOp to Kleisli[Task, Bucket, A] and some helpers for translating to Task[A]
  */
-object CouchTranslator {
+final object CouchTranslator {
   type CouchK[A] = Kleisli[Task, Bucket, A]
 
+  /**
+   * Given a Bucket return back a NT that can turn DBOps into a Task.
+   */
   def interpret(b: Bucket): (DBOps ~> Task) = new (DBOps ~> Task) {
     def apply[A](prog: DBOps[A]): Task[A] =
       interpretK(prog).run(b)
   }
 
+  /**
+   * Given a bucket to work against, interpret a Process[DBOps,A] into an effectful Process[Task,A].
+   */
   def interpretP[A](bucket: Bucket)(p: Process[DBOps, A]): Process[Task, A] =
-    p.translate(CouchTranslator.interpret(bucket))
+    p.translate(interpret(bucket))
 
+  /**
+   * Interpret the program into a Kleisli that will take a Bucket as its argument. Useful if you want to do
+   * Kleisli arrow composition before running it.
+   */
   def interpretK[A](prog: DBProg[A]): CouchK[Throwable \/ A] =
     interpretK(prog.run)
 
+  /**
+   * Basic building block. Turns the DbOps into a Kleisli which takes a Bucket, used by interpret above.
+   */
   def interpretK[A](prog: DBOps[A]): CouchK[A] =
     Free.runFC[DBOp, CouchK, A](prog)(couchRunner)
 
