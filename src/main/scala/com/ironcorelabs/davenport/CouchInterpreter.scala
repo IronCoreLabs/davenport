@@ -20,25 +20,30 @@ import java.util.NoSuchElementException
 import rx.lang.scala.Observable
 import rx.lang.scala.JavaConversions._
 
-/**
- * Things related to translating DBOp to Kleisli[Task, Bucket, A] and some helpers for translating to Task[A]
- */
-final object CouchTranslator {
-  type CouchK[A] = Kleisli[Task, Bucket, A]
+class CouchInterpreter(val bucket: Task[Bucket]) {
+  import CouchInterpreter._
 
   /**
    * Given a Bucket return back a NT that can turn DBOps into a Task.
    */
-  def interpret(b: Bucket): (DBOps ~> Task) = new (DBOps ~> Task) {
+  def interpret: (DBOps ~> Task) = new (DBOps ~> Task) {
     def apply[A](prog: DBOps[A]): Task[A] =
-      interpretK(prog).run(b)
+      bucket.flatMap(interpretK(prog).run(_))
   }
 
   /**
    * Given a bucket to work against, interpret a Process[DBOps,A] into an effectful Process[Task,A].
    */
-  def interpretP[A](bucket: Bucket)(p: Process[DBOps, A]): Process[Task, A] =
-    p.translate(interpret(bucket))
+  def interpretP[A](p: Process[DBOps, A]): Process[Task, A] =
+    p.translate(interpret)
+
+}
+
+/**
+ * Things related to translating DBOp to Kleisli[Task, Bucket, A] and some helpers for translating to Task[A]
+ */
+final object CouchInterpreter {
+  type CouchK[A] = Kleisli[Task, Bucket, A]
 
   /**
    * Interpret the program into a Kleisli that will take a Bucket as its argument. Useful if you want to do

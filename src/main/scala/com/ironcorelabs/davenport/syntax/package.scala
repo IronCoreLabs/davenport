@@ -1,8 +1,9 @@
 //
-// com.ironcorelabs.davenport.CouchConnection
+// com.ironcorelabs.davenport.syntax
 //
 // Copyright (c) 2015 IronCore Labs
 //
 package com.ironcorelabs.davenport
 
-package object syntax extends DBProgOps
+//Import this te get all the syntaxes
+package object syntax extends DBProgOps with ProcessOps

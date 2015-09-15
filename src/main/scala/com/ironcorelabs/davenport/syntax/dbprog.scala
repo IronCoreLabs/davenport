@@ -1,5 +1,5 @@
 //
-// com.ironcorelabs.davenport.CouchConnection
+// com.ironcorelabs.davenport.dbprog
 //
 // Copyright (c) 2015 IronCore Labs
 //
@@ -16,9 +16,8 @@ object dbprog extends DBProgOps
 
 trait DBProgOps {
   implicit class OurDBProgOps[A](self: DBProg[A]) {
-
     def process: Process[DBOps, Throwable \/ A] = Batch.liftToProcess(self)
-    def interpretCouchK: CouchTranslator.CouchK[Throwable \/ A] = CouchTranslator.interpretK(self)
-    def interpretCouch(b: Bucket): Task[Throwable \/ A] = CouchTranslator.interpret(b)(self.run)
+    def interpretK: CouchInterpreter.CouchK[Throwable \/ A] = CouchInterpreter.interpretK(self)
+    def interpret(i: CouchInterpreter): Task[Throwable \/ A] = i.interpret(self.run)
   }
 }

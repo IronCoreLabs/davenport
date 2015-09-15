@@ -14,7 +14,7 @@ import DB._
 class DBSpec extends WordSpec with Matchers with BeforeAndAfterAll with DisjunctionMatchers {
   "DB" should {
     "fail lifting none into dbprog" in {
-      MemConnection(liftIntoDBProg(None)) should be(left)
+      MemInterpreter.interpretTask(liftIntoDBProg(None)).run._2 should be(left)
     }
   }
 }

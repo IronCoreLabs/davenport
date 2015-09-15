@@ -44,20 +44,21 @@ class DBDocumentSpec extends WordSpec with Matchers with DisjunctionMatchers wit
     val k1 = Key("user::email@example.com")
     "create, then get and then remove wrapper docs" in {
       val create = DBUser.create(u1)
-      val (data, res) = MemConnection.run(create)
+      val (data, res) = MemInterpreter.interpret(create)(Map()).run
       res should be(right)
       // next line is basically to make sure hashver is populated and juice up
       // code coverage
       res.value.hashver.value should be > 0L
 
       val get = DBUser.get(k1)
-      val (data2, res2) = MemConnection.run(get, data)
+      val (data2, res2) = MemInterpreter.interpret(get)(data).run
       res2.value.data should equal(u1)
-      val (data3, res3) = MemConnection.run(res2.value.remove, data)
+      val (data3, res3) = MemInterpreter.interpret(res2.value.remove)(data).run
       res3 should be(right)
     }
     "attempt removal of a missing doc" in {
-      MemConnection(DBUser.remove(k1)) should be(left) // fail since doesn't exist
+      val (_, res) = MemInterpreter.interpretTask(DBUser.remove(k1)).run
+      res should be(left) // fail since doesn't exist
     }
   }
 }

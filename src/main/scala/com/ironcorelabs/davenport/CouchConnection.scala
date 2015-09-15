@@ -64,6 +64,8 @@ object CouchConnection {
     )
   }
 
+  private val interpreter = new CouchInterpreter(bucketOrError)
+
   //
   //
   // Connect and disconnect state methods
@@ -141,15 +143,11 @@ object CouchConnection {
 
   def apply[A](prog: DBProg[A]): Throwable \/ A = exec(prog)
 
-  def execProcess[A](p: Process[DBOps, A]): Process[Task, A] = {
-    Process.eval(bucketOrError).flatMap { bucket =>
-      p.translate(CouchTranslator.interpret(bucket))
-    }
-  }
+  def execProcess[A](p: Process[DBOps, A]): Process[Task, A] =
+    interpreter.interpretP(p)
 
   def exec[A](prog: DBProg[A]): Throwable \/ A = execTask(prog).attemptRun.join
 
   def execTask[A](prog: DBProg[A]): Task[Throwable \/ A] =
-    bucketOrError flatMap prog.interpretCouch
-
+    prog.interpret(interpreter)
 }
