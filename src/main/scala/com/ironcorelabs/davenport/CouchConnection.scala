@@ -121,18 +121,20 @@ object CouchConnection {
    */
   def connected: Boolean = !currentConnection.isEmpty
 
+  def createInterpreter: CouchInterpreter = new CouchInterpreter(bucketOrError)
+
   /**
    * Used for testing a failed connection without having
    * to disconnect from the database first.
    */
-  def fakeDisconnect() = {
+  private[davenport] def fakeDisconnect() = {
     testConnection = currentConnection
     currentConnection = None
   }
   /**
    * Restores the connected session state
    */
-  def fakeDisconnectRevert() = {
+  private[davenport] def fakeDisconnectRevert() = {
     currentConnection = testConnection
   }
 }

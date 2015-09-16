@@ -23,7 +23,7 @@ class CouchInterpreterSpec extends TestBase {
   }.toList
 
   //Interpreter to test.
-  val interpreter = new CouchInterpreter(CouchConnection.bucketOrError)
+  val interpreter = CouchConnection.createInterpreter
 
   //Helper functions.
   def execProcess[A](p: Process[DBOps, A]): Process[Task, A] = p.interpretCouch(interpreter)

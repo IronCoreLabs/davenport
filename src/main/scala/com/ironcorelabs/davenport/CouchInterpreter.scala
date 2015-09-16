@@ -24,6 +24,8 @@ import syntax.dbprog._
 class CouchInterpreter(val bucket: Task[Bucket]) {
   import CouchInterpreter._
 
+  def intpret[A](db: DBProg[A]): Task[Throwable \/ A] = interpret(db.run)
+
   /**
    * Given a Bucket return back a NT that can turn DBOps into a Task.
    */
