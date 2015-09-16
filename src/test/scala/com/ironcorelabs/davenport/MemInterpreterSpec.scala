@@ -136,6 +136,27 @@ class MemInterpreterSpec extends TestBase {
       runForResult(steps) should be(left)
     }
 
+    "lift single create into process" in {
+      val createAndGet: DBProg[DbValue] = for {
+        _ <- createDoc(k, v)
+        g <- getDoc(k)
+      } yield g
+      val (_, res) = runProcess(createAndGet.process).value
+      res should have length (1)
+      res.head.value.jsonString should ===(v)
+    }
+
+    "show Process[Task] coming together with Process[DBOps]" in {
+      val dataStream = Process.eval(Task.now(k -> v))
+      val kvState: KVState[Unit] = dataStream.toKVState.flatMap {
+        case (key, value) =>
+          createDoc(key, value).process.interpretMem
+      }.run
+      val result: KVMap = kvState(Map()).run._1
+      result should have size (1)
+      result.toSeq.head._2 should ===(v)
+    }
+
     //
     // Test batch import
     //
@@ -157,7 +178,6 @@ class MemInterpreterSpec extends TestBase {
       val (_, res) = runProcess(createDocs(tenrows).takeWhile(_.isRight), data).value
       res.length should ===(0)
     }
-
     "don't try and insert first 5 and return 5 errors" in {
       val (data, res) = runProcess(createDocs(tenrows.drop(5))).value
       res.length should ===(5)

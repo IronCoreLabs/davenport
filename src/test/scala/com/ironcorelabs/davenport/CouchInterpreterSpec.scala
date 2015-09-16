@@ -9,7 +9,7 @@ import scalaz._, Scalaz._, scalaz.concurrent.Task, scalaz.stream.Process
 import DB._
 import DB.Batch._
 import tags.RequiresCouch
-import syntax.dbprog._
+import syntax._
 import scala.concurrent.duration._
 
 @RequiresCouch
@@ -26,7 +26,7 @@ class CouchInterpreterSpec extends TestBase {
   val interpreter = new CouchInterpreter(CouchConnection.bucketOrError)
 
   //Helper functions.
-  def execProcess[A](p: Process[DBOps, A]): Process[Task, A] = interpreter.interpretP(p)
+  def execProcess[A](p: Process[DBOps, A]): Process[Task, A] = p.interpretCouch(interpreter)
   def exec[A](prog: DBProg[A]): Throwable \/ A = execTask(prog).attemptRun.join
   def execTask[A](prog: DBProg[A]): Task[Throwable \/ A] = prog.interpret(interpreter)
 
@@ -157,7 +157,6 @@ class CouchInterpreterSpec extends TestBase {
       val res = execTask(tenrows.map { case (key, value) => createDoc(key, value) }.head).attemptRun.value
       res should be(left)
     }
-
     "return errors batch importing the same items again" in {
       val res = execProcess(createDocs(tenrows)).runLog.attemptRun.value
       val (lefts, rights) = res.toList.separate
@@ -172,7 +171,7 @@ class CouchInterpreterSpec extends TestBase {
     "fail after first error if we pass in a halting function" in {
       val res = execProcess(createDocs(tenrows).takeWhile(_.isRight)).runLog.attemptRun.value
       val (lefts, rights) = res.toList.separate
-      lefts.length should ===(0) //Check with Patrick if these semantics are OK.
+      lefts.length should ===(0)
       rights.length should ===(0)
     }
     "attempt to recover from a bad CAS error by refetching and retrying" in {
@@ -202,6 +201,16 @@ class CouchInterpreterSpec extends TestBase {
 
       val finalres = handled.attemptRun.join.value
       finalres.jsonString should ===(newvalue)
+    }
+
+    "work without using interpreter by instead using Kleisli" in {
+      val createAndGet = for {
+        _ <- removeKey(k)
+        _ <- createDoc(k, v)
+        dbValue <- getDoc(k)
+      } yield dbValue.jsonString
+      val task = CouchConnection.bucketOrError.flatMap(createAndGet.interpretK.run(_))
+      task.run.value should ===(v)
     }
     "handle a failed connection" in {
       // Save off bucket and then ditch it

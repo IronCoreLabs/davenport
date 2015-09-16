@@ -19,6 +19,7 @@ import java.util.NoSuchElementException
 // RxScala (Observables) used in Couchbase client lib async calls
 import rx.lang.scala.Observable
 import rx.lang.scala.JavaConversions._
+import syntax.dbprog._
 
 class CouchInterpreter(val bucket: Task[Bucket]) {
   import CouchInterpreter._
@@ -49,14 +50,12 @@ final object CouchInterpreter {
    * Interpret the program into a Kleisli that will take a Bucket as its argument. Useful if you want to do
    * Kleisli arrow composition before running it.
    */
-  def interpretK[A](prog: DBProg[A]): CouchK[Throwable \/ A] =
-    interpretK(prog.run)
+  def interpretK[A](prog: DBProg[A]): CouchK[Throwable \/ A] = interpretK(prog.run)
 
   /**
    * Basic building block. Turns the DbOps into a Kleisli which takes a Bucket, used by interpret above.
    */
-  def interpretK[A](prog: DBOps[A]): CouchK[A] =
-    Free.runFC[DBOp, CouchK, A](prog)(couchRunner)
+  def interpretK[A](prog: DBOps[A]): CouchK[A] = Free.runFC[DBOp, CouchK, A](prog)(couchRunner)
 
   /**
    * We use co-yoneda to run our `scalaz.Free`.

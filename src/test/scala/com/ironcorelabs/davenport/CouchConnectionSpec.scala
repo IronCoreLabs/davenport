@@ -26,6 +26,8 @@ class CouchConnectionSpec extends TestBase {
       // Get error in return
       res should be(left)
 
+      CouchConnection.connected should ===(false)
+
       CouchConnection.fakeDisconnectRevert
     }
   }
