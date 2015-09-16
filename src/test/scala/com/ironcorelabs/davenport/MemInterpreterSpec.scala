@@ -6,17 +6,14 @@
 package com.ironcorelabs.davenport
 
 import scalaz._, Scalaz._, scalaz.concurrent.Task
-import org.scalatest.{ WordSpec, Matchers, BeforeAndAfterAll, OptionValues }
-import org.scalatest.concurrent.AsyncAssertions
-import org.typelevel.scalatest._
 import DB._
 import DB.Batch._
 import MemInterpreter.{ KVMap, KVState, interpretTask }
 import syntax._
 import scalaz.stream.Process
 
-class MemInterpreterSpec extends WordSpec with Matchers with DisjunctionValues with OptionValues with DisjunctionMatchers {
-
+class MemInterpreterSpec extends TestBase {
+  //Variables used in many tests
   val k = Key("test")
   val v = RawJsonString("value")
   val newvalue = RawJsonString("some other value")
@@ -43,12 +40,10 @@ class MemInterpreterSpec extends WordSpec with Matchers with DisjunctionValues w
   def runForResult[A](prog: DBProg[A], m: KVMap = Map()): Throwable \/ A =
     run(prog, m)._2
 
-  "MemConnection" should {
-
+  "MemInterpreter" should {
     //
     // Test basic create/get/update operations
     //
-
     "get a doc that exists" in {
       val testRead = getDoc(k)
       val res = runForResult(testRead, seedData)
@@ -111,7 +106,6 @@ class MemInterpreterSpec extends WordSpec with Matchers with DisjunctionValues w
     //
     // Test counters
     //
-
     "get zero when retrieving non-existent counter" in {
       val (data, res) = run(getCounter(k))
       res.value should ===(0L)
@@ -145,7 +139,6 @@ class MemInterpreterSpec extends WordSpec with Matchers with DisjunctionValues w
     //
     // Test batch import
     //
-
     "be happy doing initial batch import" in {
       val (map, res) = runProcess(createDocs(tenrows)).value
       res.toList.separate._2.length should ===(tenrows.length)
@@ -170,6 +163,5 @@ class MemInterpreterSpec extends WordSpec with Matchers with DisjunctionValues w
       res.length should ===(5)
       res.toList.separate._2.length should ===(5)
     }
-
   }
 }

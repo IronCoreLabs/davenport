@@ -6,8 +6,6 @@
 package com.ironcorelabs.davenport
 
 import scalaz._, Scalaz._, scalaz.concurrent.Task
-import DB._
-import scalaz.stream.Process
 
 // Couchbase
 import com.couchbase.client.java.{ CouchbaseCluster, Bucket, AsyncBucket }
@@ -16,7 +14,6 @@ import com.couchbase.client.java.env.{ CouchbaseEnvironment, DefaultCouchbaseEnv
 // Configuration library
 import knobs.{ Required, Optional, FileResource, Config, ClassPathResource }
 import java.io.File
-import syntax._
 
 /** Connect to Couchbase and interpret [[DB.DBProg]]s */
 object CouchConnection {
@@ -36,7 +33,7 @@ object CouchConnection {
   //
   private var currentConnection: Option[CouchConnectionInfo] = None
   private var testConnection: Option[CouchConnectionInfo] = None
-  private val bucketOrError: Task[Bucket] = Task.delay(currentConnection.map(_.bucket).getOrElse(throw new Exception("Not connected")))
+  val bucketOrError: Task[Bucket] = Task.delay(currentConnection.map(_.bucket).getOrElse(throw new Exception("Not connected")))
 
   //
   //
@@ -63,8 +60,6 @@ object CouchConnection {
         .build()
     )
   }
-
-  private val interpreter = new CouchInterpreter(bucketOrError)
 
   //
   //
@@ -140,14 +135,4 @@ object CouchConnection {
   def fakeDisconnectRevert() = {
     currentConnection = testConnection
   }
-
-  def apply[A](prog: DBProg[A]): Throwable \/ A = exec(prog)
-
-  def execProcess[A](p: Process[DBOps, A]): Process[Task, A] =
-    interpreter.interpretP(p)
-
-  def exec[A](prog: DBProg[A]): Throwable \/ A = execTask(prog).attemptRun.join
-
-  def execTask[A](prog: DBProg[A]): Task[Throwable \/ A] =
-    prog.interpret(interpreter)
 }

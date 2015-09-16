@@ -10,7 +10,6 @@ import DB._
 import scalaz.stream.Process
 import scalaz._
 import scalaz.concurrent.Task
-import com.couchbase.client.java.Bucket
 
 object dbprog extends DBProgOps
 

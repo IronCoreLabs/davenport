@@ -5,15 +5,11 @@
 //
 package com.ironcorelabs.davenport
 
-import org.scalatest.{ WordSpec, Matchers, OptionValues }
-import scala.language.postfixOps
-import org.typelevel.scalatest._
-import DisjunctionValues._
-import com.ironcorelabs.davenport._, DB._
+import DB._
 import scalaz._, Scalaz._, scalaz.concurrent.Task
 import argonaut._, Argonaut._
 
-class DBDocumentSpec extends WordSpec with Matchers with DisjunctionMatchers with OptionValues {
+class DBDocumentSpec extends TestBase {
   case class User(firstName: String, lastName: String, email: String, createdDate: Long)
   case class DBUser(key: Key, data: User, cas: Long) extends DBDocument[User] {
     def dataJson: Throwable \/ RawJsonString =
