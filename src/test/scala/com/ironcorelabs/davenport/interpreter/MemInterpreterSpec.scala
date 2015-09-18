@@ -33,7 +33,7 @@ class MemInterpreterSpec extends TestBase {
     newV <- getDocString(k)
   } yield newV
 
-  def emptyInterpreter: Interpreter = MemInterpreter(Map())
+  def emptyInterpreter: Interpreter = MemInterpreter.empty
 
   //Couple helper functions
   def run[A](prog: DBProg[A]): Throwable \/ A = {
@@ -77,6 +77,13 @@ class MemInterpreterSpec extends TestBase {
       } yield newDbv.jsonString
       val res = run(createDoc(k, v) *> testUpdate).value
       res shouldBe newvalue
+    }
+    "fail to update a doc that doesn't exist" in {
+      val testUpdate = for {
+        newDbv <- updateDoc(k, newvalue, HashVer(0))
+      } yield newDbv.jsonString
+      val res = run(testUpdate).leftValue
+      res.getMessage should include("when trying to update.")
     }
     "fail updating a doc when using incorrect hashver" in {
       val testUpdate = updateDoc(k, newvalue, HashVer(0))

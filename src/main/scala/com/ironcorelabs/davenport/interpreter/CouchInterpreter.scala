@@ -8,7 +8,6 @@ package interpreter
 
 import scalaz.{ \/, \/-, ~>, Kleisli, Free }
 import scalaz.concurrent.Task
-import scalaz.std.anyVal._
 import scalaz.syntax.either._
 import DB._
 import scalaz.stream.Process
@@ -22,7 +21,6 @@ import com.couchbase.client.java.error._
 // RxScala (Observables) used in Couchbase client lib async calls
 import rx.lang.scala.Observable
 import rx.lang.scala.JavaConversions._
-import com.ironcorelabs.davenport.syntax.dbprog._
 
 abstract class CouchInterpreter extends Interpreter {
   import CouchInterpreter._

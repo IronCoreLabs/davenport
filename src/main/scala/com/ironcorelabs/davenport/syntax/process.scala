@@ -4,7 +4,6 @@
 package com.ironcorelabs.davenport
 package syntax
 
-import scalaz._
 import scalaz.concurrent.Task
 import scalaz.stream.Process
 import com.couchbase.client.java.Bucket

@@ -38,6 +38,8 @@ object MemInterpreter {
     protected var map = m
   }
 
+  def empty: MemInterpreter = apply(Map.empty)
+
   val interpretKVState: DBOps ~> KVState = new (DBOps ~> KVState) {
     def apply[A](db: DBOps[A]): KVState[A] = {
       Free.runFC[DBOp, KVState, A](db)(toKVState)
@@ -70,7 +72,7 @@ object MemInterpreter {
             } else {
               m -> error("Someone else updated this doc first")
             }
-          }.getOrElse(m -> error(s"No value found for key '${k.value}'"))
+          }.getOrElse(m -> error(s"No value found for key '${k.value}' when trying to update."))
         }
         case CreateDoc(k, doc) => state { m: KVMap =>
           m.get(k).map(_ => m -> error(s"Can't create since '${k.value}' already exists")).getOrElse(modifyStateDbv(m + (k -> doc), doc, genHashVer(doc)))

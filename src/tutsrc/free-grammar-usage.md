@@ -8,7 +8,8 @@ In Davenport, we provide an in-memory local option as well as Couchbase, but som
 
 ```tut:silent
 import com.ironcorelabs.davenport.DB._
-import com.ironcorelabs.davenport.{CouchConnection, MemInterpreter}
+import com.ironcorelabs.davenport.CouchConnection
+import com.ironcorelabs.davenport.interpreter.MemInterpreter
 import com.ironcorelabs.davenport.syntax._
 
 // Some definitions that should help understand the code below
@@ -27,7 +28,7 @@ val operations = for {
 } yield fetchedDoc
 
 // Now we can execute those operations using Couch or Mem.  Either:
-val finalResult = MemInterpreter.interpretTask(operations).run
+val finalResult = operations.interpret(MemInterpreter.empty).run
 
 // or: val finalResult = CouchConnection.createInterpreter.interpret(operations).run
 // and in either case the result will be the same except for the hashVer
@@ -64,10 +65,10 @@ def copyFieldInDb(field: String, srcKey: Key, dstKey: Key): DBProg[DbValue] = fo
 
 
 // in this case, the result will be an error since docA and docB have not been created
-val finalResult = MemInterpreter.interpretTask(copyFieldInDb("a", Key("docA"), Key("docB"))).run
+val finalResult = copyFieldInDb("a", Key("docA"), Key("docB")).interpret(MemInterpreter.empty).run
 
 // in this case, the result will be a successful new docB with a:1, c: 2, d: 2
-val finalResult = MemInterpreter.interpretTask(for {
+val finalResult = MemInterpreter.empty.interpret(for {
   docA <- createDoc(Key("docA"), RawJsonString("""{ "a": 1, "b": 1, "c": 1 }"""))
   docB <- createDoc(Key("docB"), RawJsonString("""{ "c": 2, "d": 2 }"""))
   newB <- copyFieldInDb("a", Key("docA"), Key("docB"))
