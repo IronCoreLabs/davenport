@@ -10,7 +10,7 @@ import scalaz._
 import DB._
 
 trait Interpreter {
-  //The only abstract method
+  //Define how you map each op to a Task using a Natural Transformation.
   def interpret: (DBOps ~> Task)
 
   def interpret[A](db: DBProg[A]): Task[Throwable \/ A] = interpret(db.run)
