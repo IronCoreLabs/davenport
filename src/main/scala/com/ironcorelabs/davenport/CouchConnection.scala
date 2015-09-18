@@ -1,6 +1,4 @@
 //
-// com.ironcorelabs.davenport.CouchConnection
-//
 // Copyright (c) 2015 IronCore Labs
 //
 package com.ironcorelabs.davenport
@@ -14,6 +12,7 @@ import com.couchbase.client.java.env.{ CouchbaseEnvironment, DefaultCouchbaseEnv
 // Configuration library
 import knobs.{ Required, Optional, FileResource, Config, ClassPathResource }
 import java.io.File
+import interpreter.CouchInterpreter
 
 /** Connect to Couchbase and interpret [[DB.DBProg]]s */
 object CouchConnection {
@@ -121,7 +120,7 @@ object CouchConnection {
    */
   def connected: Boolean = !currentConnection.isEmpty
 
-  def createInterpreter: CouchInterpreter = new CouchInterpreter(bucketOrError)
+  def createInterpreter: CouchInterpreter = CouchInterpreter(bucketOrError)
 
   /**
    * Used for testing a failed connection without having

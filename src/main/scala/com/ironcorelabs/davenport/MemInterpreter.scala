@@ -1,9 +1,8 @@
 //
-// com.ironcorelabs.davenport.MemTranslator
-//
 // Copyright (c) 2015 IronCore Labs
 //
 package com.ironcorelabs.davenport
+package interpreter
 
 import scalaz.concurrent.Task
 import scalaz.stream.Process
@@ -11,26 +10,35 @@ import scalaz._
 import scalaz.syntax.either._
 import DB._
 
+abstract class MemInterpreter extends Interpreter {
+  import MemInterpreter._
+  protected var map: KVMap
+
+  def interpret: (DBOps ~> Task) = new (DBOps ~> Task) {
+    def apply[A](prog: DBOps[A]): Task[A] = {
+      //Note that the Task.delay captures the current state when this op is run, which is important
+      //if you rerun a Task.
+      Task.delay(map).flatMap(interpretKVState(prog)(_)).map {
+        case (newM, value) =>
+          //In order to provide the same semantics as Couch, once a value has been "computed" it will be 
+          //committed to the DB. Note that this might overwrite someone elses changes in a multi-thread environment.
+          map = newM
+          value
+      }
+    }
+  }
+}
+
 object MemInterpreter {
   /** Backend of the memory store is a Map from Key -> RawJsonString */
   type KVMap = Map[Key, RawJsonString]
   type KVState[A] = StateT[Task, KVMap, A]
 
-  def interpretTask[A](db: DBProg[A], initialState: KVMap = Map()): Task[(KVMap, Throwable \/ A)] =
-    interpret(db)(initialState)
+  def apply(m: KVMap): MemInterpreter = new MemInterpreter {
+    protected var map = m
+  }
 
-  def interpret[A](db: DBProg[A]): KVState[Throwable \/ A] =
-    interpret(db.run)
-
-  def interpret[A](db: DBOps[A]): KVState[A] =
-    opsToKVState(db)
-
-  def interpretP[A](p: Process[DBOps, A]): Process[KVState, A] = p.translate(opsToKVState)
-
-  /**
-   * NT which brings DBOps to KVState. Useful for translating a Process[DBOps, A] into a Process[KVState, A].
-   */
-  val opsToKVState: DBOps ~> KVState = new (DBOps ~> KVState) {
+  val interpretKVState: DBOps ~> KVState = new (DBOps ~> KVState) {
     def apply[A](db: DBOps[A]): KVState[A] = {
       Free.runFC[DBOp, KVState, A](db)(toKVState)
     }

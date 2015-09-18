@@ -1,11 +1,15 @@
 //
-// com.ironcorelabs.davenport.CouchConnection
+// com.ironcorelabs.davenport.CouchInterpreter
 //
 // Copyright (c) 2015 IronCore Labs
 //
 package com.ironcorelabs.davenport
+package interpreter
 
-import scalaz._, Scalaz._, scalaz.concurrent.Task
+import scalaz.{ \/, \/-, ~>, Kleisli, Free }
+import scalaz.concurrent.Task
+import scalaz.std.anyVal._
+import scalaz.syntax.either._
 import DB._
 import scalaz.stream.Process
 
@@ -14,18 +18,15 @@ import com.couchbase.client.java.{ ReplicateTo, PersistTo, ReplicaMode, Couchbas
 import com.couchbase.client.java.env.{ CouchbaseEnvironment, DefaultCouchbaseEnvironment }
 import com.couchbase.client.java.document._
 import com.couchbase.client.java.error._
-import java.util.NoSuchElementException
 
 // RxScala (Observables) used in Couchbase client lib async calls
 import rx.lang.scala.Observable
 import rx.lang.scala.JavaConversions._
-import syntax.dbprog._
+import com.ironcorelabs.davenport.syntax.dbprog._
 
-class CouchInterpreter(val bucket: Task[Bucket]) {
+abstract class CouchInterpreter extends Interpreter {
   import CouchInterpreter._
-
-  def intpret[A](db: DBProg[A]): Task[Throwable \/ A] = interpret(db.run)
-
+  def bucket: Task[Bucket]
   /**
    * Given a Bucket return back a NT that can turn DBOps into a Task.
    */
@@ -33,19 +34,16 @@ class CouchInterpreter(val bucket: Task[Bucket]) {
     def apply[A](prog: DBOps[A]): Task[A] =
       bucket.flatMap(interpretK(prog).run(_))
   }
-
-  /**
-   * Given a bucket to work against, interpret a Process[DBOps,A] into an effectful Process[Task,A].
-   */
-  def interpretP[A](p: Process[DBOps, A]): Process[Task, A] =
-    p.translate(interpret)
-
 }
 
 /**
  * Things related to translating DBOp to Kleisli[Task, Bucket, A] and some helpers for translating to Task[A]
  */
 final object CouchInterpreter {
+  def apply(b: Task[Bucket]): CouchInterpreter = new CouchInterpreter {
+    val bucket = b
+  }
+
   type CouchK[A] = Kleisli[Task, Bucket, A]
 
   /**

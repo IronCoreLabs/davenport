@@ -4,12 +4,13 @@
 // Copyright (c) 2015 IronCore Labs
 //
 package com.ironcorelabs.davenport
+package interpreter
 
+import syntax._
 import scalaz._, Scalaz._, scalaz.concurrent.Task, scalaz.stream.Process
 import DB._
 import DB.Batch._
 import tags.RequiresCouch
-import syntax._
 import scala.concurrent.duration._
 
 @RequiresCouch
@@ -26,7 +27,7 @@ class CouchInterpreterSpec extends TestBase {
   val interpreter = CouchConnection.createInterpreter
 
   //Helper functions.
-  def execProcess[A](p: Process[DBOps, A]): Process[Task, A] = p.interpretCouch(interpreter)
+  def execProcess[A](p: Process[DBOps, A]): Process[Task, A] = p.interpret(interpreter)
   def exec[A](prog: DBProg[A]): Throwable \/ A = execTask(prog).attemptRun.join
   def execTask[A](prog: DBProg[A]): Task[Throwable \/ A] = prog.interpret(interpreter)
 
@@ -209,7 +210,7 @@ class CouchInterpreterSpec extends TestBase {
         _ <- createDoc(k, v)
         dbValue <- getDoc(k)
       } yield dbValue.jsonString
-      val task = CouchConnection.bucketOrError.flatMap(createAndGet.interpretK.run(_))
+      val task = CouchConnection.bucketOrError.flatMap(CouchInterpreter.interpretK(createAndGet).run(_))
       task.run.value should ===(v)
     }
     "handle a failed connection" in {
