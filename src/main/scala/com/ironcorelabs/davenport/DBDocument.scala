@@ -1,6 +1,4 @@
 //
-// com.ironcorelabs.davenport.DBDocument
-//
 // Copyright (c) 2015 IronCore Labs
 //
 package com.ironcorelabs.davenport

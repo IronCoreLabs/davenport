@@ -1,6 +1,4 @@
 //
-// com.ironcorelabs.davenport.Tags
-//
 // Copyright (c) 2015 IronCore Labs
 //
 package com.ironcorelabs.davenport.tagobjects

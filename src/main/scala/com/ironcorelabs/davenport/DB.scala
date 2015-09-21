@@ -1,6 +1,4 @@
 //
-// com.ironcorelabs.davenport.DB
-//
 // Copyright (c) 2015 IronCore Labs
 //
 package com.ironcorelabs.davenport
@@ -107,7 +105,7 @@ object DB {
   //
 
   /** Any database operation must be represented by a `DBOp` */
-  sealed trait DBOp[+A]
+  sealed trait DBOp[A]
   case class GetDoc(key: Key) extends DBOp[Throwable \/ DbValue]
   case class CreateDoc(key: Key, doc: RawJsonString) extends DBOp[Throwable \/ DbValue]
   case class UpdateDoc(key: Key, doc: RawJsonString, hashver: HashVer) extends DBOp[Throwable \/ DbValue]

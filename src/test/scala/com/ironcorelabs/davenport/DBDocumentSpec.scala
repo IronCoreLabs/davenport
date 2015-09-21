@@ -1,19 +1,14 @@
 //
-// com.ironcorelabs.davenport.DBDocumentSpec
-//
 // Copyright (c) 2015 IronCore Labs
 //
 package com.ironcorelabs.davenport
 
-import org.scalatest.{ WordSpec, Matchers, OptionValues }
-import scala.language.postfixOps
-import org.typelevel.scalatest._
-import DisjunctionValues._
-import com.ironcorelabs.davenport._, DB._
+import DB._
 import scalaz._, Scalaz._, scalaz.concurrent.Task
 import argonaut._, Argonaut._
+import interpreter.MemInterpreter
 
-class DBDocumentSpec extends WordSpec with Matchers with DisjunctionMatchers with OptionValues {
+class DBDocumentSpec extends TestBase {
   case class User(firstName: String, lastName: String, email: String, createdDate: Long)
   case class DBUser(key: Key, data: User, cas: Long) extends DBDocument[User] {
     def dataJson: Throwable \/ RawJsonString =
@@ -44,20 +39,22 @@ class DBDocumentSpec extends WordSpec with Matchers with DisjunctionMatchers wit
     val k1 = Key("user::email@example.com")
     "create, then get and then remove wrapper docs" in {
       val create = DBUser.create(u1)
-      val (data, res) = MemConnection.run(create)
+      val interpreter = MemInterpreter(Map())
+      val res = interpreter.interpret(create).run
       res should be(right)
       // next line is basically to make sure hashver is populated and juice up
       // code coverage
       res.value.hashver.value should be > 0L
 
       val get = DBUser.get(k1)
-      val (data2, res2) = MemConnection.run(get, data)
+      val res2 = interpreter.interpret(get).run
       res2.value.data should equal(u1)
-      val (data3, res3) = MemConnection.run(res2.value.remove, data)
+      val res3 = interpreter.interpret(res2.value.remove).run
       res3 should be(right)
     }
     "attempt removal of a missing doc" in {
-      MemConnection(DBUser.remove(k1)) should be(left) // fail since doesn't exist
+      val res = MemInterpreter(Map()).interpret(DBUser.remove(k1)).run
+      res should be(left) // fail since doesn't exist
     }
   }
 }

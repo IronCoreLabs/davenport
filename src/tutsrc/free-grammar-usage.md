@@ -4,11 +4,13 @@ title: Free Grammar Implementation
 
 Davenport uses a Free Grammar abstraction based on [scalaz](https://github.com/scalaz/scalaz)'s `Free` monads. This means that you string together a bunch of database instructions, but delay executing them until you're ready.  When you do execute them, you get to choose your interpreter.  All interpreters must handle all instructions.
 
-In Davenport, we provide an in-memory local option as well as Couchbase, but someone could implement the grammar against any backend and none of your code would change except the reference to the connection class.  The immediate advantage is testing: you get fast unit tests via the MemConnection that verify functionality without needing a Couchbase server or connection setup and teardown.  For example:
+In Davenport, we provide an in-memory local option as well as Couchbase, but someone could implement the grammar against any backend and none of your code would change except your choice of interpreter.  The immediate advantage is testing: you get fast unit tests via the MemInterpreter that verify functionality without needing a Couchbase server or connection setup and teardown.  For example:
 
 ```tut:silent
 import com.ironcorelabs.davenport.DB._
-import com.ironcorelabs.davenport.{ MemConnection, CouchConnection }
+import com.ironcorelabs.davenport.CouchConnection
+import com.ironcorelabs.davenport.interpreter.MemInterpreter
+import com.ironcorelabs.davenport.syntax._
 
 // Some definitions that should help understand the code below
 //   case class Key(value: String)
@@ -26,9 +28,9 @@ val operations = for {
 } yield fetchedDoc
 
 // Now we can execute those operations using Couch or Mem.  Either:
-val finalResult = MemConnection.exec(operations)
+val finalResult = operations.interpret(MemInterpreter.empty).run
 
-// or: val finalResult = CouchConnection.exec(operations)
+// or: val finalResult = CouchConnection.createInterpreter.interpret(operations).run
 // and in either case the result will be the same except for the hashVer
 ```
 
@@ -63,17 +65,17 @@ def copyFieldInDb(field: String, srcKey: Key, dstKey: Key): DBProg[DbValue] = fo
 
 
 // in this case, the result will be an error since docA and docB have not been created
-val finalResult = MemConnection.exec(copyFieldInDb("a", Key("docA"), Key("docB")))
+val finalResult = copyFieldInDb("a", Key("docA"), Key("docB")).interpret(MemInterpreter.empty).run
 
 // in this case, the result will be a successful new docB with a:1, c: 2, d: 2
-val finalResult = MemConnection.exec(for {
+val finalResult = MemInterpreter.empty.interpret(for {
   docA <- createDoc(Key("docA"), RawJsonString("""{ "a": 1, "b": 1, "c": 1 }"""))
   docB <- createDoc(Key("docB"), RawJsonString("""{ "c": 2, "d": 2 }"""))
   newB <- copyFieldInDb("a", Key("docA"), Key("docB"))
-} yield newB)
+} yield newB).run
 ```
 
-This implementation uses scalaz Disjunctions (`\/`) and scalaz `Tasks`. You can choose to call `execTask` on any interpreter and then spin off the task asynchronously or combine it with other async events such as service calls.
+This implementation uses scalaz Disjunctions (`\/`) and scalaz `Tasks`. You can choose to spin off the task asynchronously or combine it with other async events such as service calls.
 
 Errors are nicely handled with returned exceptions (as opposed to thrown exceptions) to give insight into any issues while retaining type safety.
 

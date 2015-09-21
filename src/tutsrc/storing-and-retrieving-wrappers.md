@@ -79,20 +79,24 @@ Now that we have a nice abstraction for persisting our user class, let's try it 
 
 ```tut
 import Example._
+import com.ironcorelabs.davenport.interpreter.MemInterpreter
+import com.ironcorelabs.davenport.syntax.dbprog._
 val addTwoNewUsers = for {
   newu1 <- DBUser.create(User("User", "One", "readyplayerone@example.com", System.currentTimeMillis()))
   newu2 <- DBUser.create(User("User", "Two", "readyplayertwo@example.com", System.currentTimeMillis()))
 } yield List(newu1, newu2)
-val users: Throwable \/ List[DBUser] = MemConnection.exec(addTwoNewUsers)
+
+val users: Throwable \/ List[DBUser] = MemInterpreter.empty.interpret(addTwoNewUsers).run
 ```
 
-Feel free to test against Couchbase as well.  We'll keep illustrating with the MemConnection for now to show how you can easily experiment and write unit tests.  As an alternative to calling `MemConnection.exec` you can call `MemConnection.run`.  This is not part of the common interface dictated by `AbstractConnection`, but is special to the memory implementation.  `run` takes an optional `Map` and returns a tuple with the `Map` and the results.  You can then use this `Map` as your state and as a starting point for a database with known values in it.  Building on our example above, we could instead do this:
+Feel free to test against Couchbase as well.  We'll keep illustrating with the MemInterpreter for now to show how you can easily experiment and write unit tests.  As an alternative to calling `MemInterpreter.empty.interpret` you can call `CouchConnection.createInterpreter.interpret`.  You could also import the syntax which will add `interpret` to `DBProg` which takes any `Interpreter`. Building on our example above, we could instead do this:
 
 ```tut
-val (db: MemConnection.KVMap, users: \/[Throwable, List[DBUser]]) = MemConnection.run(addTwoNewUsers)
+val interpreter = MemInterpreter.empty
+val users = addTwoNewUsers.interpret(interpreter).run
 
 // Fetch one of the users out of the database
-val (db2, u1) = MemConnection.run(DBUser.get(Key("user::readyplayerone@example.com")), db)
+val u1 = DBUser.get(Key("user::readyplayerone@example.com")).interpret(interpreter).run
 ```
 
 We expect that the primitives with `RawJsonString` will generally not be used outside of the `DBDocument` classes.
