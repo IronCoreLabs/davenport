@@ -12,9 +12,15 @@ And then open up the file `target/scala-2.11/scoverage-report/index.html` in you
 
 ## Updating Documentation and Website
 
-Tutorials should be added to the `src/tutsrc` directory.  Code blocks should typically use `\`\`\`tuts` instead of `\`\`\`scala` to add code.  This will ensure the code blocks are checked by the compiler and the output shown inline.  See [tpolecat/tut](https://github.com/tpolecat/tut) for details.
+Tutorials should be added to the `src/tutsrc` directory.  Code blocks should typically use \`\`\`tuts instead of \`\`\`scala to add code.  This will ensure the code blocks are checked by the compiler and the output shown inline.  See [tpolecat/tut](https://github.com/tpolecat/tut) for details.
 
-To update the site, do this:
+Updating the site requires you to install [jekyll first](https://help.github.com/articles/using-jekyll-with-pages/#installing-jekyll).  In short, here's what you need to do for initial setup:
+
+1. Make sure you have ruby 2.0 or greater installed
+2. Run `gem install bundler`
+3. Run `gem install github-pages`
+
+Once you're setup, to update the site, do this:
 
 ```bash
 > sbt tut make-site
