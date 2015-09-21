@@ -27,6 +27,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <link rel="shortcut icon" href="/davenport/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/davenport/favicon.ico" type="image/x-icon">
+
 
 
   
@@ -89,9 +92,8 @@
 <p>First, in your <code>build.sbt</code> file, you will want to reference davenport like so:</p>
 
 <div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre>resolvers += &quot;IronCore BinTray Repo&quot; at &quot;http://dl.bintray.com/ironcorelabs/maven&quot;
-libraryDependencies ++= Seq(
-    &quot;default&quot; %% &quot;davenport&quot; % &quot;0.5.11&quot;,
+  <div class="code"><pre>libraryDependencies ++= Seq(
+    &quot;default&quot; %% &quot;davenport&quot; % &quot;0.5.21&quot;,
     &quot;org.scalaz&quot; %% &quot;scalaz-core&quot; % &quot;7.1.2&quot;, // for type awesomeness
     &quot;org.scalaz&quot; %% &quot;scalaz-concurrent&quot; % &quot;7.1.2&quot;, // for type awesomeness
     &quot;io.argonaut&quot; %% &quot;argonaut&quot; % &quot;6.1&quot; // json (de)serialization scalaz style
@@ -100,7 +102,7 @@ libraryDependencies ++= Seq(
 </div>
 </div>
 
-<p><strong>Note:</strong> argonaut is not actually required.  You may use any json serialization that you prefer, but you will need argonaut to follow along with our example and getting started code.</p>
+<p><strong>Note:</strong> see the <a href="https://github.com/ironcorelabs/davenport">github page</a> for the latest stable version number to use.</p>
 
 <h2 id="setup-couchbase">Setup Couchbase</h2>
 

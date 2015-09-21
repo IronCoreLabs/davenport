@@ -27,6 +27,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <link rel="shortcut icon" href="/davenport/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/davenport/favicon.ico" type="image/x-icon">
+
 
 
   
@@ -167,11 +170,17 @@ object Example {
 
 <p>Anyone wanting to factor out some of the boilerplate – please be my guest, we’d love the pull requests.</p>
 
-<p>Now that we have a nice abstraction for persisting our user class, lets try it out:</p>
+<p>Now that we have a nice abstraction for persisting our user class, let’s try it out:</p>
 
 <div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre>scala&gt; import Example._
 import Example._
+
+scala&gt; import com.ironcorelabs.davenport.interpreter.MemInterpreter
+import com.ironcorelabs.davenport.interpreter.MemInterpreter
+
+scala&gt; import com.ironcorelabs.davenport.syntax.dbprog._
+import com.ironcorelabs.davenport.syntax.dbprog._
 
 scala&gt; val addTwoNewUsers = for {
      |   newu1 &lt;- DBUser.create(User(&quot;User&quot;, &quot;One&quot;, &quot;readyplayerone@example.com&quot;, System.currentTimeMillis()))
@@ -179,23 +188,24 @@ scala&gt; val addTwoNewUsers = for {
      | } yield List(newu1, newu2)
 addTwoNewUsers: scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,Throwable,List[Example.DBUser]] = EitherT(Gosub())
 
-scala&gt; val users: Throwable \/ List[DBUser] = MemConnection.exec(addTwoNewUsers)
-users: scalaz.\/[Throwable,List[Example.DBUser]] = \/-(List(DBUser(Key(user::readyplayerone@example.com),User(User,One,readyplayerone@example.com,1440697068010),1705542438), DBUser(Key(user::readyplayertwo@example.com),User(User,Two,readyplayertwo@example.com,1440697068212),1666720598)))
+scala&gt; val users: Throwable \/ List[DBUser] = MemInterpreter.empty.interpret(addTwoNewUsers).run
+users: scalaz.\/[Throwable,List[Example.DBUser]] = \/-(List(DBUser(Key(user::readyplayerone@example.com),User(User,One,readyplayerone@example.com,1442856230690),-1724472512), DBUser(Key(user::readyplayertwo@example.com),User(User,Two,readyplayertwo@example.com,1442856230895),710019528)))
 </pre></div>
 </div>
 </div>
 
-<p>Feel free to test against Couchbase as well.  We’ll keep illustrating with the MemConnection for now to show how you can easily experiment and write unit tests.  As an alternative to calling <code>MemConnection.exec</code> you can call <code>MemConnection.run</code>.  This is not part of the common interface dictated by <code>AbstractConnection</code>, but is special to the memory implementation.  <code>run</code> takes an optional <code>Map</code> and returns a tuple with the <code>Map</code> and the results.  You can then use this <code>Map</code> as your state and as a starting point for a database with known values in it.  Building on our example above, we could instead do this:</p>
+<p>Feel free to test against Couchbase as well.  We’ll keep illustrating with the MemInterpreter for now to show how you can easily experiment and write unit tests.  As an alternative to calling <code>MemInterpreter.empty.interpret</code> you can call <code>CouchConnection.createInterpreter.interpret</code>.  You could also import the syntax which will add <code>interpret</code> to <code>DBProg</code> which takes any <code>Interpreter</code>. Building on our example above, we could instead do this:</p>
 
 <div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre>scala&gt; val (db: MemConnection.KVMap, users: \/[Throwable, List[DBUser]]) = MemConnection.run(addTwoNewUsers)
-db: com.ironcorelabs.davenport.MemConnection.KVMap = Map(Key(user::readyplayerone@example.com) -&gt; RawJsonString({&quot;firstName&quot;:&quot;User&quot;,&quot;lastName&quot;:&quot;One&quot;,&quot;email&quot;:&quot;readyplayerone@example.com&quot;,&quot;createdDate&quot;:1440697068010}), Key(user::readyplayertwo@example.com) -&gt; RawJsonString({&quot;firstName&quot;:&quot;User&quot;,&quot;lastName&quot;:&quot;Two&quot;,&quot;email&quot;:&quot;readyplayertwo@example.com&quot;,&quot;createdDate&quot;:1440697068536}))
-users: scalaz.\/[Throwable,List[Example.DBUser]] = \/-(List(DBUser(Key(user::readyplayerone@example.com),User(User,One,readyplayerone@example.com,1440697068010),1705542438), DBUser(Key(user::readyplayertwo@example.com),User(User,Two,readyplayertwo@example.com,1440697068536),1985783451)))
+  <div class="code"><pre>scala&gt; val interpreter = MemInterpreter.empty
+interpreter: com.ironcorelabs.davenport.interpreter.MemInterpreter = com.ironcorelabs.davenport.interpreter.MemInterpreter$$anon$1@78f9d7c6
+
+scala&gt; val users = addTwoNewUsers.interpret(interpreter).run
+users: scalaz.\/[Throwable,List[Example.DBUser]] = \/-(List(DBUser(Key(user::readyplayerone@example.com),User(User,One,readyplayerone@example.com,1442856230690),-1724472512), DBUser(Key(user::readyplayertwo@example.com),User(User,Two,readyplayertwo@example.com,1442856231169),-1867449197)))
 
 scala&gt; // Fetch one of the users out of the database
-     | val (db2, u1) = MemConnection.run(DBUser.get(Key(&quot;user::readyplayerone@example.com&quot;)), db)
-db2: com.ironcorelabs.davenport.MemConnection.KVMap = Map(Key(user::readyplayerone@example.com) -&gt; RawJsonString({&quot;firstName&quot;:&quot;User&quot;,&quot;lastName&quot;:&quot;One&quot;,&quot;email&quot;:&quot;readyplayerone@example.com&quot;,&quot;createdDate&quot;:1440697068010}), Key(user::readyplayertwo@example.com) -&gt; RawJsonString({&quot;firstName&quot;:&quot;User&quot;,&quot;lastName&quot;:&quot;Two&quot;,&quot;email&quot;:&quot;readyplayertwo@example.com&quot;,&quot;createdDate&quot;:1440697068536}))
-u1: scalaz.\/[Throwable,Example.DBUser] = \/-(DBUser(Key(user::readyplayerone@example.com),User(User,One,readyplayerone@example.com,1440697068010),1705542438))
+     | val u1 = DBUser.get(Key(&quot;user::readyplayerone@example.com&quot;)).interpret(interpreter).run
+u1: scalaz.\/[Throwable,Example.DBUser] = \/-(DBUser(Key(user::readyplayerone@example.com),User(User,One,readyplayerone@example.com,1442856230690),-1724472512))
 </pre></div>
 </div>
 </div>

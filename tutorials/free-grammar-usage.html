@@ -27,6 +27,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <link rel="shortcut icon" href="/davenport/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/davenport/favicon.ico" type="image/x-icon">
+
 
 
   
@@ -86,11 +89,13 @@
     <div class="entry">
       <p>Davenport uses a Free Grammar abstraction based on <a href="https://github.com/scalaz/scalaz">scalaz</a>’s <code>Free</code> monads. This means that you string together a bunch of database instructions, but delay executing them until you’re ready.  When you do execute them, you get to choose your interpreter.  All interpreters must handle all instructions.</p>
 
-<p>In Davenport, we provide an in-memory local option as well as Couchbase, but someone could implement the grammar against any backend and none of your code would change except the reference to the connection class.  The immediate advantage is testing: you get fast unit tests via the MemConnection that verify functionality without needing a Couchbase server or connection setup and teardown.  For example:</p>
+<p>In Davenport, we provide an in-memory local option as well as Couchbase, but someone could implement the grammar against any backend and none of your code would change except your choice of interpreter.  The immediate advantage is testing: you get fast unit tests via the MemInterpreter that verify functionality without needing a Couchbase server or connection setup and teardown.  For example:</p>
 
 <div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre>import com.ironcorelabs.davenport.DB._
-import com.ironcorelabs.davenport.{ MemConnection, CouchConnection }
+import com.ironcorelabs.davenport.CouchConnection
+import com.ironcorelabs.davenport.interpreter.MemInterpreter
+import com.ironcorelabs.davenport.syntax._
 
 // Some definitions that should help understand the code below
 //   case class Key(value: String)
@@ -108,9 +113,9 @@ val operations = for {
 } yield fetchedDoc
 
 // Now we can execute those operations using Couch or Mem.  Either:
-val finalResult = MemConnection.exec(operations)
+val finalResult = operations.interpret(MemInterpreter.empty).run
 
-// or: val finalResult = CouchConnection.exec(operations)
+// or: val finalResult = CouchConnection.createInterpreter.interpret(operations).run
 // and in either case the result will be the same except for the hashVer
 </pre></div>
 </div>
@@ -154,21 +159,21 @@ scala&gt; // This shows how to use the above copy operation on data from the db
 copyFieldInDb: (field: String, srcKey: com.ironcorelabs.davenport.DB.Key, dstKey: com.ironcorelabs.davenport.DB.Key)com.ironcorelabs.davenport.DB.DBProg[com.ironcorelabs.davenport.DB.DbValue]
 
 scala&gt; // in this case, the result will be an error since docA and docB have not been created
-     | val finalResult = MemConnection.exec(copyFieldInDb(&quot;a&quot;, Key(&quot;docA&quot;), Key(&quot;docB&quot;)))
+     | val finalResult = copyFieldInDb(&quot;a&quot;, Key(&quot;docA&quot;), Key(&quot;docB&quot;)).interpret(MemInterpreter.empty).run
 finalResult: scalaz.\/[Throwable,com.ironcorelabs.davenport.DB.DbValue] = -\/(java.lang.Exception: No value found for key 'docA')
 
 scala&gt; // in this case, the result will be a successful new docB with a:1, c: 2, d: 2
-     | val finalResult = MemConnection.exec(for {
+     | val finalResult = MemInterpreter.empty.interpret(for {
      |   docA &lt;- createDoc(Key(&quot;docA&quot;), RawJsonString(&quot;&quot;&quot;{ &quot;a&quot;: 1, &quot;b&quot;: 1, &quot;c&quot;: 1 }&quot;&quot;&quot;))
      |   docB &lt;- createDoc(Key(&quot;docB&quot;), RawJsonString(&quot;&quot;&quot;{ &quot;c&quot;: 2, &quot;d&quot;: 2 }&quot;&quot;&quot;))
      |   newB &lt;- copyFieldInDb(&quot;a&quot;, Key(&quot;docA&quot;), Key(&quot;docB&quot;))
-     | } yield newB)
+     | } yield newB).run
 finalResult: scalaz.\/[Throwable,com.ironcorelabs.davenport.DB.DbValue] = \/-(DbValue(RawJsonString({&quot;c&quot;:2,&quot;d&quot;:2,&quot;a&quot;:1}),HashVer(1113126735)))
 </pre></div>
 </div>
 </div>
 
-<p>This implementation uses scalaz Disjunctions (<code>\/</code>) and scalaz <code>Tasks</code>. You can choose to call <code>execTask</code> on any interpreter and then spin off the task asynchronously or combine it with other async events such as service calls.</p>
+<p>This implementation uses scalaz Disjunctions (<code>\/</code>) and scalaz <code>Tasks</code>. You can choose to spin off the task asynchronously or combine it with other async events such as service calls.</p>
 
 <p>Errors are nicely handled with returned exceptions (as opposed to thrown exceptions) to give insight into any issues while retaining type safety.</p>
 

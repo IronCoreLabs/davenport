@@ -92,24 +92,7 @@
 
         <div id="types" class="types members">
               <h3>Type Members</h3>
-              <ol><li name="com.ironcorelabs.davenport.DB.BatchCreateDocs" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="BatchCreateDocsextendsDB.DBOp[scalaz.\/[Throwable,com.ironcorelabs.davenport.DB.DBBatchResults]]withProductwithSerializable"></a>
-      <a id="BatchCreateDocs:BatchCreateDocs"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">case class</span>
-      </span>
-      <span class="symbol">
-        <a href="DB$$BatchCreateDocs.html"><span class="name">BatchCreateDocs</span></a><span class="params">(<span name="st">st: <a href="#DBBatchStream=Iterator[scalaz.\/[Throwable,(com.ironcorelabs.davenport.DB.DBProg[com.ironcorelabs.davenport.DB.Key],com.ironcorelabs.davenport.DB.RawJsonString)]]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBBatchStream">DBBatchStream</a></span>, <span name="continue">continue: (<span class="extype" name="scala.Throwable">Throwable</span>) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result"> extends <a href="DB$$DBOp.html" class="extype" name="com.ironcorelabs.davenport.DB.DBOp">DBOp</a>[<span class="extype" name="scalaz.\/">\/</span>[<span class="extype" name="scala.Throwable">Throwable</span>, <a href="#DBBatchResults=scalaz.\&amp;/[scalaz.IList[com.ironcorelabs.davenport.DB.DbBatchError],scalaz.IList[Int]]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBBatchResults">DBBatchResults</a>]] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@BatchCreateDocsextendsDB.DBOp[scalaz.\/[Throwable,com.ironcorelabs.davenport.DB.DBBatchResults]]withProductwithSerializable" title="Permalink" target="_top">
-        <img src="../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      
-    </li><li name="com.ironcorelabs.davenport.DB.CreateDoc" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+              <ol><li name="com.ironcorelabs.davenport.DB.CreateDoc" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="CreateDocextendsDB.DBOp[scalaz.\/[Throwable,com.ironcorelabs.davenport.DB.DbValue]]withProductwithSerializable"></a>
       <a id="CreateDoc:CreateDoc"></a>
       <h4 class="signature">
@@ -126,61 +109,19 @@
       </a>
     </span>
       
-    </li><li name="com.ironcorelabs.davenport.DB.DBBatchResults" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="DBBatchResults=scalaz.\&amp;/[scalaz.IList[com.ironcorelabs.davenport.DB.DbBatchError],scalaz.IList[Int]]"></a>
-      <a id="DBBatchResults:DBBatchResults"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">type</span>
-      </span>
-      <span class="symbol">
-        <span class="name">DBBatchResults</span><span class="result"> = <span class="extype" name="scalaz.\&amp;/">\&amp;/</span>[<span class="extype" name="scalaz.IList">IList</span>[<a href="DB$$DbBatchError.html" class="extype" name="com.ironcorelabs.davenport.DB.DbBatchError">DbBatchError</a>], <span class="extype" name="scalaz.IList">IList</span>[<span class="extype" name="scala.Int">Int</span>]]</span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@DBBatchResults=scalaz.\&amp;/[scalaz.IList[com.ironcorelabs.davenport.DB.DbBatchError],scalaz.IList[Int]]" title="Permalink" target="_top">
-        <img src="../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <p class="shortcomment cmt">Makes use of <code>scalaz.These</code> (<code>\&amp;/</code>) to accumulate successes and failures</p><div class="fullcomment"><div class="comment cmt"><p>Makes use of <code>scalaz.These</code> (<code>\&amp;/</code>) to accumulate successes and failures</p><p> <code>\&amp;/.This</code> will capture a list of encountered errors and their line nums</p><p> <code>\&amp;/.That</code> will capture a list of successfully imported line nums
-</p></div></div>
-    </li><li name="com.ironcorelabs.davenport.DB.DBBatchStream" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="DBBatchStream=Iterator[scalaz.\/[Throwable,(com.ironcorelabs.davenport.DB.DBProg[com.ironcorelabs.davenport.DB.Key],com.ironcorelabs.davenport.DB.RawJsonString)]]"></a>
-      <a id="DBBatchStream:DBBatchStream"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">type</span>
-      </span>
-      <span class="symbol">
-        <span class="name">DBBatchStream</span><span class="result"> = <span class="extype" name="scala.collection.Iterator">Iterator</span>[<span class="extype" name="scalaz.\/">\/</span>[<span class="extype" name="scala.Throwable">Throwable</span>, (<a href="#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,Throwable,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DBProg</a>[<a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a>], <a href="DB$$RawJsonString.html" class="extype" name="com.ironcorelabs.davenport.DB.RawJsonString">RawJsonString</a>)]]</span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@DBBatchStream=Iterator[scalaz.\/[Throwable,(com.ironcorelabs.davenport.DB.DBProg[com.ironcorelabs.davenport.DB.Key],com.ironcorelabs.davenport.DB.RawJsonString)]]" title="Permalink" target="_top">
-        <img src="../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <p class="shortcomment cmt">Transform incoming data into this type</p><div class="fullcomment"><div class="comment cmt"><p>Transform incoming data into this type</p><p> If a failure happens, for example, reading data from a file,
- pass that failure along in the form of an Exception. Otherwise
- pass in a key and a json string.</p><p> Note: the key must be encapsulated in <a href="#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,Throwable,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DBProg</a>. This allows you
- to increment a counter in the DB for the next key. But if your
- key is statically derived from the data, use the appropriate lift
- function, like this:</p><pre>liftIntoDBProg(Key(<span class="lit">"mykey"</span>).right)</pre><p> If you have an issue generating a key or it fails validation of
- some kind, lift your error into <a href="#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,Throwable,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DBProg</a> instead.
-</p></div></div>
     </li><li name="com.ironcorelabs.davenport.DB.DBOp" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="DBOp[+A]extendsAnyRef"></a>
-      <a id="DBOp[+A]:DBOp[A]"></a>
+      <a id="DBOp[A]extendsAnyRef"></a>
+      <a id="DBOp[A]:DBOp[A]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">sealed </span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="DB$$DBOp.html"><span class="name">DBOp</span></a><span class="tparams">[<span name="A">+A</span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+        <a href="DB$$DBOp.html"><span class="name">DBOp</span></a><span class="tparams">[<span name="A">A</span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@DBOp[+A]extendsAnyRef" title="Permalink" target="_top">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@DBOp[A]extendsAnyRef" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -222,25 +163,6 @@
  and a series of <a href="DB$$DBOp.html" class="extype" name="com.ironcorelabs.davenport.DB.DBOp">DBOp</a> classes or functions combined together.
  When passed to an interpreter such as <code>CouchConnection.exec</code> or
  <code>MemConnection.exec</code>, these are executed.
-</p></div></div>
-    </li><li name="com.ironcorelabs.davenport.DB.DbBatchError" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="DbBatchErrorextendsProductwithSerializable"></a>
-      <a id="DbBatchError:DbBatchError"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">case class</span>
-      </span>
-      <span class="symbol">
-        <a href="DB$$DbBatchError.html"><span class="name">DbBatchError</span></a><span class="params">(<span name="recordNum">recordNum: <span class="extype" name="scala.Int">Int</span></span>, <span name="error">error: <span class="extype" name="scala.Throwable">Throwable</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@DbBatchErrorextendsProductwithSerializable" title="Permalink" target="_top">
-        <img src="../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <p class="shortcomment cmt">A batch error gives a record number and an error string</p><div class="fullcomment"><div class="comment cmt"><p>A batch error gives a record number and an error string</p><p> When importing a lot of data, this will store accrued errors
- indicating their source.
 </p></div></div>
     </li><li name="com.ironcorelabs.davenport.DB.DbValue" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="DbValueextendsProductwithSerializable"></a>
@@ -457,6 +379,25 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="com.ironcorelabs.davenport.DB.Batch" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Batch"></a>
+      <a id="Batch:Batch"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="DB$$Batch$.html"><span class="name">Batch</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@Batch" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Object that contains batch operations for DB.</p><div class="fullcomment"><div class="comment cmt"><p>Object that contains batch operations for DB. They have been separated out because they cannot be mixed with <code>DBProg</code> operations
+without first lifting them into a process via <code>liftToProcess</code>.
+</p></div></div>
     </li><li name="com.ironcorelabs.davenport.DB#MonadDBOps" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="MonadDBOps:scalaz.Monad[com.ironcorelabs.davenport.DB.DBOps]"></a>
       <a id="MonadDBOps:Monad[DBOps]"></a>
@@ -491,62 +432,6 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li name="com.ironcorelabs.davenport.DB#batchCreateDocs" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="batchCreateDocs(st:com.ironcorelabs.davenport.DB.DBBatchStream,continue:Throwable=&gt;Boolean):com.ironcorelabs.davenport.DB.DBProg[com.ironcorelabs.davenport.DB.DBBatchResults]"></a>
-      <a id="batchCreateDocs(DBBatchStream,(Throwable)⇒Boolean):DBProg[DBBatchResults]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">batchCreateDocs</span><span class="params">(<span name="st">st: <a href="#DBBatchStream=Iterator[scalaz.\/[Throwable,(com.ironcorelabs.davenport.DB.DBProg[com.ironcorelabs.davenport.DB.Key],com.ironcorelabs.davenport.DB.RawJsonString)]]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBBatchStream">DBBatchStream</a></span>, <span name="continue">continue: (<span class="extype" name="scala.Throwable">Throwable</span>) ⇒ <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">_ =&gt; true</span></span>)</span><span class="result">: <a href="#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,Throwable,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DBProg</a>[<a href="#DBBatchResults=scalaz.\&amp;/[scalaz.IList[com.ironcorelabs.davenport.DB.DbBatchError],scalaz.IList[Int]]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBBatchResults">DBBatchResults</a>]</span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@batchCreateDocs(st:com.ironcorelabs.davenport.DB.DBBatchStream,continue:Throwable=&gt;Boolean):com.ironcorelabs.davenport.DB.DBProg[com.ironcorelabs.davenport.DB.DBBatchResults]" title="Permalink" target="_top">
-        <img src="../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <p class="shortcomment cmt">Process a stream of records into new database documents</p><div class="fullcomment"><div class="comment cmt"><p>Process a stream of records into new database documents</p><p> Pass in a continue function to control what happens on error. For example,
- if you want to abort imports on certain errors or after a certain number
- of errors, use a custom <code>continue</code> function. By default, the processing of
- the incoming records does not stop until the end of the records are
- reached.
-</p></div></div>
-    </li><li name="com.ironcorelabs.davenport.DB#batchFailed" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="batchFailed(idx:Int,e:Throwable):com.ironcorelabs.davenport.DB.DBBatchResults"></a>
-      <a id="batchFailed(Int,Throwable):DBBatchResults"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">batchFailed</span><span class="params">(<span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>, <span name="e">e: <span class="extype" name="scala.Throwable">Throwable</span></span>)</span><span class="result">: <a href="#DBBatchResults=scalaz.\&amp;/[scalaz.IList[com.ironcorelabs.davenport.DB.DbBatchError],scalaz.IList[Int]]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBBatchResults">DBBatchResults</a></span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@batchFailed(idx:Int,e:Throwable):com.ironcorelabs.davenport.DB.DBBatchResults" title="Permalink" target="_top">
-        <img src="../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <p class="shortcomment cmt">Generate a <a href="#DBBatchResults=scalaz.\&amp;/[scalaz.IList[com.ironcorelabs.davenport.DB.DbBatchError],scalaz.IList[Int]]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBBatchResults">DBBatchResults</a> error</p>
-    </li><li name="com.ironcorelabs.davenport.DB#batchSucceeded" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="batchSucceeded(idx:Int):com.ironcorelabs.davenport.DB.DBBatchResults"></a>
-      <a id="batchSucceeded(Int):DBBatchResults"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">batchSucceeded</span><span class="params">(<span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <a href="#DBBatchResults=scalaz.\&amp;/[scalaz.IList[com.ironcorelabs.davenport.DB.DbBatchError],scalaz.IList[Int]]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBBatchResults">DBBatchResults</a></span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@batchSucceeded(idx:Int):com.ironcorelabs.davenport.DB.DBBatchResults" title="Permalink" target="_top">
-        <img src="../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <p class="shortcomment cmt">Generate a <a href="#DBBatchResults=scalaz.\&amp;/[scalaz.IList[com.ironcorelabs.davenport.DB.DbBatchError],scalaz.IList[Int]]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBBatchResults">DBBatchResults</a> success</p>
     </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a>
       <a id="clone():AnyRef"></a>
@@ -587,23 +472,6 @@
       </a>
     </span>
       <p class="shortcomment cmt">Create a document with the given key</p>
-    </li><li name="com.ironcorelabs.davenport.DB#dbProgFail" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="dbProgFail[A](e:Throwable):com.ironcorelabs.davenport.DB.DBProg[A]"></a>
-      <a id="dbProgFail[A](Throwable):DBProg[A]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">dbProgFail</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="e">e: <span class="extype" name="scala.Throwable">Throwable</span></span>)</span><span class="result">: <a href="#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,Throwable,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DBProg</a>[<span class="extype" name="com.ironcorelabs.davenport.DB.dbProgFail.A">A</span>]</span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@dbProgFail[A](e:Throwable):com.ironcorelabs.davenport.DB.DBProg[A]" title="Permalink" target="_top">
-        <img src="../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <p class="shortcomment cmt">Convenience for converting an exception into a <a href="#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,Throwable,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DBProg</a> operation</p>
     </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a>
       <a id="eq(AnyRef):Boolean"></a>
