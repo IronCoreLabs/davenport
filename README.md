@@ -3,6 +3,8 @@
 [![codecov.io](http://codecov.io/github/IronCoreLabs/davenport/coverage.svg?branch=master)](http://codecov.io/github/IronCoreLabs/davenport?branch=master)
 [![Codacy Badge](https://www.codacy.com/project/badge/f9ad4d48e42d49fc851af5d9697753b8)](https://www.codacy.com/app/github-zmre/davenport)
 [![MIT Open Source License](https://img.shields.io/badge/license-MIT-blue.svg)](http://opensource.org/licenses/MIT)
+[![Stories In Progress](https://badge.waffle.io/IronCoreLabs/davenport.svg?label=in%20progress&title=In%20Progress)](http://waffle.io/IronCoreLabs/davenport)
+
 
 # Davenport - A principled Couchbase library for Scala
 
