@@ -5,6 +5,14 @@ package com.ironcorelabs.davenport
 
 import org.scalatest.{ WordSpec, Matchers, OptionValues, BeforeAndAfterAll }
 import org.scalatest.concurrent.AsyncAssertions
-import org.typelevel.scalatest.{ DisjunctionValues, DisjunctionMatchers }
+import org.typelevel.scalatest.{ DisjunctionMatchers, DisjunctionValues, ValidationMatchers }
 
-trait TestBase extends WordSpec with Matchers with DisjunctionValues with OptionValues with DisjunctionMatchers with AsyncAssertions with BeforeAndAfterAll
+abstract class TestBase
+  extends WordSpec
+  with Matchers
+  with OptionValues
+  with DisjunctionMatchers
+  with ValidationMatchers
+  with DisjunctionValues
+  with AsyncAssertions
+  with BeforeAndAfterAll
