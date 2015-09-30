@@ -48,7 +48,7 @@ final object CouchInterpreter {
    * Interpret the program into a Kleisli that will take a Bucket as its argument. Useful if you want to do
    * Kleisli arrow composition before running it.
    */
-  def interpretK[A](prog: DBProg[A]): CouchK[Throwable \/ A] = interpretK(prog.run)
+  def interpretK[A](prog: DBProg[A]): CouchK[DBError \/ A] = interpretK(prog.run)
 
   /**
    * Basic building block. Turns the DbOps into a Kleisli which takes a Bucket, used by interpret above.
@@ -76,19 +76,19 @@ final object CouchInterpreter {
     /*
      * Helpers for the grammar interpreter
      */
-    private def getDoc(k: Key): CouchK[Throwable \/ DbValue] =
-      couchOpToDBValue(_.get(k.value, classOf[RawJsonDocument]))
+    private def getDoc(k: Key): CouchK[DBError \/ DbValue] =
+      couchOpToDBValue(k)(_.get(k.value, classOf[RawJsonDocument]))
 
-    private def createDoc(k: Key, v: RawJsonString): CouchK[Throwable \/ DbValue] =
-      couchOpToDBValue(_.insert(
+    private def createDoc(k: Key, v: RawJsonString): CouchK[DBError \/ DbValue] =
+      couchOpToDBValue(k)(_.insert(
         RawJsonDocument.create(k.value, 0, v.value, 0)
       ))
 
-    private def getCounter(k: Key): CouchK[Throwable \/ Long] =
-      couchOpToLong(_.counter(k.value, 0, 0, 0))
+    private def getCounter(k: Key): CouchK[DBError \/ Long] =
+      couchOpToLong(k)(_.counter(k.value, 0, 0, 0))
 
-    private def incrementCounter(k: Key, delta: Long): CouchK[Throwable \/ Long] =
-      couchOpToLong(
+    private def incrementCounter(k: Key, delta: Long): CouchK[DBError \/ Long] =
+      couchOpToLong(k)(
         // here we use delta as the default, so if you want an increment
         // by one on a key that doesn't exist, we'll give you a 1 back
         // and if you want an increment by 10 on a key that doesn't exist,
@@ -96,25 +96,35 @@ final object CouchInterpreter {
         _.counter(k.value, delta, delta, 0)
       )
 
-    private def removeKey(k: Key): CouchK[Throwable \/ Unit] =
+    private def removeKey(k: Key): CouchK[DBError \/ Unit] =
       couchOpToA[Unit, String](
         _.remove(k.value, classOf[RawJsonDocument])
-      )(_ => ().right)
+      )(_ => ()).map(_.leftMap(throwableToDBError(k, _)))
 
-    private def updateDoc(k: Key, v: RawJsonString, h: HashVer): CouchK[Throwable \/ DbValue] =
-      couchOpToA(_.replace(
+    private def updateDoc(k: Key, v: RawJsonString, h: HashVer): CouchK[DBError \/ DbValue] = {
+      val updateResult = couchOpToA(_.replace(
         RawJsonDocument.create(k.value, 0, v.value, h.value)
-      ))(doc => DbValue(RawJsonString(doc.content), HashVer(doc.cas)).right)
+      ))(doc => DbValue(RawJsonString(doc.content), HashVer(doc.cas)))
 
-    private def couchOpToLong(fetchOp: AsyncBucket => Observable[JsonLongDocument]): CouchK[Throwable \/ Long] = {
-      couchOpToA(fetchOp)(doc => \/-(doc.content))
+      updateResult.map(_.leftMap(throwableToDBError(k, _)))
     }
 
-    private def couchOpToDBValue(fetchOp: AsyncBucket => Observable[RawJsonDocument]): CouchK[Throwable \/ DbValue] =
-      couchOpToA(fetchOp)(doc => DbValue(RawJsonString(doc.content), HashVer(doc.cas)).right)
+    private def couchOpToLong(k: Key)(fetchOp: AsyncBucket => Observable[JsonLongDocument]): CouchK[DBError \/ Long] = {
+      couchOpToA(fetchOp)(doc => Long2long(doc.content)).map(_.leftMap(throwableToDBError(k, _)))
+    }
 
-    private def couchOpToA[A, B](fetchOp: AsyncBucket => Observable[AbstractDocument[B]])(f: AbstractDocument[B] => Throwable \/ A): Kleisli[Task, Bucket, Throwable \/ A] = Kleisli.kleisli { bucket =>
-      obs2Task(fetchOp(bucket.async)).map(_.flatMap(f))
+    private def couchOpToDBValue(k: Key)(fetchOp: AsyncBucket => Observable[RawJsonDocument]): CouchK[DBError \/ DbValue] =
+      couchOpToA(fetchOp)(doc => DbValue(RawJsonString(doc.content), HashVer(doc.cas))).map(_.leftMap(throwableToDBError(k, _)))
+
+    private def couchOpToA[A, B](fetchOp: AsyncBucket => Observable[AbstractDocument[B]])(f: AbstractDocument[B] => A): Kleisli[Task, Bucket, Throwable \/ A] = Kleisli.kleisli { bucket: Bucket =>
+      obs2Task(fetchOp(bucket.async)).map(_.map(f))
+    }
+
+    private def throwableToDBError(key: Key, t: Throwable): DBError = t match {
+      case _: DocumentDoesNotExistException => ValueNotFound(key)
+      case _: DocumentAlreadyExistsException => ValueExists(key)
+      case _: CASMismatchException => HashMismatch(key)
+      case t => GeneralError(t)
     }
 
     // This is the most efficient way of running things in the couchbase lib

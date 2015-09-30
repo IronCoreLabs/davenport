@@ -28,8 +28,8 @@ class CouchInterpreterSpec extends TestBase {
 
   //Helper functions.
   def execProcess[A](p: Process[DBOps, A]): Process[Task, A] = p.interpret(interpreter)
-  def exec[A](prog: DBProg[A]): Throwable \/ A = execTask(prog).attemptRun.join
-  def execTask[A](prog: DBProg[A]): Task[Throwable \/ A] = prog.interpret(interpreter)
+  def exec[A](prog: DBProg[A]): DBError \/ A = execTask(prog).run
+  def execTask[A](prog: DBProg[A]): Task[DBError \/ A] = prog.interpret(interpreter)
 
   override def beforeAll() = {
     // Connect and make sure test key is not in db in case of
@@ -55,7 +55,7 @@ class CouchInterpreterSpec extends TestBase {
     import com.couchbase.client.java.error._
     "fail fetching a doc that doesn't exist" in {
       val res = exec(getDoc(k))
-      res.leftValue.getClass should ===(classOf[DocumentDoesNotExistException])
+      res.leftValue should ===(ValueNotFound(k))
     }
     "create a doc that doesn't exist" in {
       val res = exec(createDoc(k, v))
@@ -68,7 +68,7 @@ class CouchInterpreterSpec extends TestBase {
     "fail to create a doc if it already exists" in {
       val testCreate = createDoc(k, newvalue)
       val res = exec(testCreate)
-      res.leftValue.getClass should ===(classOf[DocumentAlreadyExistsException])
+      res.leftValue should ===(ValueExists(k))
     }
     "fail to get counter when counter is actually a string" in {
       val steps = for {
@@ -97,12 +97,12 @@ class CouchInterpreterSpec extends TestBase {
     "fail updating a doc that doesn't exist" in {
       val testUpdate = updateDoc(k404, newvalue, HashVer(1234))
       val res = exec(testUpdate)
-      res.leftValue.getClass should ===(classOf[DocumentDoesNotExistException])
+      res.leftValue should ===(ValueNotFound(k404))
     }
     "fail updating a doc when using incorrect hashver" in {
       val testUpdate = updateDoc(k, v, HashVer(1234))
       val res = exec(testUpdate)
-      res.leftValue.getClass should ===(classOf[CASMismatchException])
+      res.leftValue should ===(HashMismatch(k))
     }
     "remove a key that exists" in {
       val testRemove = removeKey(k)
@@ -112,7 +112,7 @@ class CouchInterpreterSpec extends TestBase {
     "fail removing a key that doesn't exist" in {
       val testRemove = removeKey(k)
       val res = exec(removeKey(k))
-      res.leftValue.getClass should ===(classOf[DocumentDoesNotExistException])
+      res.leftValue should ===(ValueNotFound(k))
     }
     "modify map fails if key is not in db" in {
       val testModify = modifyDoc(k, j => newvalue)
@@ -148,7 +148,7 @@ class CouchInterpreterSpec extends TestBase {
       res.value should ===(10L)
     }
     "be happy doing initial batch import" in {
-      val res: IndexedSeq[Throwable \/ DbValue] = execProcess(createDocs(tenrows)).runLog.attemptRun.value
+      val res: IndexedSeq[DBError \/ DbValue] = execProcess(createDocs(tenrows)).runLog.attemptRun.value
       val (lefts, rights) = res.toList.separate
       lefts.length should ===(0)
       rights.length should ===(tenrows.length)
@@ -165,7 +165,7 @@ class CouchInterpreterSpec extends TestBase {
       lefts.length should ===(tenrows.length)
 
       lefts.foldMap {
-        case _: DocumentAlreadyExistsException => 1
+        case ValueExists(_) => 1
         case _ => 0
       } should ===(tenrows.length)
     }
@@ -186,21 +186,21 @@ class CouchInterpreterSpec extends TestBase {
       def upd(cas: Long) = updateDoc(k, newvalue, HashVer(cas))
 
       // Generate a task that will fail with a bad CAS and prove it
-      val res: Task[Throwable \/ DbValue] = execTask(upd(123))
-      res.attemptRun.join should be(left)
+      val res: Task[DBError \/ DbValue] = execTask(upd(123))
+      res.run should be(left)
 
       // Generate a task that handles CAS errors and run and verify
-      val handled: Task[Throwable \/ DbValue] = res.map(_.handleError {
-        case e: CASMismatchException =>
+      val handled: Task[DBError \/ DbValue] = res.map(_.handleError {
+        case HashMismatch(key) =>
           execTask(for {
-            v <- getDoc(k)
+            v <- getDoc(key)
             u <- upd(v.hashVer.value)
-          } yield u).attemptRun.join
+          } yield u).run
         case x => x.left
 
       })
 
-      val finalres = handled.attemptRun.join.value
+      val finalres = handled.run.value
       finalres.jsonString should ===(newvalue)
     }
 
@@ -219,7 +219,7 @@ class CouchInterpreterSpec extends TestBase {
 
       // Prove that the connection fails
       val connectionfail = execTask(getDoc(k))
-      connectionfail.attemptRun.join.leftValue.getMessage should ===("Not connected")
+      connectionfail.attemptRun.leftValue.getMessage should ===("Not connected")
 
       CouchConnection.fakeDisconnectRevert
     }

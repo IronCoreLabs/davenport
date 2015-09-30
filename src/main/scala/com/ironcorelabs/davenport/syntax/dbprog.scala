@@ -14,7 +14,7 @@ object dbprog extends DBProgOps
 
 trait DBProgOps {
   implicit class OurDBProgOps[A](self: DBProg[A]) {
-    def process: Process[DBOps, Throwable \/ A] = Batch.liftToProcess(self)
-    def interpret(i: Interpreter): Task[Throwable \/ A] = i.interpret(self.run)
+    def process: Process[DBOps, DBError \/ A] = Batch.liftToProcess(self)
+    def interpret(i: Interpreter): Task[DBError \/ A] = i.interpret(self.run)
   }
 }

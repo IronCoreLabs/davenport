@@ -51,12 +51,12 @@ object DB {
   /**
    * The basic building block sent to the interpreter.
    *
-   *  Effectively this captures expected return type of `Throwable \/ A`
+   *  Effectively this captures expected return type of `DBError \/ A`
    *  and a series of [[DBOp]] classes or functions combined together.
    *  When passed to an interpreter such as `CouchConnection.exec` or
    *  `MemConnection.exec`, these are executed.
    */
-  type DBProg[A] = EitherT[DBOps, Throwable, A]
+  type DBProg[A] = EitherT[DBOps, DBError, A]
 
   //
   //
@@ -73,28 +73,12 @@ object DB {
    *  This will most often be used when using for comprehensions mixing [[DBOp]]
    *  operations with other data extraction such as json de/serialization.
    */
-  def liftIntoDBProg[A](opt: Option[A]): DBProg[A] = liftIntoDBProg(opt, "Value not found")
-
-  /**
-   * The `liftIntoDBProg` operations allow any function or value to be deferred to
-   *  the executor.
-   *
-   *  This will most often be used when using for comprehensions mixing [[DBOp]]
-   *  operations with other data extraction such as json de/serialization.
-   */
-  def liftIntoDBProg[A](either: Throwable \/ A): DBProg[A] = EitherT.eitherT(Monad[DBOps].point(either))
-
-  /**
-   * The liftIntoDBProg operations allow any function or value to be deferred to
-   *  the executor.
-   *
-   *  This will most often be used when using `for` comprehensions mixing [[DBOp]]
-   *  operations with other data extraction such as json de/serialization.
-   */
-  def liftIntoDBProg[A](opt: Option[A], errormessage: String): DBProg[A] = EitherT.eitherT(Monad[DBOps].point(opt \/> new Exception(errormessage)))
-
-  private def liftToFreeEitherT[A](a: DBOp[Throwable \/ A]): DBProg[A] = {
-    val free: DBOps[Throwable \/ A] = Free.liftFC(a)
+  def liftIntoDBProg[A](opt: Option[A], dbError: DBError): DBProg[A] = EitherT.eitherT(Monad[DBOps].point(opt \/> dbError))
+  def liftIntoDBProg[A](opt: Option[A], errormessage: String): DBProg[A] = liftIntoDBProg(opt, GeneralError(new Exception(errormessage)))
+  def liftIntoDBProg[A](either: Throwable \/ A): DBProg[A] = liftDisjunction(either.leftMap(GeneralError(_)))
+  def liftDisjunction[A](either: DBError \/ A): DBProg[A] = EitherT.eitherT(Monad[DBOps].point(either))
+  private def liftToFreeEitherT[A](a: DBOp[DBError \/ A]): DBProg[A] = {
+    val free: DBOps[DBError \/ A] = Free.liftFC(a)
     EitherT.eitherT(free)
   }
 
@@ -106,12 +90,12 @@ object DB {
 
   /** Any database operation must be represented by a `DBOp` */
   sealed trait DBOp[A]
-  case class GetDoc(key: Key) extends DBOp[Throwable \/ DbValue]
-  case class CreateDoc(key: Key, doc: RawJsonString) extends DBOp[Throwable \/ DbValue]
-  case class UpdateDoc(key: Key, doc: RawJsonString, hashver: HashVer) extends DBOp[Throwable \/ DbValue]
-  case class RemoveKey(key: Key) extends DBOp[Throwable \/ Unit]
-  case class GetCounter(key: Key) extends DBOp[Throwable \/ Long]
-  case class IncrementCounter(key: Key, delta: Long = 1) extends DBOp[Throwable \/ Long]
+  case class GetDoc(key: Key) extends DBOp[DBError \/ DbValue]
+  case class CreateDoc(key: Key, doc: RawJsonString) extends DBOp[DBError \/ DbValue]
+  case class UpdateDoc(key: Key, doc: RawJsonString, hashver: HashVer) extends DBOp[DBError \/ DbValue]
+  case class RemoveKey(key: Key) extends DBOp[DBError \/ Unit]
+  case class GetCounter(key: Key) extends DBOp[DBError \/ Long]
+  case class IncrementCounter(key: Key, delta: Long = 1) extends DBOp[DBError \/ Long]
 
   //
   //
@@ -153,16 +137,49 @@ object DB {
   } yield res
 
   /**
+   * ADT for errors that might happen in working with our grammar.
+   */
+  sealed abstract class DBError {
+    def message: String
+  }
+  /**
+   * If no value was found at the requested key.
+   */
+  case class ValueNotFound(key: Key) extends DBError {
+    def message: String = s"No value found for key '$key'."
+  }
+  /**
+   * If a value already exists at key.
+   */
+  case class ValueExists(key: Key) extends DBError {
+    def message: String = s"Value for '$key' already exists."
+  }
+  /**
+   * If the hash for an update doesn't match.
+   */
+  case class HashMismatch(key: Key) extends DBError {
+    def message: String = s"The hash for '$key' was incorrect."
+  }
+  /**
+   * All other errors will be exceptions that come out of the underlying store. They'll be
+   * wrapped up in this type.
+   */
+  case class GeneralError(ex: Throwable) extends DBError {
+    def message = ex.getMessage
+  }
+
+  /**
    * Object that contains batch operations for DB. They have been separated out because they cannot be mixed with `DBProg` operations
    * without first lifting them into a process via `liftToProcess`.
    */
   object Batch {
-    def liftToProcess[A](prog: DBProg[A]): Process[DBOps, Throwable \/ A] = Process.eval(prog.run)
+    def liftToProcess[A](prog: DBProg[A]): Process[DBOps, DBError \/ A] = Process.eval(prog.run)
     /**
      * Create all values in the Foldable F.
      */
-    def createDocs[F[_]](foldable: F[(Key, RawJsonString)])(implicit F: Foldable[F]): Process[DBOps, Throwable \/ DbValue] = {
+    def createDocs[F[_]](foldable: F[(Key, RawJsonString)])(implicit F: Foldable[F]): Process[DBOps, DBError \/ DbValue] = {
       Process.emitAll(foldable.toList).evalMap { case (key, json) => createDoc(key, json).run }
     }
   }
 }
+

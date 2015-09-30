@@ -18,9 +18,8 @@ class DBDocumentSpec extends TestBase {
     implicit def codec: CodecJson[User] = casecodec4(User.apply, User.unapply)(
       "firstName", "lastName", "email", "createdDate"
     )
-    def genKey(u: User): DBProg[Key] = liftIntoDBProg(Key(s"user::${u.email}").right[Throwable])
-    def fromJson(s: RawJsonString): Throwable \/ User =
-      fromJsonString(s.value) \/> new Exception("Failed to decode json to User")
+    def genKey(u: User): DBProg[Key] = Monad[DBProg].point(Key(s"user::${u.email}"))
+    def fromJson(s: RawJsonString): Throwable \/ User = fromJsonString(s.value) \/> new Exception("Failed to decode json to User")
     def create(u: User): DBProg[DBUser] = for {
       json <- liftIntoDBProg(\/.fromTryCatchNonFatal(toJsonString(u)))
       key <- genKey(u)
