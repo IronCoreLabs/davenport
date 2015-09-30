@@ -8,7 +8,7 @@ layout: tutorial
 First, in your `build.sbt` file, you will want to reference davenport like so:
 
     libraryDependencies ++= Seq(
-        "default" %% "davenport" % "0.5.21",
+        "com.ironcorelabs" %% "davenport" % "0.5.21",
         "org.scalaz" %% "scalaz-core" % "7.1.2", // for type awesomeness
         "org.scalaz" %% "scalaz-concurrent" % "7.1.2", // for type awesomeness
         "io.argonaut" %% "argonaut" % "6.1" // json (de)serialization scalaz style
