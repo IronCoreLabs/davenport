@@ -61,9 +61,6 @@ trait DBDocument[T] {
  *  See [[DBDocument]] docs for more details.
  */
 trait DBDocumentCompanion[T] {
-  /** This assumes argonaut. */
-  implicit def codec: CodecJson[T]
-
   /**
    * Keys may be generated from database ops like IncrementCounter
    *
@@ -100,8 +97,8 @@ trait DBDocumentCompanion[T] {
   def remove(k: Key): DBProg[Unit] = removeKey(k)
 
   /** Helper method for implementing interface */
-  def fromJsonString(s: String)(implicit codec: CodecJson[T]): Option[T] = s.decodeOption[T]
+  def fromJsonString(s: String)(implicit codec: DecodeJson[T]): Option[T] = s.decodeOption[T]
 
   /** Helper method for implementing interface */
-  def toJsonString(t: T)(implicit codec: CodecJson[T]): RawJsonString = RawJsonString(t.asJson.toString)
+  def toJsonString(t: T)(implicit codec: EncodeJson[T]): RawJsonString = RawJsonString(t.asJson.toString)
 }
