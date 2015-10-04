@@ -15,8 +15,9 @@ import com.ironcorelabs.davenport.syntax._
 // Some definitions that should help understand the code below
 //   case class Key(value: String)
 //   case class RawJsonString(value: String)
-//   case class HashVer(value: String)
-//   case class DbValue(jsonString: RawJsonString, hashVer: HashVer)
+//   case class DBDocument[A](key: Key, hashVer: HashVer, data: A)
+//   type DBValue = DBDocument[RawJsonString]
+//   case class DBValue(data: RawJsonString, hashVer: HashVer)
 
 // Write something to the DB, then fetch it (we're ignoring the fact that we return
 // the written value from the update command to make a point)
@@ -56,10 +57,10 @@ def copyFieldJson(field: String, srcJson: RawJsonString, dstJson: RawJsonString)
 // any errors along the way (such as a failure to find a document with the key)
 // will abort the whole thing (short circuit) and result in an error when
 // the DBProg is executed
-def copyFieldInDb(field: String, srcKey: Key, dstKey: Key): DBProg[DbValue] = for {
+def copyFieldInDb(field: String, srcKey: Key, dstKey: Key): DBProg[DBValue] = for {
   src <- getDoc(srcKey)
   dst <- getDoc(dstKey)
-  newjson <- liftIntoDBProg(copyFieldJson(field, src.jsonString, dst.jsonString), "Serde failed.")
+  newjson <- liftIntoDBProg(copyFieldJson(field, src.data, dst.data), "Serde failed.")
   updatedDst <- updateDoc(dstKey, newjson, dst.hashVer)
 } yield updatedDst
 

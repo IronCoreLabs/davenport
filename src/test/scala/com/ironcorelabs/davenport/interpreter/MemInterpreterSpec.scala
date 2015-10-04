@@ -26,7 +26,7 @@ class MemInterpreterSpec extends TestBase {
     (Key("key" + i) -> RawJsonString("val" + i))
   }.toList
 
-  def getDocString(k: Key): DBProg[RawJsonString] = getDoc(k).map(_.jsonString)
+  def getDocString(k: Key): DBProg[RawJsonString] = getDoc(k).map(_.data)
 
   def createAndGet(k: Key, v: RawJsonString): DBProg[RawJsonString] = for {
     _ <- createDoc(k, v)
@@ -74,21 +74,22 @@ class MemInterpreterSpec extends TestBase {
       val testUpdate = for {
         dbv <- getDoc(k)
         newDbv <- updateDoc(k, newvalue, dbv.hashVer)
-      } yield newDbv.jsonString
+      } yield newDbv.data
       val res = run(createDoc(k, v) *> testUpdate).value
       res shouldBe newvalue
     }
     "fail to update a doc that doesn't exist" in {
       val testUpdate = for {
         newDbv <- updateDoc(k, newvalue, HashVer(0))
-      } yield newDbv.jsonString
+      } yield newDbv.data
       val res = run(testUpdate).leftValue
       res shouldBe ValueNotFound(k)
     }
     "fail updating a doc when using incorrect hashver" in {
       val testUpdate = updateDoc(k, newvalue, HashVer(0))
-      val res = run(createDoc(k, v) *> testUpdate)
-      res shouldBe left
+      val res = run(createDoc(k, v) *> testUpdate).leftValue
+      res shouldBe HashMismatch(k)
+      res.message shouldBe s"The hash for '$k' was incorrect."
     }
     "remove a key that exists" in {
       val testRemoveAndGet = for {
@@ -104,7 +105,7 @@ class MemInterpreterSpec extends TestBase {
       res shouldBe left
     }
     "modify map" in {
-      val testModify = modifyDoc(k, j => newvalue).map(_.jsonString)
+      val testModify = modifyDoc(k, j => newvalue).map(_.data)
       val res = run(createDoc(k, v) *> testModify).value
       res shouldBe newvalue
     }
@@ -157,7 +158,7 @@ class MemInterpreterSpec extends TestBase {
       val dataStream = Process.eval(Task.now(k -> v))
       val task: Task[IndexedSeq[DBError \/ RawJsonString]] = dataStream.flatMap {
         case (key, value) =>
-          createDoc(key, value).map(_.jsonString).process.interpret(emptyInterpreter)
+          createDoc(key, value).map(_.data).process.interpret(emptyInterpreter)
       }.runLog
       val result = task.run
       result should have size (1)

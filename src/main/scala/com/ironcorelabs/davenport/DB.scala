@@ -36,9 +36,6 @@ object DB {
    */
   final case class HashVer(value: Long) extends AnyVal
 
-  /** Just a string and a hashver */
-  final case class DbValue(jsonString: RawJsonString, hashVer: HashVer)
-
   //
   //
   // 2. Type aliases for simpler function signatures
@@ -57,6 +54,8 @@ object DB {
    *  `MemConnection.exec`, these are executed.
    */
   type DBProg[A] = EitherT[DBOps, DBError, A]
+
+  type DBValue = DBDocument[RawJsonString]
 
   //
   //
@@ -90,9 +89,9 @@ object DB {
 
   /** Any database operation must be represented by a `DBOp` */
   sealed trait DBOp[A]
-  case class GetDoc(key: Key) extends DBOp[DBError \/ DbValue]
-  case class CreateDoc(key: Key, doc: RawJsonString) extends DBOp[DBError \/ DbValue]
-  case class UpdateDoc(key: Key, doc: RawJsonString, hashver: HashVer) extends DBOp[DBError \/ DbValue]
+  case class GetDoc(key: Key) extends DBOp[DBError \/ DBValue]
+  case class CreateDoc(key: Key, doc: RawJsonString) extends DBOp[DBError \/ DBValue]
+  case class UpdateDoc(key: Key, doc: RawJsonString, hashver: HashVer) extends DBOp[DBError \/ DBValue]
   case class RemoveKey(key: Key) extends DBOp[DBError \/ Unit]
   case class GetCounter(key: Key) extends DBOp[DBError \/ Long]
   case class IncrementCounter(key: Key, delta: Long = 1) extends DBOp[DBError \/ Long]
@@ -104,14 +103,14 @@ object DB {
   //
 
   /** Return a document given some key */
-  def getDoc(k: Key): DBProg[DbValue] = liftToFreeEitherT(GetDoc(k))
+  def getDoc(k: Key): DBProg[DBValue] = liftToFreeEitherT(GetDoc(k))
 
   /** Create a document with the given key */
-  def createDoc(k: Key, doc: RawJsonString): DBProg[DbValue] =
+  def createDoc(k: Key, doc: RawJsonString): DBProg[DBValue] =
     liftToFreeEitherT(CreateDoc(k, doc))
 
   /** Update a doc given its key, new value, and correct hashver */
-  def updateDoc(k: Key, doc: RawJsonString, hashver: HashVer): DBProg[DbValue] =
+  def updateDoc(k: Key, doc: RawJsonString, hashver: HashVer): DBProg[DBValue] =
     liftToFreeEitherT(UpdateDoc(k, doc, hashver))
 
   /** Remove a doc from the DB given its key */
@@ -131,9 +130,9 @@ object DB {
    *  this. More commonly a higher level class that can be serialized to the db
    *  will have a modify function that transforms and calls this under the hood.
    */
-  def modifyDoc(k: Key, f: RawJsonString => RawJsonString): DBProg[DbValue] = for {
+  def modifyDoc(k: Key, f: RawJsonString => RawJsonString): DBProg[DBValue] = for {
     t <- getDoc(k)
-    res <- updateDoc(k, f(t.jsonString), t.hashVer)
+    res <- updateDoc(k, f(t.data), t.hashVer)
   } yield res
 
   /**
@@ -177,7 +176,7 @@ object DB {
     /**
      * Create all values in the Foldable F.
      */
-    def createDocs[F[_]](foldable: F[(Key, RawJsonString)])(implicit F: Foldable[F]): Process[DBOps, DBError \/ DbValue] = {
+    def createDocs[F[_]](foldable: F[(Key, RawJsonString)])(implicit F: Foldable[F]): Process[DBOps, DBError \/ DBValue] = {
       Process.emitAll(foldable.toList).evalMap { case (key, json) => createDoc(key, json).run }
     }
   }
