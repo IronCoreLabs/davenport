@@ -59,7 +59,7 @@ def copyFieldJson(field: String, srcJson: RawJsonString, dstJson: RawJsonString)
 def copyFieldInDb(field: String, srcKey: Key, dstKey: Key): DBProg[DbValue] = for {
   src <- getDoc(srcKey)
   dst <- getDoc(dstKey)
-  newjson <- liftIntoDBProg(copyFieldJson(field, src.jsonString, dst.jsonString))
+  newjson <- liftIntoDBProg(copyFieldJson(field, src.jsonString, dst.jsonString), "Serde failed.")
   updatedDst <- updateDoc(dstKey, newjson, dst.hashVer)
 } yield updatedDst
 

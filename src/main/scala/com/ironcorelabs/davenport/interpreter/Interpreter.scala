@@ -13,6 +13,6 @@ trait Interpreter {
   //Define how you map each op to a Task using a Natural Transformation.
   def interpret: (DBOps ~> Task)
 
-  def interpret[A](db: DBProg[A]): Task[Throwable \/ A] = interpret(db.run)
+  def interpret[A](db: DBProg[A]): Task[DBError \/ A] = interpret(db.run)
   def interpretP[A](p: Process[DBOps, A]): Process[Task, A] = p.translate(interpret)
 }

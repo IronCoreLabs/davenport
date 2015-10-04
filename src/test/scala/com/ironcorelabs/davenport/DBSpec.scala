@@ -11,7 +11,7 @@ class DBSpec extends TestBase {
   "DB" should {
     "fail lifting none into dbprog" in {
       val interpreter = MemInterpreter(Map())
-      interpreter.interpret(liftIntoDBProg(None)).run should be(left)
+      interpreter.interpret(liftIntoDBProg(None, ValueNotFound(Key("blah")))).run should be(left)
     }
   }
 }

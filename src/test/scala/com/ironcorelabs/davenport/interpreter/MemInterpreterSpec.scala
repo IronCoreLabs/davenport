@@ -36,7 +36,7 @@ class MemInterpreterSpec extends TestBase {
   def emptyInterpreter: Interpreter = MemInterpreter.empty
 
   //Couple helper functions
-  def run[A](prog: DBProg[A]): Throwable \/ A = {
+  def run[A](prog: DBProg[A]): DBError \/ A = {
     emptyInterpreter.interpret(prog).run
   }
 
@@ -83,7 +83,7 @@ class MemInterpreterSpec extends TestBase {
         newDbv <- updateDoc(k, newvalue, HashVer(0))
       } yield newDbv.jsonString
       val res = run(testUpdate).leftValue
-      res.getMessage should include("when trying to update.")
+      res shouldBe ValueNotFound(k)
     }
     "fail updating a doc when using incorrect hashver" in {
       val testUpdate = updateDoc(k, newvalue, HashVer(0))
@@ -96,7 +96,7 @@ class MemInterpreterSpec extends TestBase {
         v <- getDoc(k)
       } yield v
       val ex = run(createDoc(k, v) *> testRemoveAndGet).leftValue
-      ex.getMessage should include(s"No value found for key '${k.value}'")
+      ex.message should include("No value found for key")
     }
     "fail removing a key that doesn't exist" in {
       val testRemove = removeKey(k)
@@ -155,7 +155,7 @@ class MemInterpreterSpec extends TestBase {
 
     "show Process[Task] coming together with Process[DBOps]" in {
       val dataStream = Process.eval(Task.now(k -> v))
-      val task: Task[IndexedSeq[Throwable \/ RawJsonString]] = dataStream.flatMap {
+      val task: Task[IndexedSeq[DBError \/ RawJsonString]] = dataStream.flatMap {
         case (key, value) =>
           createDoc(key, value).map(_.jsonString).process.interpret(emptyInterpreter)
       }.runLog
@@ -174,7 +174,7 @@ class MemInterpreterSpec extends TestBase {
       createOne.interpret(interpreter).run.value
       //create one should cause the whole thing to report error
       val error = (createTwo *> createOne).interpret(interpreter).run.leftValue
-      error.getMessage should include(s"'${k.value}' already exists")
+      error.message should include("already exists")
 
       //check to ensure that ever though the last operation failed, it still committed everything before `createOne`.
       val (r1, r2) = (getDocString(k) |@| getDocString(k2))(_ -> _).interpret(interpreter).run.value

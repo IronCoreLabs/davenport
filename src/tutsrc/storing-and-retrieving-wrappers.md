@@ -86,7 +86,7 @@ val addTwoNewUsers = for {
   newu2 <- DBUser.create(User("User", "Two", "readyplayertwo@example.com", System.currentTimeMillis()))
 } yield List(newu1, newu2)
 
-val users: Throwable \/ List[DBUser] = MemInterpreter.empty.interpret(addTwoNewUsers).run
+val users: DBError \/ List[DBUser] = MemInterpreter.empty.interpret(addTwoNewUsers).run
 ```
 
 Feel free to test against Couchbase as well.  We'll keep illustrating with the MemInterpreter for now to show how you can easily experiment and write unit tests.  As an alternative to calling `MemInterpreter.empty.interpret` you can call `CouchConnection.createInterpreter.interpret`.  You could also import the syntax which will add `interpret` to `DBProg` which takes any `Interpreter`. Building on our example above, we could instead do this:
