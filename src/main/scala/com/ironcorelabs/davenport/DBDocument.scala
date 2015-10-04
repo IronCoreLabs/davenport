@@ -71,7 +71,7 @@ trait DBDocumentCompanion[T] {
    *  def genKey = liftIntoDBProg(Key("mykey").right)
    * }}}
    */
-  def genKey(d: T): DBProg[_]
+  def genKey(d: T): DBProg[Key]
 
   /**
    * Convert from a json string to a `T`
@@ -91,7 +91,9 @@ trait DBDocumentCompanion[T] {
   def create(d: T): DBProg[_]
 
   /** Fetch a document from the datastore */
-  def get(k: Key): DBProg[_]
+  def get(k: Key)(implicit codec: DecodeJson[T]): DBProg[Option[T]] = for {
+    s <- getDoc(k)
+  } yield fromJsonString(s.jsonString.value)
 
   /** Remove an arbitrary document from the datastore */
   def remove(k: Key): DBProg[Unit] = removeKey(k)
@@ -101,4 +103,37 @@ trait DBDocumentCompanion[T] {
 
   /** Helper method for implementing interface */
   def toJsonString(t: T)(implicit codec: EncodeJson[T]): RawJsonString = RawJsonString(t.asJson.toString)
+}
+
+case class Document[A](key: Key, hashVer: HashVer, data: A) {
+  def map[B](f: A => B) = Document(key, hashVer, f(data))
+}
+
+object Document {
+  import scalaz.Functor
+  implicit val instances: Functor[Document] = new Functor[Document] {
+    def map[A, B](fa: Document[A])(f: A => B): Document[B] = fa.map(f)
+  }
+
+  def create[T](key: Key, t: T)(implicit codec: EncodeJson[T]): DBProg[Document[RawJsonString]] =
+    createDoc(key, RawJsonString(t.asJson.toString)).map(dbv => Document(key, dbv.hashVer, dbv.jsonString))
+
+  /** Fetch a document from the datastore */
+  def get[T](k: Key)(implicit codec: DecodeJson[T]): DBProg[Document[Option[T]]] = for {
+    s <- getDoc(k)
+  } yield Document(k, s.hashVer, s.jsonString.value.decodeOption[T])
+
+  /** Remove an arbitrary document from the datastore */
+  def remove(k: Key): DBProg[Unit] = removeKey(k)
+}
+
+object documentSyntax {
+  implicit class KeyOps(key: Key) {
+    def get[T](implicit codec: DecodeJson[T]) = Document.get(key)(codec)
+    def remove = Document.remove(key)
+  }
+  implicit class TOps[T](t: T) {
+    def create(key: Key)(implicit codec: EncodeJson[T]): DBProg[Document[RawJsonString]] =
+      Document.create(key, t)
+  }
 }
