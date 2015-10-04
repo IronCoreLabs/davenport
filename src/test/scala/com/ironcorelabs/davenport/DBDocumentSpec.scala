@@ -34,7 +34,7 @@ class DBDocumentSpec extends TestBase {
 
       val get = k1.get[User]
       val res2 = interpreter.interpret(get).run.value
-      res2.data.value should equal(u1)
+      res2.data should equal(u1)
       val res3 = interpreter.interpret(DBDocument.remove(res2.key)).run
       res3 should be(right)
     }

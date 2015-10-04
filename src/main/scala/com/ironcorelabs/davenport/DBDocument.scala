@@ -20,9 +20,10 @@ final object DBDocument {
     createDoc(key, RawJsonString(t.asJson.toString)).map(_.map(_ => t))
 
   /** Fetch a document from the datastore */
-  def get[T](k: Key)(implicit codec: DecodeJson[T]): DBProg[DBDocument[Option[T]]] = for {
+  def get[T](k: Key)(implicit codec: DecodeJson[T]): DBProg[DBDocument[T]] = for {
     s <- getDoc(k)
-  } yield DBDocument(k, s.hashVer, s.data.value.decodeOption[T])
+    v <- liftIntoDBProg(s.data.value.decodeOption[T], "Deserialization Failed.")
+  } yield DBDocument(k, s.hashVer, v)
 
   /** Remove an arbitrary document from the datastore */
   def remove(k: Key): DBProg[Unit] = removeKey(k)
