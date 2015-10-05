@@ -10,7 +10,7 @@ import com.couchbase.client.java.Bucket
 import DB.DBOps
 import interpreter.Interpreter
 
-object process extends ProcessOps
+final object process extends ProcessOps
 
 trait ProcessOps {
   implicit class OurProcessOps[M[_], A](self: Process[M, A]) {

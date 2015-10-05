@@ -89,12 +89,12 @@ object DB {
 
   /** Any database operation must be represented by a `DBOp` */
   sealed trait DBOp[A]
-  case class GetDoc(key: Key) extends DBOp[DBError \/ DBValue]
-  case class CreateDoc(key: Key, doc: RawJsonString) extends DBOp[DBError \/ DBValue]
-  case class UpdateDoc(key: Key, doc: RawJsonString, hashver: HashVer) extends DBOp[DBError \/ DBValue]
-  case class RemoveKey(key: Key) extends DBOp[DBError \/ Unit]
-  case class GetCounter(key: Key) extends DBOp[DBError \/ Long]
-  case class IncrementCounter(key: Key, delta: Long = 1) extends DBOp[DBError \/ Long]
+  final case class GetDoc(key: Key) extends DBOp[DBError \/ DBValue]
+  final case class CreateDoc(key: Key, doc: RawJsonString) extends DBOp[DBError \/ DBValue]
+  final case class UpdateDoc(key: Key, doc: RawJsonString, hashVer: HashVer) extends DBOp[DBError \/ DBValue]
+  final case class RemoveKey(key: Key) extends DBOp[DBError \/ Unit]
+  final case class GetCounter(key: Key) extends DBOp[DBError \/ Long]
+  final case class IncrementCounter(key: Key, delta: Long = 1) extends DBOp[DBError \/ Long]
 
   //
   //
@@ -110,8 +110,8 @@ object DB {
     liftToFreeEitherT(CreateDoc(k, doc))
 
   /** Update a doc given its key, new value, and correct hashver */
-  def updateDoc(k: Key, doc: RawJsonString, hashver: HashVer): DBProg[DBValue] =
-    liftToFreeEitherT(UpdateDoc(k, doc, hashver))
+  def updateDoc(k: Key, doc: RawJsonString, hashVer: HashVer): DBProg[DBValue] =
+    liftToFreeEitherT(UpdateDoc(k, doc, hashVer))
 
   /** Remove a doc from the DB given its key */
   def removeKey(k: Key): DBProg[Unit] = liftToFreeEitherT(RemoveKey(k))
@@ -144,26 +144,26 @@ object DB {
   /**
    * If no value was found at the requested key.
    */
-  case class ValueNotFound(key: Key) extends DBError {
+  final case class ValueNotFound(key: Key) extends DBError {
     def message: String = s"No value found for key '$key'."
   }
   /**
    * If a value already exists at key.
    */
-  case class ValueExists(key: Key) extends DBError {
+  final case class ValueExists(key: Key) extends DBError {
     def message: String = s"Value for '$key' already exists."
   }
   /**
    * If the hash for an update doesn't match.
    */
-  case class HashMismatch(key: Key) extends DBError {
+  final case class HashMismatch(key: Key) extends DBError {
     def message: String = s"The hash for '$key' was incorrect."
   }
   /**
    * All other errors will be exceptions that come out of the underlying store. They'll be
    * wrapped up in this type.
    */
-  case class GeneralError(ex: Throwable) extends DBError {
+  final case class GeneralError(ex: Throwable) extends DBError {
     def message = ex.getMessage
   }
 
