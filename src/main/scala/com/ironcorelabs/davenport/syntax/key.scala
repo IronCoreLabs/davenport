@@ -11,10 +11,10 @@ final object key extends KeyOps
 
 trait KeyOps {
   implicit class OurKeyOps(key: Key) {
-    def dbget[T](implicit codec: DecodeJson[T]): DBProg[DBDocument[T]] = DBDocument.get(key)(codec)
-    def dbremove = DBDocument.remove(key)
-    def dbcreate[T](t: T)(implicit codec: EncodeJson[T]): DBProg[DBDocument[T]] = DBDocument.create(key, t)
-    def dbincrementCounter(delta: Long): DBProg[Long] = DB.incrementCounter(key, delta)
-    def dbgetCounter: DBProg[Long] = DB.getCounter(key)
+    def dbGet[T](implicit codec: DecodeJson[T]): DBProg[DBDocument[T]] = DBDocument.get(key)(codec)
+    def dbRemove = DBDocument.remove(key)
+    def dbCreate[T](t: T)(implicit codec: EncodeJson[T]): DBProg[DBDocument[T]] = DBDocument.create(key, t)
+    def dbIncrementCounter(delta: Long): DBProg[Long] = DB.incrementCounter(key, delta)
+    def dbGetCounter: DBProg[Long] = DB.getCounter(key)
   }
 }

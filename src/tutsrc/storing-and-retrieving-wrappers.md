@@ -37,8 +37,8 @@ import scalaz._
 val user1 = User("User", "One", "readyplayerone@example.com", System.currentTimeMillis())
 val user2 = User("User", "Two", "readyplayertwo@example.com", System.currentTimeMillis())
 val addTwoNewUsers = for {
-  newu1 <- user1.create(User.createKey(user1))
-  newu2 <- user2.create(User.createKey(user2))
+  newu1 <- User.createKey(user1).dbCreate(user1)
+  newu2 <- User.createKey(user2).dbCreate(user2)
 } yield List(newu1, newu2)
 
 val users = MemInterpreter.empty.interpret(addTwoNewUsers).run
@@ -51,5 +51,5 @@ val interpreter = MemInterpreter.empty
 val users = addTwoNewUsers.interpret(interpreter).run
 
 // Fetch one of the users out of the database
-val u1 = Key("user::readyplayerone@example.com").get[User].interpret(interpreter).run
+val u1 = Key("user::readyplayerone@example.com").dbGet[User].interpret(interpreter).run
 ```
