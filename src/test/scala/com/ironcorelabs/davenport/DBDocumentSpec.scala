@@ -24,7 +24,7 @@ class DBDocumentSpec extends TestBase {
     val k1 = Key("user::email@example.com")
     "create, then get and then remove wrapper docs" in {
       val create = k1.dbCreate(u1)
-      val interpreter = MemInterpreter(Map())
+      val interpreter = MemInterpreter.empty
       val res = interpreter.interpret(create).run
       res should be(right)
       // next line is basically to make sure hashver is populated and juice up
@@ -38,8 +38,31 @@ class DBDocumentSpec extends TestBase {
       res3 should be(right)
     }
     "attempt removal of a missing doc" in {
-      val res = MemInterpreter(Map()).interpret(k1.dbRemove).run
+      val res = MemInterpreter.empty.interpret(k1.dbRemove).run
       res should be(left) // fail since doesn't exist
+    }
+
+    "key from a counter should interface with Document" in {
+      import syntax._
+      val interpreter = MemInterpreter.empty
+      val counterKey = Key("myCounter")
+      val getUserById = for {
+        k <- counterKey.dbGetCounter
+        user <- Key(s"user$k").dbGet[User]
+      } yield user
+
+      val createUserForId = for {
+        k <- counterKey.dbIncrementCounter(1)
+        user <- Key(s"user$k").dbCreate(u1)
+      } yield user
+
+      //Make the value 100 just for fun.
+      counterKey.dbIncrementCounter(100).interpret(interpreter).run.value
+      val notFoundError = getUserById.interpret(interpreter).run.leftValue
+      notFoundError.message should include("user100")
+      val createdUserDoc = createUserForId.interpret(interpreter).run.value
+      createdUserDoc.data shouldBe u1
+      getUserById.interpret(interpreter).run.value shouldBe createdUserDoc
     }
   }
 }

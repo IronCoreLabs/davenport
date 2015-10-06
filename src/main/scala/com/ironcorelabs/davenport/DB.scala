@@ -12,7 +12,7 @@ import scalaz.stream.Process
  *
  * To use this, import com.ironcorelabs.davenport.DB._
  */
-object DB {
+final object DB {
 
   //
   //

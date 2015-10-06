@@ -90,7 +90,7 @@ class CouchInterpreterSpec extends TestBase {
         res <- updateDoc(k, newvalue, t.hashVer)
       } yield res
       val res = exec(testUpdate)
-      res should be(right)
+      res.value.hashVer should not be (0)
       val res2 = exec(getDoc(k))
       res2.value.data should ===(newvalue)
     }
