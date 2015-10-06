@@ -74,9 +74,11 @@ class MemInterpreterSpec extends TestBase {
       val testUpdate = for {
         dbv <- getDoc(k)
         newDbv <- updateDoc(k, newvalue, dbv.hashVer)
-      } yield newDbv.data
-      val res = run(createDoc(k, v) *> testUpdate).value
-      res shouldBe newvalue
+      } yield (dbv, newDbv)
+      val (oldDoc, newDoc) = run(createDoc(k, v) *> testUpdate).value
+      oldDoc.hashVer should not be (newDoc.hashVer)
+      oldDoc.data should not be (newDoc.hashVer)
+      oldDoc.key shouldBe newDoc.key
     }
     "fail to update a doc that doesn't exist" in {
       val testUpdate = for {

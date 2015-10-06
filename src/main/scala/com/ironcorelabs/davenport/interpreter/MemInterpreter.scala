@@ -68,7 +68,7 @@ object MemInterpreter {
           m.get(k).map { json =>
             val storedhashver = genHashVer(json)
             if (hashver == storedhashver) {
-              modifyStateDbv(m + (k -> doc), DBDocument(k, hashver, doc))
+              modifyStateDbv(m + (k -> doc), DBDocument(k, genHashVer(doc), doc))
             } else {
               m -> (HashMismatch(k).left)
             }

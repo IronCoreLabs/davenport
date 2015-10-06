@@ -5,7 +5,7 @@ package com.ironcorelabs.davenport
 package syntax
 
 import DB.{ Key, DBProg }
-import argonaut.{ DecodeJson, EncodeJson }
+import argonaut.{ DecodeJson, EncodeJson, CodecJson }
 
 final object key extends KeyOps
 
@@ -16,5 +16,6 @@ trait KeyOps {
     def dbCreate[T](t: T)(implicit codec: EncodeJson[T]): DBProg[DBDocument[T]] = DBDocument.create(key, t)
     def dbIncrementCounter(delta: Long): DBProg[Long] = DB.incrementCounter(key, delta)
     def dbGetCounter: DBProg[Long] = DB.getCounter(key)
+    def dbModify[T](f: T => T)(implicit codec: CodecJson[T]): DBProg[DBDocument[T]] = DBDocument.modify(key, f)
   }
 }

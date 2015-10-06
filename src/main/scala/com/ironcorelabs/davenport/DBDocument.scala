@@ -17,9 +17,20 @@ final case class DBDocument[A](key: Key, hashVer: HashVer, data: A) {
 }
 
 final object DBDocument {
-  import scalaz.Functor
+  import scalaz.{ Functor, Equal }
+  import scalaz.std.string._
+  import scalaz.std.anyVal._
   implicit val instance: Functor[DBDocument] = new Functor[DBDocument] {
     def map[A, B](fa: DBDocument[A])(f: A => B): DBDocument[B] = fa.map(f)
+  }
+
+  implicit def dbDocumentEqual[A](implicit aEq: Equal[A]): Equal[DBDocument[A]] = new Equal[DBDocument[A]] {
+    override def equalIsNatural: Boolean = aEq.equalIsNatural
+
+    override def equal(doc1: DBDocument[A], doc2: DBDocument[A]): Boolean = (doc1, doc2) match {
+      case (DBDocument(key1, hashVer1, a1), DBDocument(key2, hashVer2, a2)) =>
+        aEq.equal(a1, a2) && Equal[String].equal(key1.value, key2.value) && Equal[Long].equal(hashVer1.value, hashVer2.value)
+    }
   }
 
   /**
@@ -49,7 +60,7 @@ final object DBDocument {
    * Update the document to a new value.
    */
   def update[T](doc: DBDocument[T])(implicit codec: EncodeJson[T]): DBProg[DBDocument[T]] =
-    updateDoc(doc.key, RawJsonString(doc.data.asJson.toString), doc.hashVer).map(_ => doc)
+    updateDoc(doc.key, RawJsonString(doc.data.asJson.toString), doc.hashVer).map(newDoc => newDoc.map(_ => doc.data))
 
   /**
    * Remove the document stored at key `key`

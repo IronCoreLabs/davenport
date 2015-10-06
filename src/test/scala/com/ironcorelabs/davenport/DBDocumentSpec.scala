@@ -3,6 +3,9 @@
 //
 package com.ironcorelabs.davenport
 
+import org.scalacheck._
+import org.scalacheck.Prop._
+import Arbitrary.arbitrary
 import DB._
 import scalaz._, Scalaz._, scalaz.concurrent.Task
 import argonaut._, Argonaut._
@@ -17,6 +20,14 @@ class DBDocumentSpec extends TestBase {
     )
 
     def genKey(u: User): Key = Key(s"user::${u.email}")
+  }
+
+  implicit def arbDBDocument[A: Arbitrary] = Arbitrary {
+    for {
+      keyString <- arbitrary[String]
+      hashLong <- arbitrary[Long]
+      a <- arbitrary[A]
+    } yield DBDocument(Key(keyString), HashVer(hashLong), a)
   }
 
   "DBDocument" should {
@@ -42,7 +53,7 @@ class DBDocumentSpec extends TestBase {
       res should be(left) // fail since doesn't exist
     }
 
-    "key from a counter should interface with Document" in {
+    "work correctly when constructing key from a counter" in {
       import syntax._
       val interpreter = MemInterpreter.empty
       val counterKey = Key("myCounter")
@@ -63,6 +74,26 @@ class DBDocumentSpec extends TestBase {
       val createdUserDoc = createUserForId.interpret(interpreter).run.value
       createdUserDoc.data shouldBe u1
       getUserById.interpret(interpreter).run.value shouldBe createdUserDoc
+    }
+
+    "modify according to the passed in function" in {
+      import syntax._
+      val interpreter = MemInterpreter.empty
+      val putUserDoc = k1.dbCreate(u1).interpret(interpreter).run.value
+      def removeFirstName(u: User) = u.copy(firstName = "")
+      val noMoreName = k1.dbModify[User](removeFirstName(_)).interpret(interpreter).run.value
+      //value should be the same as the doc we put 
+      noMoreName.data shouldBe putUserDoc.map(removeFirstName(_)).data
+      //hash versions should *not* match because the data changed.
+      noMoreName.hashVer should not be (putUserDoc.hashVer)
+      //Get the data to be sure modify returned the correct data and hash version
+      k1.dbGet[User].interpret(interpreter).run.value shouldBe noMoreName
+
+    }
+    "have a lawful scalaz typeclasses" in {
+      import scalaz.scalacheck.ScalazProperties
+      check(Prop.all(ScalazProperties.equal.laws[DBDocument[Int]]))
+      check(ScalazProperties.functor.laws[DBDocument])
     }
   }
 }
