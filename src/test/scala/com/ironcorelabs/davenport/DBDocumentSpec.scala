@@ -92,7 +92,7 @@ class DBDocumentSpec extends TestBase {
     }
     "have a lawful scalaz typeclasses" in {
       import scalaz.scalacheck.ScalazProperties
-      check(Prop.all(ScalazProperties.equal.laws[DBDocument[Int]]))
+      check(ScalazProperties.equal.laws[DBDocument[Int]])
       check(ScalazProperties.functor.laws[DBDocument])
     }
   }
