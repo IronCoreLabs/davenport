@@ -51,7 +51,7 @@ object MemInterpreter {
     HashVer(scala.util.hashing.MurmurHash3.stringHash(s.value).toLong)
 
   private def modifyState(s: KVMap): (KVMap, DBError \/ Unit) = s -> ().right
-  private def modifyStateDbv(s: KVMap, j: RawJsonString, h: HashVer): (KVMap, DBError \/ DbValue) = s -> DbValue(j, h).right
+  private def modifyStateDbv(s: KVMap, dbv: DBValue): (KVMap, DBError \/ DBValue) = s -> dbv.right
   private def notFoundError[A](key: Key): DBError \/ A = ValueNotFound(key).left
   //Convienience method to lift f into KVState.
   private def state[A](f: KVMap => (KVMap, A)): KVState[A] = StateT[Task, KVMap, A] { map =>
@@ -61,21 +61,21 @@ object MemInterpreter {
     def apply[A](op: DBOp[A]): KVState[A] = {
       op match {
         case GetDoc(k: Key) => state { m: KVMap =>
-          m.get(k).map(json => m -> DbValue(json, genHashVer(json)).right)
+          m.get(k).map(json => m -> DBDocument(k, genHashVer(json), json).right)
             .getOrElse(m -> notFoundError(k))
         }
         case UpdateDoc(k, doc, hashver) => state { m: KVMap =>
           m.get(k).map { json =>
             val storedhashver = genHashVer(json)
             if (hashver == storedhashver) {
-              modifyStateDbv(m + (k -> doc), doc, hashver)
+              modifyStateDbv(m + (k -> doc), DBDocument(k, genHashVer(doc), doc))
             } else {
               m -> (HashMismatch(k).left)
             }
           }.getOrElse(m -> notFoundError(k))
         }
         case CreateDoc(k, doc) => state { m: KVMap =>
-          m.get(k).map(_ => m -> ValueExists(k).left).getOrElse(modifyStateDbv(m + (k -> doc), doc, genHashVer(doc)))
+          m.get(k).map(_ => m -> ValueExists(k).left).getOrElse(modifyStateDbv(m + (k -> doc), DBDocument(k, genHashVer(doc), doc)))
         }
         case RemoveKey(k) => state { m: KVMap =>
           val keyOrError = m.get(k).map(_ => k.right).getOrElse(ValueNotFound(k).left)

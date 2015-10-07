@@ -10,7 +10,7 @@ import scalaz._
 import scalaz.concurrent.Task
 import interpreter.Interpreter
 
-object dbprog extends DBProgOps
+final object dbprog extends DBProgOps
 
 trait DBProgOps {
   implicit class OurDBProgOps[A](self: DBProg[A]) {

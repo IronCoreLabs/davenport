@@ -15,7 +15,7 @@ import scalaz.stream.Process
 // Couchbase
 import com.couchbase.client.java.{ ReplicateTo, PersistTo, ReplicaMode, CouchbaseCluster, Bucket, AsyncBucket }
 import com.couchbase.client.java.env.{ CouchbaseEnvironment, DefaultCouchbaseEnvironment }
-import com.couchbase.client.java.document._
+import com.couchbase.client.java.document.{ AbstractDocument, JsonLongDocument, RawJsonDocument }
 import com.couchbase.client.java.error._
 
 // RxScala (Observables) used in Couchbase client lib async calls
@@ -76,10 +76,10 @@ final object CouchInterpreter {
     /*
      * Helpers for the grammar interpreter
      */
-    private def getDoc(k: Key): CouchK[DBError \/ DbValue] =
+    private def getDoc(k: Key): CouchK[DBError \/ DBValue] =
       couchOpToDBValue(k)(_.get(k.value, classOf[RawJsonDocument]))
 
-    private def createDoc(k: Key, v: RawJsonString): CouchK[DBError \/ DbValue] =
+    private def createDoc(k: Key, v: RawJsonString): CouchK[DBError \/ DBValue] =
       couchOpToDBValue(k)(_.insert(
         RawJsonDocument.create(k.value, 0, v.value, 0)
       ))
@@ -101,10 +101,10 @@ final object CouchInterpreter {
         _.remove(k.value, classOf[RawJsonDocument])
       )(_ => ()).map(_.leftMap(throwableToDBError(k, _)))
 
-    private def updateDoc(k: Key, v: RawJsonString, h: HashVer): CouchK[DBError \/ DbValue] = {
+    private def updateDoc(k: Key, v: RawJsonString, h: HashVer): CouchK[DBError \/ DBValue] = {
       val updateResult = couchOpToA(_.replace(
         RawJsonDocument.create(k.value, 0, v.value, h.value)
-      ))(doc => DbValue(RawJsonString(doc.content), HashVer(doc.cas)))
+      ))(doc => DBDocument(k, HashVer(doc.cas), RawJsonString(doc.content)))
 
       updateResult.map(_.leftMap(throwableToDBError(k, _)))
     }
@@ -113,8 +113,8 @@ final object CouchInterpreter {
       couchOpToA(fetchOp)(doc => Long2long(doc.content)).map(_.leftMap(throwableToDBError(k, _)))
     }
 
-    private def couchOpToDBValue(k: Key)(fetchOp: AsyncBucket => Observable[RawJsonDocument]): CouchK[DBError \/ DbValue] =
-      couchOpToA(fetchOp)(doc => DbValue(RawJsonString(doc.content), HashVer(doc.cas))).map(_.leftMap(throwableToDBError(k, _)))
+    private def couchOpToDBValue(k: Key)(fetchOp: AsyncBucket => Observable[RawJsonDocument]): CouchK[DBError \/ DBValue] =
+      couchOpToA(fetchOp)(doc => DBDocument(k, HashVer(doc.cas), RawJsonString(doc.content))).map(_.leftMap(throwableToDBError(k, _)))
 
     private def couchOpToA[A, B](fetchOp: AsyncBucket => Observable[AbstractDocument[B]])(f: AbstractDocument[B] => A): Kleisli[Task, Bucket, Throwable \/ A] = Kleisli.kleisli { bucket: Bucket =>
       obs2Task(fetchOp(bucket.async)).map(_.map(f))

@@ -3,102 +3,67 @@
 //
 package com.ironcorelabs.davenport
 
-import scalaz.\/
-
-// Couchbase
-import com.couchbase.client.java.{ ReplicateTo, PersistTo, ReplicaMode }
-
-// Picklers
 import argonaut._, Argonaut._
-
 import DB._
 
 /**
- * Should be implemented by a wrapper of a case class
- *
- *  Typically you'll have this pattern:
- *
- *  {{{
- *  case class User(name: String, email: String)
- *  class DBUser(val key: Key, data: User, hv: HashVer) extends DBDocument[User] {
- *    // ...
- *  }
- *  object DBUser extends DBDocumentCompanion[User] {
- *    // ...
- *  }
- *  }}}
- *
- *  If you follow this pattern, you'll be able to store/retrieve arbitrary
- *  documents of different types.
+ * A document that's either destined to be put into the DB or came out of the DB.
+ * Key - The key where the document is stored.
+ * hashVer - The HashVer of the current document
+ * data - The data stored in the document, typically RawJsonString when it comes out of the DB.
  */
-trait DBDocument[T] {
-  /** Typically put in the parameters for the `DBDocument` class. */
-  val key: Key
-
-  /** Typically put in the parameters for the `DBDocument` class. */
-  val data: T
-
-  /**
-   * Typically put in the parameters for the `DBDocument` class.
-   *
-   *  Used to capture the database state when this was fetched.
-   */
-  val cas: Long
-
-  /** Generate a json string from the data */
-  def dataJson: Throwable \/ RawJsonString
-
-  /** Remove this from the database */
-  def remove: DBProg[Unit] = removeKey(key)
-
-  /** Convenience function used on update */
-  lazy val hashver = HashVer(cas)
+final case class DBDocument[A](key: Key, hashVer: HashVer, data: A) {
+  def map[B](f: A => B) = DBDocument(key, hashVer, f(data))
 }
 
-/**
- * For the companion object for the [[DBDocument]]
- *
- *  See [[DBDocument]] docs for more details.
- */
-trait DBDocumentCompanion[T] {
-  /**
-   * Keys may be generated from database ops like IncrementCounter
-   *
-   *  Consequently, `genKey` returns a [[DB.DBProg]]. To return a static string,
-   *  just lift the value into a `DBProg`, like this:
-   *
-   * {{{
-   *  def genKey = liftIntoDBProg(Key("mykey").right)
-   * }}}
-   */
-  def genKey(d: T): DBProg[_]
+final object DBDocument {
+  import scalaz.{ Functor, Equal }
+  import scalaz.std.string._
+  import scalaz.std.anyVal._
+  implicit val instance: Functor[DBDocument] = new Functor[DBDocument] {
+    def map[A, B](fa: DBDocument[A])(f: A => B): DBDocument[B] = fa.map(f)
+  }
+
+  implicit def dbDocumentEqual[A](implicit aEq: Equal[A]): Equal[DBDocument[A]] = new Equal[DBDocument[A]] {
+    override def equalIsNatural: Boolean = aEq.equalIsNatural
+
+    override def equal(doc1: DBDocument[A], doc2: DBDocument[A]): Boolean = (doc1, doc2) match {
+      case (DBDocument(key1, hashVer1, a1), DBDocument(key2, hashVer2, a2)) =>
+        aEq.equal(a1, a2) && Equal[String].equal(key1.value, key2.value) && Equal[Long].equal(hashVer1.value, hashVer2.value)
+    }
+  }
 
   /**
-   * Convert from a json string to a `T`
-   *
-   *  Return the left disjunction on error.
-   *
-   *  If you have `object DBUser extends DBDocumentCompanion[User]`
-   *  then this method should return a `right` of `User` on success.
+   * Create a document out of `t` using `codec` and store it at `key`.
    */
-  def fromJson(s: RawJsonString): Throwable \/ T
+  def create[T](key: Key, t: T)(implicit codec: EncodeJson[T]): DBProg[DBDocument[T]] =
+    createDoc(key, RawJsonString(t.asJson.toString)).map(_.map(_ => t))
 
   /**
-   * Take a document of type `T` and add to the datastore
-   *
-   *  This should return a `DBWhatever` when the [[DB.DBProg]] is executed.
+   * Fetch a document from the datastore and decode it using `codec`
+   * If deserialization fails the DBProg will result in a left disjunction.
    */
-  def create(d: T): DBProg[_]
+  def get[T](k: Key)(implicit codec: DecodeJson[T]): DBProg[DBDocument[T]] = for {
+    s <- getDoc(k)
+    v <- liftIntoDBProg(s.data.value.decodeOption[T], "Deserialization failed.")
+  } yield DBDocument(k, s.hashVer, v)
 
-  /** Fetch a document from the datastore */
-  def get(k: Key): DBProg[_]
+  /**
+   * A short way to get and update by running the data through `f`.
+   */
+  def modify[T](k: Key, f: T => T)(implicit codec: CodecJson[T]): DBProg[DBDocument[T]] = for {
+    v <- get(k)(codec)
+    result <- update(v.map(f))
+  } yield result
 
-  /** Remove an arbitrary document from the datastore */
-  def remove(k: Key): DBProg[Unit] = removeKey(k)
+  /**
+   * Update the document to a new value.
+   */
+  def update[T](doc: DBDocument[T])(implicit codec: EncodeJson[T]): DBProg[DBDocument[T]] =
+    updateDoc(doc.key, RawJsonString(doc.data.asJson.toString), doc.hashVer).map(newDoc => newDoc.map(_ => doc.data))
 
-  /** Helper method for implementing interface */
-  def fromJsonString(s: String)(implicit codec: DecodeJson[T]): Option[T] = s.decodeOption[T]
-
-  /** Helper method for implementing interface */
-  def toJsonString(t: T)(implicit codec: EncodeJson[T]): RawJsonString = RawJsonString(t.asJson.toString)
+  /**
+   * Remove the document stored at key `key`
+   */
+  def remove(key: Key): DBProg[Unit] = removeKey(key)
 }

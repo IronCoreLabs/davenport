@@ -15,7 +15,7 @@ import java.io.File
 import interpreter.CouchInterpreter
 
 /** Connect to Couchbase and interpret [[DB.DBProg]]s */
-object CouchConnection {
+final object CouchConnection {
   //
   //
   // Building block types for couchbase connection

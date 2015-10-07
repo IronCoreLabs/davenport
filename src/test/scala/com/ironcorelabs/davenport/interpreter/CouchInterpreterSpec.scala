@@ -59,11 +59,11 @@ class CouchInterpreterSpec extends TestBase {
     }
     "create a doc that doesn't exist" in {
       val res = exec(createDoc(k, v))
-      res.value.jsonString should ===(v)
+      res.value.data should ===(v)
     }
     "get a doc that should now exist" in {
       val res = exec(getDoc(k))
-      res.value.jsonString should ===(v)
+      res.value.data should ===(v)
     }
     "fail to create a doc if it already exists" in {
       val testCreate = createDoc(k, newvalue)
@@ -90,9 +90,9 @@ class CouchInterpreterSpec extends TestBase {
         res <- updateDoc(k, newvalue, t.hashVer)
       } yield res
       val res = exec(testUpdate)
-      res should be(right)
+      res.value.hashVer should not be (0)
       val res2 = exec(getDoc(k))
-      res2.value.jsonString should ===(newvalue)
+      res2.value.data should ===(newvalue)
     }
     "fail updating a doc that doesn't exist" in {
       val testUpdate = updateDoc(k404, newvalue, HashVer(1234))
@@ -125,7 +125,7 @@ class CouchInterpreterSpec extends TestBase {
         res <- modifyDoc(k, j => newvalue)
       } yield res
       val res = exec(testModify)
-      res.value.jsonString should ===(newvalue)
+      res.value.data should ===(newvalue)
     }
     "get zero when retrieving non-existent counter" in {
       val res = exec(for {
@@ -148,7 +148,7 @@ class CouchInterpreterSpec extends TestBase {
       res.value should ===(10L)
     }
     "be happy doing initial batch import" in {
-      val res: IndexedSeq[DBError \/ DbValue] = execProcess(createDocs(tenrows)).runLog.attemptRun.value
+      val res: IndexedSeq[DBError \/ DBValue] = execProcess(createDocs(tenrows)).runLog.attemptRun.value
       val (lefts, rights) = res.toList.separate
       lefts.length should ===(0)
       rights.length should ===(tenrows.length)
@@ -186,11 +186,11 @@ class CouchInterpreterSpec extends TestBase {
       def upd(cas: Long) = updateDoc(k, newvalue, HashVer(cas))
 
       // Generate a task that will fail with a bad CAS and prove it
-      val res: Task[DBError \/ DbValue] = execTask(upd(123))
+      val res: Task[DBError \/ DBValue] = execTask(upd(123))
       res.run should be(left)
 
       // Generate a task that handles CAS errors and run and verify
-      val handled: Task[DBError \/ DbValue] = res.map(_.handleError {
+      val handled: Task[DBError \/ DBValue] = res.map(_.handleError {
         case HashMismatch(key) =>
           execTask(for {
             v <- getDoc(key)
@@ -201,7 +201,7 @@ class CouchInterpreterSpec extends TestBase {
       })
 
       val finalres = handled.run.value
-      finalres.jsonString should ===(newvalue)
+      finalres.data should ===(newvalue)
     }
 
     "work without using interpreter by instead using Kleisli" in {
@@ -209,7 +209,7 @@ class CouchInterpreterSpec extends TestBase {
         _ <- removeKey(k)
         _ <- createDoc(k, v)
         dbValue <- getDoc(k)
-      } yield dbValue.jsonString
+      } yield dbValue.data
       val task = CouchConnection.bucketOrError.flatMap(CouchInterpreter.interpretK(createAndGet).run(_))
       task.run.value should ===(v)
     }
