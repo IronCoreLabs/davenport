@@ -27,7 +27,7 @@ class DBDocumentSpec extends TestBase {
       keyString <- arbitrary[String]
       hashLong <- arbitrary[Long]
       a <- arbitrary[A]
-    } yield DBDocument(Key(keyString), HashVer(hashLong), a)
+    } yield DBDocument(Key(keyString), CommitVersion(hashLong), a)
   }
 
   "DBDocument" should {
@@ -38,9 +38,9 @@ class DBDocumentSpec extends TestBase {
       val interpreter = MemInterpreter.empty
       val res = interpreter.interpret(create).run
       res should be(right)
-      // next line is basically to make sure hashver is populated and juice up
+      // next line is basically to make sure commitVersion is populated and juice up
       // code coverage
-      res.value.hashVer.value should be > 0L
+      res.value.commitVersion.value should be > 0L
 
       val get = k1.dbGet[User]
       val res2 = interpreter.interpret(get).run.value
@@ -84,9 +84,9 @@ class DBDocumentSpec extends TestBase {
       val noMoreName = k1.dbModify[User](removeFirstName(_)).interpret(interpreter).run.value
       //value should be the same as the doc we put 
       noMoreName.data shouldBe putUserDoc.map(removeFirstName(_)).data
-      //hash versions should *not* match because the data changed.
-      noMoreName.hashVer should not be (putUserDoc.hashVer)
-      //Get the data to be sure modify returned the correct data and hash version
+      //commit versions should *not* match because the data changed.
+      noMoreName.commitVersion should not be (putUserDoc.commitVersion)
+      //Get the data to be sure modify returned the correct data and commit version
       k1.dbGet[User].interpret(interpreter).run.value shouldBe noMoreName
 
     }

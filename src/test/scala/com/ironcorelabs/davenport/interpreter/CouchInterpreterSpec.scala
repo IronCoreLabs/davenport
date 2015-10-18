@@ -84,25 +84,25 @@ class CouchInterpreterSpec extends TestBase {
       } yield c
       execTask(steps).attemptRun.value should be(left)
     }
-    "update a doc that exists with correct hashver" in {
+    "update a doc that exists with correct commitVersion" in {
       val testUpdate = for {
         t <- getDoc(k)
-        res <- updateDoc(k, newvalue, t.hashVer)
+        res <- updateDoc(k, newvalue, t.commitVersion)
       } yield res
       val res = exec(testUpdate)
-      res.value.hashVer should not be (0)
+      res.value.commitVersion should not be (0)
       val res2 = exec(getDoc(k))
       res2.value.data should ===(newvalue)
     }
     "fail updating a doc that doesn't exist" in {
-      val testUpdate = updateDoc(k404, newvalue, HashVer(1234))
+      val testUpdate = updateDoc(k404, newvalue, CommitVersion(1234))
       val res = exec(testUpdate)
       res.leftValue should ===(ValueNotFound(k404))
     }
-    "fail updating a doc when using incorrect hashver" in {
-      val testUpdate = updateDoc(k, v, HashVer(1234))
+    "fail updating a doc when using incorrect commitVersion" in {
+      val testUpdate = updateDoc(k, v, CommitVersion(1234))
       val res = exec(testUpdate)
-      res.leftValue should ===(HashMismatch(k))
+      res.leftValue should ===(CommitVersionMismatch(k))
     }
     "remove a key that exists" in {
       val testRemove = removeKey(k)
@@ -183,7 +183,7 @@ class CouchInterpreterSpec extends TestBase {
       } yield ())
 
       // Update
-      def upd(cas: Long) = updateDoc(k, newvalue, HashVer(cas))
+      def upd(cas: Long) = updateDoc(k, newvalue, CommitVersion(cas))
 
       // Generate a task that will fail with a bad CAS and prove it
       val res: Task[DBError \/ DBValue] = execTask(upd(123))
@@ -191,10 +191,10 @@ class CouchInterpreterSpec extends TestBase {
 
       // Generate a task that handles CAS errors and run and verify
       val handled: Task[DBError \/ DBValue] = res.map(_.handleError {
-        case HashMismatch(key) =>
+        case CommitVersionMismatch(key) =>
           execTask(for {
             v <- getDoc(key)
-            u <- upd(v.hashVer.value)
+            u <- upd(v.commitVersion.value)
           } yield u).run
         case x => x.left
 

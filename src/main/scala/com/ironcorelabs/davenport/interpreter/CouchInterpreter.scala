@@ -70,7 +70,7 @@ final object CouchInterpreter {
       case GetCounter(k: Key) => getCounter(k)
       case IncrementCounter(k: Key, delta: Long) => incrementCounter(k, delta)
       case RemoveKey(k: Key) => removeKey(k)
-      case UpdateDoc(k: Key, v: RawJsonString, h: HashVer) => updateDoc(k, v, h)
+      case UpdateDoc(k: Key, v: RawJsonString, h: CommitVersion) => updateDoc(k, v, h)
     }
 
     /*
@@ -101,10 +101,10 @@ final object CouchInterpreter {
         _.remove(k.value, classOf[RawJsonDocument])
       )(_ => ()).map(_.leftMap(throwableToDBError(k, _)))
 
-    private def updateDoc(k: Key, v: RawJsonString, h: HashVer): CouchK[DBError \/ DBValue] = {
+    private def updateDoc(k: Key, v: RawJsonString, h: CommitVersion): CouchK[DBError \/ DBValue] = {
       val updateResult = couchOpToA(_.replace(
         RawJsonDocument.create(k.value, 0, v.value, h.value)
-      ))(doc => DBDocument(k, HashVer(doc.cas), RawJsonString(doc.content)))
+      ))(doc => DBDocument(k, CommitVersion(doc.cas), RawJsonString(doc.content)))
 
       updateResult.map(_.leftMap(throwableToDBError(k, _)))
     }
@@ -114,7 +114,7 @@ final object CouchInterpreter {
     }
 
     private def couchOpToDBValue(k: Key)(fetchOp: AsyncBucket => Observable[RawJsonDocument]): CouchK[DBError \/ DBValue] =
-      couchOpToA(fetchOp)(doc => DBDocument(k, HashVer(doc.cas), RawJsonString(doc.content))).map(_.leftMap(throwableToDBError(k, _)))
+      couchOpToA(fetchOp)(doc => DBDocument(k, CommitVersion(doc.cas), RawJsonString(doc.content))).map(_.leftMap(throwableToDBError(k, _)))
 
     private def couchOpToA[A, B](fetchOp: AsyncBucket => Observable[AbstractDocument[B]])(f: AbstractDocument[B] => A): Kleisli[Task, Bucket, Throwable \/ A] = Kleisli.kleisli { bucket: Bucket =>
       obs2Task(fetchOp(bucket.async)).map(_.map(f))
@@ -123,7 +123,7 @@ final object CouchInterpreter {
     private def throwableToDBError(key: Key, t: Throwable): DBError = t match {
       case _: DocumentDoesNotExistException => ValueNotFound(key)
       case _: DocumentAlreadyExistsException => ValueExists(key)
-      case _: CASMismatchException => HashMismatch(key)
+      case _: CASMismatchException => CommitVersionMismatch(key)
       case t => GeneralError(t)
     }
 

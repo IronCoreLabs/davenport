@@ -9,11 +9,11 @@ import DB._
 /**
  * A document that's either destined to be put into the DB or came out of the DB.
  * Key - The key where the document is stored.
- * hashVer - The HashVer of the current document
+ * commitVersion - The CommitVersion of the current document
  * data - The data stored in the document, typically RawJsonString when it comes out of the DB.
  */
-final case class DBDocument[A](key: Key, hashVer: HashVer, data: A) {
-  def map[B](f: A => B) = DBDocument(key, hashVer, f(data))
+final case class DBDocument[A](key: Key, commitVersion: CommitVersion, data: A) {
+  def map[B](f: A => B) = DBDocument(key, commitVersion, f(data))
 }
 
 final object DBDocument {
@@ -28,8 +28,8 @@ final object DBDocument {
     override def equalIsNatural: Boolean = aEq.equalIsNatural
 
     override def equal(doc1: DBDocument[A], doc2: DBDocument[A]): Boolean = (doc1, doc2) match {
-      case (DBDocument(key1, hashVer1, a1), DBDocument(key2, hashVer2, a2)) =>
-        aEq.equal(a1, a2) && Equal[String].equal(key1.value, key2.value) && Equal[Long].equal(hashVer1.value, hashVer2.value)
+      case (DBDocument(key1, commitVersion1, a1), DBDocument(key2, commitVersion2, a2)) =>
+        aEq.equal(a1, a2) && Equal[String].equal(key1.value, key2.value) && Equal[Long].equal(commitVersion1.value, commitVersion2.value)
     }
   }
 
@@ -46,7 +46,7 @@ final object DBDocument {
   def get[T](k: Key)(implicit codec: DecodeJson[T]): DBProg[DBDocument[T]] = for {
     s <- getDoc(k)
     v <- liftIntoDBProg(s.data.value.decodeOption[T], "Deserialization failed.")
-  } yield DBDocument(k, s.hashVer, v)
+  } yield DBDocument(k, s.commitVersion, v)
 
   /**
    * A short way to get and update by running the data through `f`.
@@ -60,7 +60,7 @@ final object DBDocument {
    * Update the document to a new value.
    */
   def update[T](doc: DBDocument[T])(implicit codec: EncodeJson[T]): DBProg[DBDocument[T]] =
-    updateDoc(doc.key, RawJsonString(doc.data.asJson.toString), doc.hashVer).map(newDoc => newDoc.map(_ => doc.data))
+    updateDoc(doc.key, RawJsonString(doc.data.asJson.toString), doc.commitVersion).map(newDoc => newDoc.map(_ => doc.data))
 
   /**
    * Remove the document stored at key `key`
