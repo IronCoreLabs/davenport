@@ -27,14 +27,14 @@ final object DB {
   final case class RawJsonString(value: String) extends AnyVal
 
   /**
-   * A hashed signature of an existing value in the db.
+   * A commit version of an existing value in the db.
    *
    *  Couchbase calls this a CAS (check and save) as it is passed back
    *  in with requests to update a value. If the value has been changed
    *  by another actor, then the update fails and the caller is left
    *  to handle the conflict.
    */
-  final case class HashVer(value: Long) extends AnyVal
+  final case class CommitVersion(value: Long) extends AnyVal
 
   //
   //
@@ -91,7 +91,7 @@ final object DB {
   sealed trait DBOp[A]
   final case class GetDoc(key: Key) extends DBOp[DBError \/ DBValue]
   final case class CreateDoc(key: Key, doc: RawJsonString) extends DBOp[DBError \/ DBValue]
-  final case class UpdateDoc(key: Key, doc: RawJsonString, hashVer: HashVer) extends DBOp[DBError \/ DBValue]
+  final case class UpdateDoc(key: Key, doc: RawJsonString, commitVersion: CommitVersion) extends DBOp[DBError \/ DBValue]
   final case class RemoveKey(key: Key) extends DBOp[DBError \/ Unit]
   final case class GetCounter(key: Key) extends DBOp[DBError \/ Long]
   final case class IncrementCounter(key: Key, delta: Long = 1) extends DBOp[DBError \/ Long]
@@ -109,9 +109,9 @@ final object DB {
   def createDoc(k: Key, doc: RawJsonString): DBProg[DBValue] =
     liftToFreeEitherT(CreateDoc(k, doc))
 
-  /** Update a doc given its key, new value, and correct hashver */
-  def updateDoc(k: Key, doc: RawJsonString, hashVer: HashVer): DBProg[DBValue] =
-    liftToFreeEitherT(UpdateDoc(k, doc, hashVer))
+  /** Update a doc given its key, new value, and correct commitVersion */
+  def updateDoc(k: Key, doc: RawJsonString, commitVersion: CommitVersion): DBProg[DBValue] =
+    liftToFreeEitherT(UpdateDoc(k, doc, commitVersion))
 
   /** Remove a doc from the DB given its key */
   def removeKey(k: Key): DBProg[Unit] = liftToFreeEitherT(RemoveKey(k))
@@ -132,7 +132,7 @@ final object DB {
    */
   def modifyDoc(k: Key, f: RawJsonString => RawJsonString): DBProg[DBValue] = for {
     t <- getDoc(k)
-    res <- updateDoc(k, f(t.data), t.hashVer)
+    res <- updateDoc(k, f(t.data), t.commitVersion)
   } yield res
 
   /**
@@ -154,10 +154,10 @@ final object DB {
     def message: String = s"Value for '$key' already exists."
   }
   /**
-   * If the hash for an update doesn't match.
+   * If the CommitVersion for an update doesn't match.
    */
-  final case class HashMismatch(key: Key) extends DBError {
-    def message: String = s"The hash for '$key' was incorrect."
+  final case class CommitVersionMismatch(key: Key) extends DBError {
+    def message: String = s"The CommitVersion for '$key' was incorrect."
   }
   /**
    * All other errors will be exceptions that come out of the underlying store. They'll be

@@ -46,9 +46,9 @@ object MemInterpreter {
     }
   }
 
-  /** Arbitrary implementation of the hashver for records in the DB */
-  private[davenport] def genHashVer(s: RawJsonString): HashVer =
-    HashVer(scala.util.hashing.MurmurHash3.stringHash(s.value).toLong)
+  /** Arbitrary implementation of the commitVersion for records in the DB */
+  private[davenport] def genCommitVersion(s: RawJsonString): CommitVersion =
+    CommitVersion(scala.util.hashing.MurmurHash3.stringHash(s.value).toLong)
 
   private def modifyState(s: KVMap): (KVMap, DBError \/ Unit) = s -> ().right
   private def modifyStateDbv(s: KVMap, dbv: DBValue): (KVMap, DBError \/ DBValue) = s -> dbv.right
@@ -61,21 +61,21 @@ object MemInterpreter {
     def apply[A](op: DBOp[A]): KVState[A] = {
       op match {
         case GetDoc(k: Key) => state { m: KVMap =>
-          m.get(k).map(json => m -> DBDocument(k, genHashVer(json), json).right)
+          m.get(k).map(json => m -> DBDocument(k, genCommitVersion(json), json).right)
             .getOrElse(m -> notFoundError(k))
         }
-        case UpdateDoc(k, doc, hashver) => state { m: KVMap =>
+        case UpdateDoc(k, doc, commitVersion) => state { m: KVMap =>
           m.get(k).map { json =>
-            val storedhashver = genHashVer(json)
-            if (hashver == storedhashver) {
-              modifyStateDbv(m + (k -> doc), DBDocument(k, genHashVer(doc), doc))
+            val storedCommitVersion = genCommitVersion(json)
+            if (commitVersion == storedCommitVersion) {
+              modifyStateDbv(m + (k -> doc), DBDocument(k, genCommitVersion(doc), doc))
             } else {
-              m -> (HashMismatch(k).left)
+              m -> (CommitVersionMismatch(k).left)
             }
           }.getOrElse(m -> notFoundError(k))
         }
         case CreateDoc(k, doc) => state { m: KVMap =>
-          m.get(k).map(_ => m -> ValueExists(k).left).getOrElse(modifyStateDbv(m + (k -> doc), DBDocument(k, genHashVer(doc), doc)))
+          m.get(k).map(_ => m -> ValueExists(k).left).getOrElse(modifyStateDbv(m + (k -> doc), DBDocument(k, genCommitVersion(doc), doc)))
         }
         case RemoveKey(k) => state { m: KVMap =>
           val keyOrError = m.get(k).map(_ => k.right).getOrElse(ValueNotFound(k).left)

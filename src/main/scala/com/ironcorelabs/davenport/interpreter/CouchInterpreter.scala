@@ -35,7 +35,11 @@ abstract class CouchInterpreter extends Interpreter {
 }
 
 /**
- * Things related to translating DBOp to Kleisli[Task, Bucket, A] and some helpers for translating to Task[A]
+ * Things related to translating DBOp to Kleisli[Task, Bucket, A] and some helpers for translating to Task[A].
+ *
+ * This object contains couchbase specific things such as CAS, which is modeled as CommitVersion.
+ *
+ * For details about how this translation is done, look at couchRunner which routes each DBOp to its couchbase counterpart.
  */
 final object CouchInterpreter {
   def apply(b: Task[Bucket]): CouchInterpreter = new CouchInterpreter {
@@ -56,8 +60,6 @@ final object CouchInterpreter {
   def interpretK[A](prog: DBOps[A]): CouchK[A] = Free.runFC[DBOp, CouchK, A](prog)(couchRunner)
 
   /**
-   * We use co-yoneda to run our `scalaz.Free`.
-   *
    * In this case, the couchRunner object transforms [[DB.DBOp]] to
    * `scalaz.concurrent.Task`.
    * The only public method, apply, is what gets called as the grammar
@@ -70,7 +72,7 @@ final object CouchInterpreter {
       case GetCounter(k: Key) => getCounter(k)
       case IncrementCounter(k: Key, delta: Long) => incrementCounter(k, delta)
       case RemoveKey(k: Key) => removeKey(k)
-      case UpdateDoc(k: Key, v: RawJsonString, h: HashVer) => updateDoc(k, v, h)
+      case UpdateDoc(k: Key, v: RawJsonString, cv: CommitVersion) => updateDoc(k, v, cv)
     }
 
     /*
@@ -101,10 +103,10 @@ final object CouchInterpreter {
         _.remove(k.value, classOf[RawJsonDocument])
       )(_ => ()).map(_.leftMap(throwableToDBError(k, _)))
 
-    private def updateDoc(k: Key, v: RawJsonString, h: HashVer): CouchK[DBError \/ DBValue] = {
+    private def updateDoc(k: Key, v: RawJsonString, cv: CommitVersion): CouchK[DBError \/ DBValue] = {
       val updateResult = couchOpToA(_.replace(
-        RawJsonDocument.create(k.value, 0, v.value, h.value)
-      ))(doc => DBDocument(k, HashVer(doc.cas), RawJsonString(doc.content)))
+        RawJsonDocument.create(k.value, 0, v.value, cv.value)
+      ))(doc => DBDocument(k, CommitVersion(doc.cas), RawJsonString(doc.content)))
 
       updateResult.map(_.leftMap(throwableToDBError(k, _)))
     }
@@ -114,7 +116,7 @@ final object CouchInterpreter {
     }
 
     private def couchOpToDBValue(k: Key)(fetchOp: AsyncBucket => Observable[RawJsonDocument]): CouchK[DBError \/ DBValue] =
-      couchOpToA(fetchOp)(doc => DBDocument(k, HashVer(doc.cas), RawJsonString(doc.content))).map(_.leftMap(throwableToDBError(k, _)))
+      couchOpToA(fetchOp)(doc => DBDocument(k, CommitVersion(doc.cas), RawJsonString(doc.content))).map(_.leftMap(throwableToDBError(k, _)))
 
     private def couchOpToA[A, B](fetchOp: AsyncBucket => Observable[AbstractDocument[B]])(f: AbstractDocument[B] => A): Kleisli[Task, Bucket, Throwable \/ A] = Kleisli.kleisli { bucket: Bucket =>
       obs2Task(fetchOp(bucket.async)).map(_.map(f))
@@ -123,7 +125,7 @@ final object CouchInterpreter {
     private def throwableToDBError(key: Key, t: Throwable): DBError = t match {
       case _: DocumentDoesNotExistException => ValueNotFound(key)
       case _: DocumentAlreadyExistsException => ValueExists(key)
-      case _: CASMismatchException => HashMismatch(key)
+      case _: CASMismatchException => CommitVersionMismatch(key)
       case t => GeneralError(t)
     }
 

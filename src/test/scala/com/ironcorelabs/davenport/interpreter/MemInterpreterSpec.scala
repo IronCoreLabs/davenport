@@ -70,28 +70,28 @@ class MemInterpreterSpec extends TestBase {
       createTask.run.value
       createTask.run shouldBe left
     }
-    "update a doc that exists with correct hashver" in {
+    "update a doc that exists with correct commitVersion" in {
       val testUpdate = for {
         dbv <- getDoc(k)
-        newDbv <- updateDoc(k, newvalue, dbv.hashVer)
+        newDbv <- updateDoc(k, newvalue, dbv.commitVersion)
       } yield (dbv, newDbv)
       val (oldDoc, newDoc) = run(createDoc(k, v) *> testUpdate).value
-      oldDoc.hashVer should not be (newDoc.hashVer)
-      oldDoc.data should not be (newDoc.hashVer)
+      oldDoc.commitVersion should not be (newDoc.commitVersion)
+      oldDoc.data should not be (newDoc.commitVersion)
       oldDoc.key shouldBe newDoc.key
     }
     "fail to update a doc that doesn't exist" in {
       val testUpdate = for {
-        newDbv <- updateDoc(k, newvalue, HashVer(0))
+        newDbv <- updateDoc(k, newvalue, CommitVersion(0))
       } yield newDbv.data
       val res = run(testUpdate).leftValue
       res shouldBe ValueNotFound(k)
     }
-    "fail updating a doc when using incorrect hashver" in {
-      val testUpdate = updateDoc(k, newvalue, HashVer(0))
+    "fail updating a doc when using incorrect commitVersion" in {
+      val testUpdate = updateDoc(k, newvalue, CommitVersion(0))
       val res = run(createDoc(k, v) *> testUpdate).leftValue
-      res shouldBe HashMismatch(k)
-      res.message shouldBe s"The hash for '$k' was incorrect."
+      res shouldBe CommitVersionMismatch(k)
+      res.message shouldBe s"The CommitVersion for '$k' was incorrect."
     }
     "remove a key that exists" in {
       val testRemoveAndGet = for {

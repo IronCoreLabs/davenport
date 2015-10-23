@@ -15,9 +15,9 @@ import com.ironcorelabs.davenport.syntax._
 // Some definitions that should help understand the code below
 //   case class Key(value: String)
 //   case class RawJsonString(value: String)
-//   case class DBDocument[A](key: Key, hashVer: HashVer, data: A)
+//   case class DBDocument[A](key: Key, commitVersion: CommitVersion, data: A)
 //   type DBValue = DBDocument[RawJsonString]
-//   case class DBValue(data: RawJsonString, hashVer: HashVer)
+//   case class DBValue(data: RawJsonString, commitVersion: CommitVersion)
 
 // Write something to the DB, then fetch it (we're ignoring the fact that we return
 // the written value from the update command to make a point)
@@ -32,7 +32,7 @@ val operations = for {
 val finalResult = operations.interpret(MemInterpreter.empty).run
 
 // or: val finalResult = CouchConnection.createInterpreter.interpret(operations).run
-// and in either case the result will be the same except for the hashVer
+// and in either case the result will be the same except for the commitVersion
 ```
 
 * This also has some nice short-circuiting properties. If you have a DB error early on, continued DB operations will halt (unless you prefer otherwise).
@@ -61,7 +61,7 @@ def copyFieldInDb(field: String, srcKey: Key, dstKey: Key): DBProg[DBValue] = fo
   src <- getDoc(srcKey)
   dst <- getDoc(dstKey)
   newjson <- liftIntoDBProg(copyFieldJson(field, src.data, dst.data), "Serde failed.")
-  updatedDst <- updateDoc(dstKey, newjson, dst.hashVer)
+  updatedDst <- updateDoc(dstKey, newjson, dst.commitVersion)
 } yield updatedDst
 
 
