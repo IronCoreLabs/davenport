@@ -57,55 +57,73 @@ object MemInterpreter {
   private def state[A](f: KVMap => (KVMap, A)): KVState[A] = StateT[Task, KVMap, A] { map =>
     Task.delay(f(map))
   }
+
+  private def getDoc(k: Key): KVState[DBError \/ DBValue] = {
+    state { m: KVMap =>
+      m.get(k).map(json => m -> DBDocument(k, genCommitVersion(json), json).right)
+        .getOrElse(m -> notFoundError[DBValue](k))
+    }
+  }
+
+  private def updateDoc(k: Key, doc: RawJsonString, commitVersion: CommitVersion): KVState[DBError \/ DBValue] = {
+    state { m: KVMap =>
+      m.get(k).map { json =>
+        val storedCommitVersion = genCommitVersion(json)
+        if (commitVersion == storedCommitVersion) {
+          modifyStateDbv(m + (k -> doc), DBDocument(k, genCommitVersion(doc), doc))
+        } else {
+          m -> (CommitVersionMismatch(k).left)
+        }
+      }.getOrElse(m -> notFoundError(k))
+    }
+  }
+
+  private def getCounter(k: Key): KVState[DBError \/ Long] = {
+    state { m: KVMap =>
+      m.get(k).map { json =>
+        try {
+          (m -> json.value.toLong.right)
+        } catch {
+          case ex: Throwable => m -> GeneralError(ex).left
+        }
+      } getOrElse {
+        (m + (k -> RawJsonString("0")) -> 0L.right)
+      }
+    }
+  }
+
+  private def incrementCounter(k: Key, delta: Long): KVState[DBError \/ Long] = {
+    state { m: KVMap =>
+      m.get(k).map { json =>
+        // convert to long and increment by delta
+        try {
+          val newval = json.value.toLong + delta
+          (m + (k -> RawJsonString(newval.toString)) -> newval.right)
+        } catch {
+          case ex: Throwable => m -> GeneralError(ex).left
+        }
+      } getOrElse {
+        // save delta to db
+        (m + (k -> RawJsonString(delta.toString)), delta.right)
+      }
+    }
+  }
+
   private def toKVState: DBOp ~> KVState = new (DBOp ~> KVState) {
     def apply[A](op: DBOp[A]): KVState[A] = {
       op match {
-        case GetDoc(k: Key) => state { m: KVMap =>
-          m.get(k).map(json => m -> DBDocument(k, genCommitVersion(json), json).right)
-            .getOrElse(m -> notFoundError(k))
-        }
-        case UpdateDoc(k, doc, commitVersion) => state { m: KVMap =>
-          m.get(k).map { json =>
-            val storedCommitVersion = genCommitVersion(json)
-            if (commitVersion == storedCommitVersion) {
-              modifyStateDbv(m + (k -> doc), DBDocument(k, genCommitVersion(doc), doc))
-            } else {
-              m -> (CommitVersionMismatch(k).left)
-            }
-          }.getOrElse(m -> notFoundError(k))
-        }
+        case GetDoc(k: Key) => getDoc(k)
+        case UpdateDoc(k, doc, commitVersion) => updateDoc(k, doc, commitVersion)
         case CreateDoc(k, doc) => state { m: KVMap =>
-          m.get(k).map(_ => m -> ValueExists(k).left).getOrElse(modifyStateDbv(m + (k -> doc), DBDocument(k, genCommitVersion(doc), doc)))
+          m.get(k).map(_ => m -> ValueExists(k).left).
+            getOrElse(modifyStateDbv(m + (k -> doc), DBDocument(k, genCommitVersion(doc), doc)))
         }
         case RemoveKey(k) => state { m: KVMap =>
           val keyOrError = m.get(k).map(_ => k.right).getOrElse(ValueNotFound(k).left)
           keyOrError.fold(t => m -> t.left, key => modifyState(m - k))
         }
-        case GetCounter(k) => state { m: KVMap =>
-          m.get(k).map { json =>
-            try {
-              (m -> json.value.toLong.right)
-            } catch {
-              case ex: Throwable => m -> GeneralError(ex).left
-            }
-          } getOrElse {
-            (m + (k -> RawJsonString("0")) -> 0L.right)
-          }
-        }
-        case IncrementCounter(k, delta) => state { m: KVMap =>
-          m.get(k).map { json =>
-            // convert to long and increment by delta
-            try {
-              val newval = json.value.toLong + delta
-              (m + (k -> RawJsonString(newval.toString)) -> newval.right)
-            } catch {
-              case ex: Throwable => m -> GeneralError(ex).left
-            }
-          } getOrElse {
-            // save delta to db
-            (m + (k -> RawJsonString(delta.toString)), delta.right)
-          }
-        }
+        case GetCounter(k) => getCounter(k)
+        case IncrementCounter(k, delta) => incrementCounter(k, delta)
       }
     }
   }

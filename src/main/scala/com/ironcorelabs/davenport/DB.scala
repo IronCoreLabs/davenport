@@ -72,10 +72,14 @@ final object DB {
    *  This will most often be used when using for comprehensions mixing [[DBOp]]
    *  operations with other data extraction such as json de/serialization.
    */
-  def liftIntoDBProg[A](opt: Option[A], dbError: DBError): DBProg[A] = EitherT.eitherT(Monad[DBOps].point(opt \/> dbError))
-  def liftIntoDBProg[A](opt: Option[A], errormessage: String): DBProg[A] = liftIntoDBProg(opt, GeneralError(new Exception(errormessage)))
-  def liftIntoDBProg[A](either: Throwable \/ A): DBProg[A] = liftDisjunction(either.leftMap(GeneralError(_)))
-  def liftDisjunction[A](either: DBError \/ A): DBProg[A] = EitherT.eitherT(Monad[DBOps].point(either))
+  def liftIntoDBProg[A](opt: Option[A], dbError: DBError): DBProg[A] =
+    EitherT.eitherT(Monad[DBOps].point(opt \/> dbError))
+  def liftIntoDBProg[A](opt: Option[A], errormessage: String): DBProg[A] =
+    liftIntoDBProg(opt, GeneralError(new Exception(errormessage)))
+  def liftIntoDBProg[A](either: Throwable \/ A): DBProg[A] =
+    liftDisjunction(either.leftMap(GeneralError(_)))
+  def liftDisjunction[A](either: DBError \/ A): DBProg[A] =
+    EitherT.eitherT(Monad[DBOps].point(either))
   private def liftToFreeEitherT[A](a: DBOp[DBError \/ A]): DBProg[A] = {
     val free: DBOps[DBError \/ A] = Free.liftFC(a)
     EitherT.eitherT(free)
@@ -91,7 +95,8 @@ final object DB {
   sealed trait DBOp[A]
   final case class GetDoc(key: Key) extends DBOp[DBError \/ DBValue]
   final case class CreateDoc(key: Key, doc: RawJsonString) extends DBOp[DBError \/ DBValue]
-  final case class UpdateDoc(key: Key, doc: RawJsonString, commitVersion: CommitVersion) extends DBOp[DBError \/ DBValue]
+  final case class UpdateDoc(key: Key, doc: RawJsonString, commitVersion: CommitVersion)
+    extends DBOp[DBError \/ DBValue]
   final case class RemoveKey(key: Key) extends DBOp[DBError \/ Unit]
   final case class GetCounter(key: Key) extends DBOp[DBError \/ Long]
   final case class IncrementCounter(key: Key, delta: Long = 1) extends DBOp[DBError \/ Long]
@@ -164,19 +169,23 @@ final object DB {
    * wrapped up in this type.
    */
   final case class GeneralError(ex: Throwable) extends DBError {
-    def message = ex.getMessage
+    def message: String = ex.getMessage
   }
 
   /**
-   * Object that contains batch operations for DB. They have been separated out because they cannot be mixed with `DBProg` operations
-   * without first lifting them into a process via `liftToProcess`.
+   * Object that contains batch operations for DB. They have been separated out because they cannot be mixed with
+   * `DBProg` operations without first lifting them into a process via `liftToProcess`.
    */
   object Batch {
     def liftToProcess[A](prog: DBProg[A]): Process[DBOps, DBError \/ A] = Process.eval(prog.run)
     /**
      * Create all values in the Foldable F.
+     *
+     * Line is too long for scalastyle, but scalariform keeps pasting it back
+     * together, so ignore error.
      */
-    def createDocs[F[_]](foldable: F[(Key, RawJsonString)])(implicit F: Foldable[F]): Process[DBOps, DBError \/ DBValue] = {
+    def createDocs[F[_]](foldable: F[(Key, RawJsonString)])(implicit F: Foldable[F]): Process[DBOps, DBError \/ DBValue] = { // scalastyle:ignore
+
       Process.emitAll(foldable.toList).evalMap { case (key, json) => createDoc(key, json).run }
     }
   }

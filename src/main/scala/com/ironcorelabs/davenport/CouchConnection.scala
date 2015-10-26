@@ -32,7 +32,8 @@ final object CouchConnection {
   //
   private var currentConnection: Option[CouchConnectionInfo] = None
   private var testConnection: Option[CouchConnectionInfo] = None
-  val bucketOrError: Task[Bucket] = Task.delay(currentConnection.map(_.bucket).getOrElse(throw new Exception("Not connected")))
+  val bucketOrError: Task[Bucket] = Task.delay(currentConnection.map(_.bucket).
+    getOrElse(throw new Exception("Not connected")))
 
   //
   //
@@ -83,7 +84,9 @@ final object CouchConnection {
   })
   def connectWithConfig(dbcfg: Task[CouchConnectionConfig]): Throwable \/ Unit = dbcfg.map { cfg =>
     try {
-      println("Attempting connection to " + cfg.host)
+      // Want to print this line, but scalastyle doesn't like that call to
+      // print line, so ignore.
+      println("Attempting connection to " + cfg.host) // scalastyle:ignore
       val cluster = CouchbaseCluster.create(cfg.env, cfg.host)
       currentConnection = Some(CouchConnectionInfo(
         cluster,

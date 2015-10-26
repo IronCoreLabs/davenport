@@ -13,7 +13,7 @@ import DB._
  * data - The data stored in the document, typically RawJsonString when it comes out of the DB.
  */
 final case class DBDocument[A](key: Key, commitVersion: CommitVersion, data: A) {
-  def map[B](f: A => B) = DBDocument(key, commitVersion, f(data))
+  def map[B](f: A => B): DBDocument[B] = DBDocument(key, commitVersion, f(data))
 }
 
 final object DBDocument {
@@ -29,7 +29,8 @@ final object DBDocument {
 
     override def equal(doc1: DBDocument[A], doc2: DBDocument[A]): Boolean = (doc1, doc2) match {
       case (DBDocument(key1, commitVersion1, a1), DBDocument(key2, commitVersion2, a2)) =>
-        aEq.equal(a1, a2) && Equal[String].equal(key1.value, key2.value) && Equal[Long].equal(commitVersion1.value, commitVersion2.value)
+        aEq.equal(a1, a2) && Equal[String].equal(key1.value, key2.value) &&
+          Equal[Long].equal(commitVersion1.value, commitVersion2.value)
     }
   }
 
@@ -60,7 +61,8 @@ final object DBDocument {
    * Update the document to a new value.
    */
   def update[T](doc: DBDocument[T])(implicit codec: EncodeJson[T]): DBProg[DBDocument[T]] =
-    updateDoc(doc.key, RawJsonString(doc.data.asJson.toString), doc.commitVersion).map(newDoc => newDoc.map(_ => doc.data))
+    updateDoc(doc.key, RawJsonString(doc.data.asJson.toString), doc.commitVersion).
+      map(newDoc => newDoc.map(_ => doc.data))
 
   /**
    * Remove the document stored at key `key`
