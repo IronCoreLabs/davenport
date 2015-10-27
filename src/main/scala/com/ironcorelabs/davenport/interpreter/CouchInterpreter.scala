@@ -39,7 +39,8 @@ abstract class CouchInterpreter extends Interpreter {
  *
  * This object contains couchbase specific things such as CAS, which is modeled as CommitVersion.
  *
- * For details about how this translation is done, look at couchRunner which routes each DBOp to its couchbase counterpart.
+ * For details about how this translation is done, look at couchRunner which routes each DBOp to its couchbase
+ * counterpart.
  */
 final object CouchInterpreter {
   def apply(b: Task[Bucket]): CouchInterpreter = new CouchInterpreter {
@@ -115,11 +116,18 @@ final object CouchInterpreter {
       couchOpToA(fetchOp)(doc => Long2long(doc.content)).map(_.leftMap(throwableToDBError(k, _)))
     }
 
-    private def couchOpToDBValue(k: Key)(fetchOp: AsyncBucket => Observable[RawJsonDocument]): CouchK[DBError \/ DBValue] =
-      couchOpToA(fetchOp)(doc => DBDocument(k, CommitVersion(doc.cas), RawJsonString(doc.content))).map(_.leftMap(throwableToDBError(k, _)))
+    // These lines are too long for scalastyle, but can't find a way to stop
+    // scalastyle from pasting them back together wherever I split them, so
+    // they are getting the big ignore hammer.
+    private def couchOpToDBValue(k: Key)(fetchOp: AsyncBucket => Observable[RawJsonDocument]): CouchK[DBError \/ DBValue] = // scalastyle:ignore
+      couchOpToA(fetchOp)(doc => DBDocument(k, CommitVersion(doc.cas), RawJsonString(doc.content))).
+        map(_.leftMap(throwableToDBError(k, _)))
 
-    private def couchOpToA[A, B](fetchOp: AsyncBucket => Observable[AbstractDocument[B]])(f: AbstractDocument[B] => A): Kleisli[Task, Bucket, Throwable \/ A] = Kleisli.kleisli { bucket: Bucket =>
-      obs2Task(fetchOp(bucket.async)).map(_.map(f))
+    private def couchOpToA[A, B](fetchOp: AsyncBucket => Observable[AbstractDocument[B]])(f: AbstractDocument[B] => A): Kleisli[Task, Bucket, Throwable \/ A] = { // scalastyle:ignore
+
+      Kleisli.kleisli { bucket: Bucket =>
+        obs2Task(fetchOp(bucket.async)).map(_.map(f))
+      }
     }
 
     private def throwableToDBError(key: Key, t: Throwable): DBError = t match {

@@ -10,7 +10,9 @@ import com.couchbase.client.java.Bucket
 import DB.DBOps
 import interpreter.Interpreter
 
-final object process extends ProcessOps
+// The convention is for syntax objects to start with lower case, so they look
+// like package names. Scalastyle doesn't care for this, so ignore the line.
+final object process extends ProcessOps // scalastyle:ignore
 
 trait ProcessOps {
   implicit class OurProcessOps[M[_], A](self: Process[M, A]) {

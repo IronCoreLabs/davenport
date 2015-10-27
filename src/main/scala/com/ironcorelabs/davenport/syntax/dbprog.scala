@@ -10,7 +10,9 @@ import scalaz._
 import scalaz.concurrent.Task
 import interpreter.Interpreter
 
-final object dbprog extends DBProgOps
+// The convention is for syntax objects to start with lower case, so they look
+// like package names. Scalastyle doesn't care for this, so ignore the line.
+final object dbprog extends DBProgOps // scalastyle:ignore
 
 trait DBProgOps {
   implicit class OurDBProgOps[A](self: DBProg[A]) {
