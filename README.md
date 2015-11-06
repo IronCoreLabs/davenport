@@ -4,6 +4,7 @@
 [![Codacy Badge](https://www.codacy.com/project/badge/f9ad4d48e42d49fc851af5d9697753b8)](https://www.codacy.com/app/github-zmre/davenport)
 [![MIT Open Source License](https://img.shields.io/badge/license-MIT-blue.svg)](http://opensource.org/licenses/MIT)
 [![Stories In Progress](https://badge.waffle.io/IronCoreLabs/davenport.svg?label=in%20progress&title=In%20Progress)](http://waffle.io/IronCoreLabs/davenport)
+[![scaladoc](https://javadoc-badge.appspot.com/com.ironcorelabs/davenport_2.11.svg?label=scaladoc)](https://javadoc-badge.appspot.com/com.ironcorelabs/davenport_2.11)
 
 
 # Davenport - A principled Couchbase library for Scala
