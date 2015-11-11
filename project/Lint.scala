@@ -87,7 +87,7 @@ final object Lint {
     // The bit below removes all switches that could be passed to scalac about WartRemover during a non-lint compile.
     scalacOptions in Compile := (scalacOptions in Compile).value filterNot { switch =>
       switch.startsWith("-P:linter:") ||
-      "^-Xplugin:.*/com[.]foursquare[.]lint/.*linter.*[.]jar$".r.pattern.matcher(switch).find
+      "^-Xplugin:.*/org[.]psywerx[.]hairyfotr/.*linter.*[.]jar$".r.pattern.matcher(switch).find
     }
   }
 }
