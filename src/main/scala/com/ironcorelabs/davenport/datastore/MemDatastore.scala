@@ -2,7 +2,7 @@
 // Copyright (c) 2015 IronCore Labs
 //
 package com.ironcorelabs.davenport
-package interpreter
+package datastore
 
 import scalaz.concurrent.Task
 import scalaz.stream.Process
@@ -10,11 +10,11 @@ import scalaz._
 import scalaz.syntax.either._
 import DB._
 
-abstract class MemInterpreter extends Interpreter {
-  import MemInterpreter._
+abstract class MemDatastore extends Datastore {
+  import MemDatastore._
   protected var map: KVMap
 
-  def interpret: (DBOps ~> Task) = new (DBOps ~> Task) {
+  def execute: (DBOps ~> Task) = new (DBOps ~> Task) {
     def apply[A](prog: DBOps[A]): Task[A] = {
       //Note that the Task.delay captures the current state when this op is run, which is important
       //if you rerun a Task.
@@ -29,16 +29,16 @@ abstract class MemInterpreter extends Interpreter {
   }
 }
 
-object MemInterpreter {
+object MemDatastore {
   /** Backend of the memory store is a Map from Key -> RawJsonString */
   type KVMap = Map[Key, RawJsonString]
   type KVState[A] = StateT[Task, KVMap, A]
 
-  def apply(m: KVMap): MemInterpreter = new MemInterpreter {
+  def apply(m: KVMap): MemDatastore = new MemDatastore {
     protected var map = m
   }
 
-  def empty: MemInterpreter = apply(Map.empty)
+  def empty: MemDatastore = apply(Map.empty)
 
   val interpretKVState: DBOps ~> KVState = new (DBOps ~> KVState) {
     def apply[A](db: DBOps[A]): KVState[A] = {
