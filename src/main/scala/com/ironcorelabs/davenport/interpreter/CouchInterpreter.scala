@@ -22,9 +22,8 @@ import com.couchbase.client.java.error._
 import rx.lang.scala.Observable
 import rx.lang.scala.JavaConversions._
 
-abstract class CouchInterpreter extends Interpreter {
+final case class CouchInterpreter(bucket: Task[Bucket]) extends Interpreter {
   import CouchInterpreter._
-  def bucket: Task[Bucket]
   /**
    * Given a Bucket return back a NT that can turn DBOps into a Task.
    */
@@ -43,10 +42,6 @@ abstract class CouchInterpreter extends Interpreter {
  * counterpart.
  */
 final object CouchInterpreter {
-  def apply(b: Task[Bucket]): CouchInterpreter = new CouchInterpreter {
-    val bucket = b
-  }
-
   type CouchK[A] = Kleisli[Task, Bucket, A]
 
   /**

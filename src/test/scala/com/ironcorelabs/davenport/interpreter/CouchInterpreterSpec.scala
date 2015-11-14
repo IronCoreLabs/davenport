@@ -12,228 +12,59 @@ import DB._
 import DB.Batch._
 import tags.RequiresCouch
 import scala.concurrent.duration._
+import org.scalatest.BeforeAndAfter
 
 @RequiresCouch
-class CouchInterpreterSpec extends TestBase {
-  val k = Key("test")
-  val k404 = Key("test404")
-  val v = RawJsonString("value")
-  val newvalue = RawJsonString("some other value")
-  val tenrows = (1 to 10).map { i =>
-    (Key("key" + i) -> RawJsonString("val" + i))
-  }.toList
+class CouchInterpreterSpec extends InterpreterSpec with BeforeAndAfter {
+  def interpreterName: String = "CouchInterpreterBasicTests"
 
   //Interpreter to test.
-  val interpreter = CouchConnection.createInterpreter
-
-  //Helper functions.
-  def execProcess[A](p: Process[DBOps, A]): Process[Task, A] = p.interpret(interpreter)
-  def exec[A](prog: DBProg[A]): DBError \/ A = execTask(prog).run
-  def execTask[A](prog: DBProg[A]): Task[DBError \/ A] = prog.interpret(interpreter)
+  def emptyInterpreter: Interpreter = CouchConnection.createInterpreter
 
   override def beforeAll() = {
-    // Connect and make sure test key is not in db in case of
-    // bad cleanup on last run
     CouchConnection.connect
-    cleanup
     ()
   }
 
   override def afterAll() = {
-    cleanup
     CouchConnection.disconnect;
     ()
   }
 
+  /**
+   * Before each test, cleanup all the test data we use for the tests. This means
+   * every key that is used in the tests needs to be in the cleanup function.
+   */
+  before {
+    cleanup
+  }
+
   def cleanup() = {
-    exec(removeKey(k))
-    tenrows.foreach(kv => exec(removeKey(kv._1)))
+    val keys = k :: (tenrows ++ fiveMoreRows).map { case (k, _) => k }
+    keys.foreach { k =>
+      run(removeKey(k))
+    }
   }
 
   "CouchInterpreter" should {
-    import java.util._
-    import com.couchbase.client.java.error._
-    "fail fetching a doc that doesn't exist" in {
-      val res = exec(getDoc(k))
-      res.leftValue should ===(ValueNotFound(k))
-    }
-    "create a doc that doesn't exist" in {
-      val res = exec(createDoc(k, v))
-      res.value.data should ===(v)
-    }
-    "get a doc that should now exist" in {
-      val res = exec(getDoc(k))
-      res.value.data should ===(v)
-    }
-    "fail to create a doc if it already exists" in {
-      val testCreate = createDoc(k, newvalue)
-      val res = exec(testCreate)
-      res.leftValue should ===(ValueExists(k))
-    }
-    "fail to get counter when counter is actually a string" in {
-      val steps = for {
-        _ <- createDoc(k, v)
-        c <- getCounter(k)
-      } yield c
-      execTask(steps).attemptRun.value should be(left)
-    }
-    "fail to increment counter when counter is actually a string" in {
-      val steps = for {
-        _ <- createDoc(k, v)
-        c <- incrementCounter(k)
-      } yield c
-      execTask(steps).attemptRun.value should be(left)
-    }
-    "update a doc that exists with correct commitVersion" in {
-      val testUpdate = for {
-        t <- getDoc(k)
-        res <- updateDoc(k, newvalue, t.commitVersion)
-      } yield res
-      val res = exec(testUpdate)
-      res.value.commitVersion should not be (0)
-      val res2 = exec(getDoc(k))
-      res2.value.data should ===(newvalue)
-    }
-    "fail updating a doc that doesn't exist" in {
-      val testUpdate = updateDoc(k404, newvalue, CommitVersion(1234))
-      val res = exec(testUpdate)
-      res.leftValue should ===(ValueNotFound(k404))
-    }
-    "fail updating a doc when using incorrect commitVersion" in {
-      val testUpdate = updateDoc(k, v, CommitVersion(1234))
-      val res = exec(testUpdate)
-      res.leftValue should ===(CommitVersionMismatch(k))
-    }
-    "remove a key that exists" in {
-      val testRemove = removeKey(k)
-      val res = exec(removeKey(k))
-      res should be(right)
-    }
-    "fail removing a key that doesn't exist" in {
-      val testRemove = removeKey(k)
-      val res = exec(removeKey(k))
-      res.leftValue should ===(ValueNotFound(k))
-    }
-    "modify map fails if key is not in db" in {
-      val testModify = modifyDoc(k, j => newvalue)
-      val res = exec(testModify)
-      res should be(left)
-    }
-    "modify map after create" in {
-      val testModify = for {
-        _ <- createDoc(k, v)
-        res <- modifyDoc(k, j => newvalue)
-      } yield res
-      val res = exec(testModify)
-      res.value.data should ===(newvalue)
-    }
-    "get zero when retrieving non-existent counter" in {
-      val res = exec(for {
-        _ <- removeKey(k) // make sure it is gone
-        c <- getCounter(k)
-        _ <- removeKey(k) // clean up
-      } yield c)
-      res.value should ===(0L)
-    }
-    "get 1 when incrementing non-existant counter with default delta" in {
-      val res = exec(incrementCounter(k))
-      res.value should ===(1L)
-    }
-    "get 10 when incrementing existing counter (at 1) by 9" in {
-      val res = exec(incrementCounter(k, 9))
-      res.value should ===(10L)
-    }
-    "still get 10 when fetching existing counter" in {
-      val res = exec(getCounter(k))
-      res.value should ===(10L)
-    }
-    "be happy doing initial batch import" in {
-      val res: IndexedSeq[DBError \/ DBValue] = execProcess(createDocs(tenrows)).runLog.attemptRun.value
-      val (lefts, rights) = res.toList.separate
-      lefts.length should ===(0)
-      rights.length should ===(tenrows.length)
-
-    }
-    "error on single create after batch" in {
-      val res = execTask(tenrows.map { case (key, value) => createDoc(key, value) }.head).attemptRun.value
-      res should be(left)
-    }
-    "return errors batch importing the same items again" in {
-      val res = execProcess(createDocs(tenrows)).runLog.attemptRun.value
-      val (lefts, rights) = res.toList.separate
-      rights.length should ===(0)
-      lefts.length should ===(tenrows.length)
-
-      lefts.foldMap {
-        case ValueExists(_) => 1
-        case _ => 0
-      } should ===(tenrows.length)
-    }
-    "fail after first error if we pass in a halting function" in {
-      val res = execProcess(createDocs(tenrows).takeWhile(_.isRight)).runLog.attemptRun.value
-      val (lefts, rights) = res.toList.separate
-      lefts.length should ===(0)
-      rights.length should ===(0)
-    }
-    "attempt to recover from a bad CAS error by refetching and retrying" in {
-      // Setup
-      exec(for {
-        _ <- removeKey(k)
-        _ <- createDoc(k, v)
-      } yield ())
-
-      // Update
-      def upd(cas: Long) = updateDoc(k, newvalue, CommitVersion(cas))
-
-      // Generate a task that will fail with a bad CAS and prove it
-      val res: Task[DBError \/ DBValue] = execTask(upd(123))
-      res.run should be(left)
-
-      // Generate a task that handles CAS errors and run and verify
-      val handled: Task[DBError \/ DBValue] = res.map(_.handleError {
-        case CommitVersionMismatch(key) =>
-          execTask(for {
-            v <- getDoc(key)
-            u <- upd(v.commitVersion.value)
-          } yield u).run
-        case x => x.left
-
-      })
-
-      val finalres = handled.run.value
-      finalres.data should ===(newvalue)
-    }
-
-    "work without using interpreter by instead using Kleisli" in {
-      val createAndGet = for {
-        _ <- removeKey(k)
-        _ <- createDoc(k, v)
-        dbValue <- getDoc(k)
-      } yield dbValue.data
-      val task = CouchConnection.bucketOrError.flatMap(CouchInterpreter.interpretK(createAndGet).run(_))
-      task.run.value should ===(v)
-    }
     "handle a failed connection" in {
       // Save off bucket and then ditch it
       CouchConnection.fakeDisconnect
 
       // Prove that the connection fails
-      val connectionfail = execTask(getDoc(k))
+      val connectionfail = createTask(getDoc(k))
       connectionfail.attemptRun.leftValue.getMessage should ===("Not connected")
 
       CouchConnection.fakeDisconnectRevert
     }
-    /*
-     * TODO: No idea why this doesn't work. Punting until later.
-     */
-    "simulate a connection failure and recover from it using Task retry" ignore {
+    "simulate a connection failure and recover from it using Task retry" in {
       // handle async fun
       val w = new Waiter
 
       // Save off bucket and then hide it
       CouchConnection.fakeDisconnect
 
-      val connectionfail = execTask(getDoc(k))
+      val connectionfail = createTask(getDoc(k))
 
       // Setup a retry.  Within the retry, resolve the problem
       val retry = connectionfail.retryAccumulating(Seq(155.millis, 1025.millis), { t =>
@@ -242,6 +73,15 @@ class CouchInterpreterSpec extends TestBase {
       })
       val res = retry.attemptRun
       res should be(right)
+    }
+
+    "work without using interpreter by instead using Kleisli" in {
+      val createAndGet = for {
+        _ <- createDoc(k, v)
+        dbValue <- getDoc(k)
+      } yield dbValue.data
+      val task = CouchConnection.bucketOrError.flatMap(CouchInterpreter.interpretK(createAndGet).run(_))
+      task.run.value shouldBe v
     }
   }
 }
