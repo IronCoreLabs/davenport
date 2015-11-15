@@ -22,7 +22,7 @@ import com.couchbase.client.java.error._
 import rx.lang.scala.Observable
 import rx.lang.scala.JavaConversions._
 
-final case class CouchDatastore(bucket: Task[Bucket]) extends Interpreter {
+final case class CouchDatastore(bucket: Task[Bucket]) extends Datastore {
   import CouchDatastore._
   /**
    * Given a Bucket return back a NT that can turn DBOps into a Task.

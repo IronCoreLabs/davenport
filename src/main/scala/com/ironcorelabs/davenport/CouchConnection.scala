@@ -123,7 +123,7 @@ final object CouchConnection {
    */
   def connected: Boolean = !currentConnection.isEmpty
 
-  def createInterpreter: CouchDatastore = CouchDatastore(bucketOrError)
+  def createDatastore: CouchDatastore = CouchDatastore(bucketOrError)
 
   /**
    * Used for testing a failed connection without having

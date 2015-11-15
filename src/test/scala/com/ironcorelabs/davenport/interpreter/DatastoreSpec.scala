@@ -2,23 +2,22 @@
 // Copyright (c) 2015 IronCore Labs
 //
 package com.ironcorelabs.davenport
-package interpreter
+package datastore
 
 import syntax._
 import scalaz._, Scalaz._, scalaz.concurrent.Task
 import DB._
 import DB.Batch._
-import MemInterpreter.{ KVMap, KVState }
 import scalaz.stream.Process
 
 /**
- * All interpreters should inherit from this test. In order to do so the derived classes must provide a way to get an
- * "emptyInterpreter". For interpreters that have external state, see CouchInterpreterSpec for an example of a way to clear
+ * All datastore tests should inherit from this test. In order to do so the derived classes must provide a way to get an
+ * "emptyDatastore". For datastores that have external state, see CouchInterpreterSpec for an example of a way to clear
  * the state between tests.
  */
-abstract class InterpreterSpec extends TestBase {
-  def interpreterName: String
-  def emptyInterpreter: Interpreter
+abstract class DatastoreSpec extends TestBase {
+  def datastoreName: String
+  def emptyDatastore: Datastore
 
   //Variables used in many tests
   val k = Key("test")
@@ -39,14 +38,14 @@ abstract class InterpreterSpec extends TestBase {
   } yield newV
 
   //Couple helper functions
-  def run[A](prog: DBProg[A]): DBError \/ A = emptyInterpreter.interpret(prog).run
+  def run[A](prog: DBProg[A]): DBError \/ A = emptyDatastore.execute(prog).run
 
   def runProcess[A](process: Process[DBOps, A]): Throwable \/ IndexedSeq[A] =
-    process.interpret(emptyInterpreter).runLog.attemptRun
+    process.execute(emptyDatastore).runLog.attemptRun
 
-  def createTask[A](prog: DBProg[A]): Task[DBError \/ A] = prog.interpret(emptyInterpreter)
+  def createTask[A](prog: DBProg[A]): Task[DBError \/ A] = prog.execute(emptyDatastore)
 
-  interpreterName should {
+  datastoreName should {
     //
     // Test basic create/get/update operations
     //
@@ -66,8 +65,8 @@ abstract class InterpreterSpec extends TestBase {
     }
     "fail to create a doc if it already exists" in {
       val testCreate = createDoc(k, newvalue)
-      val interpreter = emptyInterpreter
-      val createTask = testCreate.interpret(interpreter)
+      val datastore = emptyDatastore
+      val createTask = testCreate.execute(datastore)
       //This is split into 2 to ensure the first is successful.
       createTask.run.value
       createTask.run shouldBe left
@@ -162,7 +161,7 @@ abstract class InterpreterSpec extends TestBase {
       val dataStream = Process.eval(Task.now(k -> v))
       val task: Task[IndexedSeq[DBError \/ RawJsonString]] = dataStream.flatMap {
         case (key, value) =>
-          createDoc(key, value).map(_.data).process.interpret(emptyInterpreter)
+          createDoc(key, value).map(_.data).process.execute(emptyDatastore)
       }.runLog
       val result = task.run
       result should have size (1)
@@ -170,19 +169,19 @@ abstract class InterpreterSpec extends TestBase {
     }
 
     "show partial success will still change the backing store" in {
-      val interpreter = emptyInterpreter
+      val datastore = emptyDatastore
       val createOne = createAndGet(k, v)
       val k2 = Key("something.")
       val v2 = RawJsonString("thisIsValue")
       val createTwo = createAndGet(k2, v2)
       //Setup the backing store
-      createOne.interpret(interpreter).run.value
+      createOne.execute(datastore).run.value
       //create one should cause the whole thing to report error
-      val error = (createTwo *> createOne).interpret(interpreter).run.leftValue
+      val error = (createTwo *> createOne).execute(datastore).run.leftValue
       error.message should include("already exists")
 
       //check to ensure that ever though the last operation failed, it still committed everything before `createOne`.
-      val (r1, r2) = (getDocString(k) |@| getDocString(k2))(_ -> _).interpret(interpreter).run.value
+      val (r1, r2) = (getDocString(k) |@| getDocString(k2))(_ -> _).execute(datastore).run.value
       r1 shouldBe v //This is in there because of the setup
       r2 shouldBe v2 //This should be in there because createTwo succeeded.
     }
@@ -195,20 +194,20 @@ abstract class InterpreterSpec extends TestBase {
       res.toList.separate._2.length shouldBe tenrows.length
     }
     "return errors batch importing the same items again" in {
-      val interpreter = emptyInterpreter
-      val initialInsertResult = createDocs(tenrows).interpret(interpreter).runLog.run
+      val datastore = emptyDatastore
+      val initialInsertResult = createDocs(tenrows).execute(datastore).runLog.run
       //Verified by another test, but sanity check.
       initialInsertResult.forall(_.isRight) shouldBe true
-      val res = createDocs(tenrows ++ fiveMoreRows).interpret(interpreter).runLog.run
+      val res = createDocs(tenrows ++ fiveMoreRows).execute(datastore).runLog.run
       res.length shouldBe tenrows.length + fiveMoreRows.length
       val (lefts, rights) = res.toList.separate
       lefts.length shouldBe tenrows.length
       rights.length shouldBe fiveMoreRows.length
     }
     "fail after on first error if we pass in a halting function" in {
-      val interpreter = emptyInterpreter
-      val initialInsert = createDocs(tenrows).interpret(interpreter).runLog.attemptRun.value
-      val res = createDocs(tenrows).takeThrough(_.isRight).interpret(interpreter).runLog.attemptRun.value
+      val datastore = emptyDatastore
+      val initialInsert = createDocs(tenrows).execute(datastore).runLog.attemptRun.value
+      val res = createDocs(tenrows).takeThrough(_.isRight).execute(datastore).runLog.attemptRun.value
       res.length shouldBe 1
       res.head shouldBe left
     }

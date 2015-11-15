@@ -9,7 +9,7 @@ import Arbitrary.arbitrary
 import DB._
 import scalaz._, Scalaz._, scalaz.concurrent.Task
 import argonaut._, Argonaut._
-import interpreter.MemInterpreter
+import datastore.MemDatastore
 import syntax.key._
 
 class DBDocumentSpec extends TestBase {
@@ -35,27 +35,27 @@ class DBDocumentSpec extends TestBase {
     val k1 = Key("user::email@example.com")
     "create, then get and then remove wrapper docs" in {
       val create = k1.dbCreate(u1)
-      val interpreter = MemInterpreter.empty
-      val res = interpreter.interpret(create).run
+      val datastore = MemDatastore.empty
+      val res = datastore.execute(create).run
       res should be(right)
       // next line is basically to make sure commitVersion is populated and juice up
       // code coverage
       res.value.commitVersion.value should be > 0L
 
       val get = k1.dbGet[User]
-      val res2 = interpreter.interpret(get).run.value
+      val res2 = datastore.execute(get).run.value
       res2.data should equal(u1)
-      val res3 = interpreter.interpret(DBDocument.remove(res2.key)).run
+      val res3 = datastore.execute(DBDocument.remove(res2.key)).run
       res3 should be(right)
     }
     "attempt removal of a missing doc" in {
-      val res = MemInterpreter.empty.interpret(k1.dbRemove).run
+      val res = MemDatastore.empty.execute(k1.dbRemove).run
       res should be(left) // fail since doesn't exist
     }
 
     "work correctly when constructing key from a counter" in {
       import syntax._
-      val interpreter = MemInterpreter.empty
+      val datastore = MemDatastore.empty
       val counterKey = Key("myCounter")
       val getUserById = for {
         k <- counterKey.dbGetCounter
@@ -68,26 +68,26 @@ class DBDocumentSpec extends TestBase {
       } yield user
 
       //Make the value 100 just for fun.
-      counterKey.dbIncrementCounter(100).interpret(interpreter).run.value
-      val notFoundError = getUserById.interpret(interpreter).run.leftValue
+      counterKey.dbIncrementCounter(100).execute(datastore).run.value
+      val notFoundError = getUserById.execute(datastore).run.leftValue
       notFoundError.message should include("user100")
-      val createdUserDoc = createUserForId.interpret(interpreter).run.value
+      val createdUserDoc = createUserForId.execute(datastore).run.value
       createdUserDoc.data shouldBe u1
-      getUserById.interpret(interpreter).run.value shouldBe createdUserDoc
+      getUserById.execute(datastore).run.value shouldBe createdUserDoc
     }
 
     "modify according to the passed in function" in {
       import syntax._
-      val interpreter = MemInterpreter.empty
-      val putUserDoc = k1.dbCreate(u1).interpret(interpreter).run.value
+      val datastore = MemDatastore.empty
+      val putUserDoc = k1.dbCreate(u1).execute(datastore).run.value
       def removeFirstName(u: User) = u.copy(firstName = "")
-      val noMoreName = k1.dbModify[User](removeFirstName(_)).interpret(interpreter).run.value
+      val noMoreName = k1.dbModify[User](removeFirstName(_)).execute(datastore).run.value
       //value should be the same as the doc we put 
       noMoreName.data shouldBe putUserDoc.map(removeFirstName(_)).data
       //commit versions should *not* match because the data changed.
       noMoreName.commitVersion should not be (putUserDoc.commitVersion)
       //Get the data to be sure modify returned the correct data and commit version
-      k1.dbGet[User].interpret(interpreter).run.value shouldBe noMoreName
+      k1.dbGet[User].execute(datastore).run.value shouldBe noMoreName
 
     }
     "have a lawful scalaz typeclasses" in {
