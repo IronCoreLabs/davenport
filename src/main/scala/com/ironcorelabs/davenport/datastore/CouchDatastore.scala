@@ -51,7 +51,7 @@ final object CouchDatastore {
   def executeK[A](prog: DBProg[A]): CouchK[DBError \/ A] = executeK(prog.run)
 
   /**
-   * Basic building block. Turns the DbOps into a Kleisli which takes a Bucket, used by interpret above.
+   * Basic building block. Turns the DbOps into a Kleisli which takes a Bucket, used by execute above.
    */
   def executeK[A](prog: DBOps[A]): CouchK[A] = Free.runFC[DBOp, CouchK, A](prog)(couchRunner)
 
@@ -72,7 +72,7 @@ final object CouchDatastore {
     }
 
     /*
-     * Helpers for the grammar interpreter
+     * Helpers for the datastore
      */
     private def getDoc(k: Key): CouchK[DBError \/ DBValue] =
       couchOpToDBValue(k)(_.get(k.value, classOf[RawJsonDocument]))

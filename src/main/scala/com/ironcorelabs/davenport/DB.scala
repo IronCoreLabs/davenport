@@ -8,7 +8,7 @@ import scalaz.stream.Process
 
 /**
  * Contains the primitives for building DBProg programs for later execution by
- *  a connection.
+ *  a datastore.
  *
  * To use this, import com.ironcorelabs.davenport.DB._
  */
@@ -46,12 +46,10 @@ final object DB {
   type DBOps[A] = Free.FreeC[DBOp, A]
 
   /**
-   * The basic building block sent to the interpreter.
+   * The basic building block sent to the datastore.
    *
-   *  Effectively this captures expected return type of `DBError \/ A`
-   *  and a series of [[DBOp]] classes or functions combined together.
-   *  When passed to an interpreter such as `CouchConnection.exec` or
-   *  `MemConnection.exec`, these are executed.
+   *  Effectively this captures expected return type of `DBError \/ A` and a series of [[DBOp]] classes or functions combined together.
+   *  When passed to an datastore such as `MemDatastore` or `CouchDatastore`, these are executed.
    */
   type DBProg[A] = EitherT[DBOps, DBError, A]
 

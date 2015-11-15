@@ -30,7 +30,7 @@ Now that we have a `JsonCodec` and a way to get a key, let's see how it works!
 
 ```tut
 import Example._
-import com.ironcorelabs.davenport.interpreter.MemInterpreter
+import com.ironcorelabs.davenport.datastore.MemDatastore
 import com.ironcorelabs.davenport.syntax._
 import scalaz._
 
@@ -41,15 +41,15 @@ val addTwoNewUsers = for {
   newu2 <- User.createKey(user2).dbCreate(user2)
 } yield List(newu1, newu2)
 
-val users = MemInterpreter.empty.interpret(addTwoNewUsers).run
+val users = MemDatastore.empty.execute(addTwoNewUsers).run
 ```
 
-Feel free to test against Couchbase as well.  We'll keep illustrating with the MemInterpreter for now to show how you can easily experiment and write unit tests.  As an alternative to calling `MemInterpreter.empty.interpret` you can call `CouchConnection.createInterpreter.interpret`.  You could also import the syntax which will add `interpret` to `DBProg` which takes any `Interpreter`. Building on our example above, we could instead do this:
+Feel free to test against Couchbase as well.  We'll keep illustrating with the MemDatastore for now to show how you can easily experiment and write unit tests.  As an alternative to calling `MemDatastore.empty.execute` you can call `CouchConnection.createInterpreter.execute`.  You could also import the syntax which will add `execute` to `DBProg` which takes any `Interpreter`. Building on our example above, we could instead do this:
 
 ```tut
-val interpreter = MemInterpreter.empty
-val users = addTwoNewUsers.interpret(interpreter).run
+val datastore = MemDatastore.empty
+val users = addTwoNewUsers.execute(datastore).run
 
 // Fetch one of the users out of the database
-val u1 = Key("user::readyplayerone@example.com").dbGet[User].interpret(interpreter).run
+val u1 = Key("user::readyplayerone@example.com").dbGet[User].execute(datastore).run
 ```

@@ -18,7 +18,7 @@ abstract class MemDatastore extends Datastore {
     def apply[A](prog: DBOps[A]): Task[A] = {
       //Note that the Task.delay captures the current state when this op is run, which is important
       //if you rerun a Task.
-      Task.delay(map).flatMap(interpretKVState(prog)(_)).map {
+      Task.delay(map).flatMap(executeKVState(prog)(_)).map {
         case (newM, value) =>
           //In order to provide the same semantics as Couch, once a value has been "computed" it will be 
           //committed to the DB. Note that this might overwrite someone elses changes in a multi-thread environment.
@@ -40,7 +40,7 @@ object MemDatastore {
 
   def empty: MemDatastore = apply(Map.empty)
 
-  val interpretKVState: DBOps ~> KVState = new (DBOps ~> KVState) {
+  val executeKVState: DBOps ~> KVState = new (DBOps ~> KVState) {
     def apply[A](db: DBOps[A]): KVState[A] = {
       Free.runFC[DBOp, KVState, A](db)(toKVState)
     }

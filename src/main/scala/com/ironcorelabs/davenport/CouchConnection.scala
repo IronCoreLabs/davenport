@@ -14,7 +14,7 @@ import knobs.{ Required, Optional, FileResource, Config, ClassPathResource }
 import java.io.File
 import datastore.CouchDatastore
 
-/** Connect to Couchbase and interpret [[DB.DBProg]]s */
+/** Connect to Couchbase and execute [[DB.DBProg]]s */
 final object CouchConnection {
   //
   //

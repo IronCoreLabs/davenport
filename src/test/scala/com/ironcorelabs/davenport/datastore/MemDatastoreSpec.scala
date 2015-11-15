@@ -1,5 +1,5 @@
 //
-// com.ironcorelabs.davenport.MemInterpreterSpec
+// com.ironcorelabs.davenport.MemDatastoreSpec
 //
 // Copyright (c) 2015 IronCore Labs
 //

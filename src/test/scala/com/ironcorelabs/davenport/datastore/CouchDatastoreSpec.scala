@@ -1,5 +1,5 @@
 //
-// com.ironcorelabs.davenport.CouchInterpreterSpec
+// com.ironcorelabs.davenport.CouchDatastoreSpec
 //
 // Copyright (c) 2015 IronCore Labs
 //
@@ -15,7 +15,7 @@ import scala.concurrent.duration._
 import org.scalatest.BeforeAndAfter
 
 @RequiresCouch
-class CouchInterpreterSpec extends DatastoreSpec with BeforeAndAfter {
+class CouchDatastoreSpec extends DatastoreSpec with BeforeAndAfter {
   def datastoreName: String = "CouchDatastoreBasicTests"
 
   def emptyDatastore: Datastore = CouchConnection.createDatastore
@@ -45,7 +45,7 @@ class CouchInterpreterSpec extends DatastoreSpec with BeforeAndAfter {
     }
   }
 
-  "CouchInterpreter" should {
+  "CouchDatastore" should {
     "handle a failed connection" in {
       // Save off bucket and then ditch it
       CouchConnection.fakeDisconnect

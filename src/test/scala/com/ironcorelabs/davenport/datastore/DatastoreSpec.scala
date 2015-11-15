@@ -12,7 +12,7 @@ import scalaz.stream.Process
 
 /**
  * All datastore tests should inherit from this test. In order to do so the derived classes must provide a way to get an
- * "emptyDatastore". For datastores that have external state, see CouchInterpreterSpec for an example of a way to clear
+ * "emptyDatastore". For datastores that have external state, see CouchDatastoreSpec for an example of a way to clear
  * the state between tests.
  */
 abstract class DatastoreSpec extends TestBase {
