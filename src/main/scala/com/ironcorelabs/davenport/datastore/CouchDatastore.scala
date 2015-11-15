@@ -1,10 +1,10 @@
 //
-// com.ironcorelabs.davenport.CouchInterpreter
+// com.ironcorelabs.davenport.CouchDatastore
 //
 // Copyright (c) 2015 IronCore Labs
 //
 package com.ironcorelabs.davenport
-package interpreter
+package datastore
 
 import scalaz.{ \/, \/-, ~>, Kleisli, Free }
 import scalaz.concurrent.Task
@@ -22,14 +22,14 @@ import com.couchbase.client.java.error._
 import rx.lang.scala.Observable
 import rx.lang.scala.JavaConversions._
 
-final case class CouchInterpreter(bucket: Task[Bucket]) extends Interpreter {
-  import CouchInterpreter._
+final case class CouchDatastore(bucket: Task[Bucket]) extends Datastore {
+  import CouchDatastore._
   /**
    * Given a Bucket return back a NT that can turn DBOps into a Task.
    */
-  def interpret: (DBOps ~> Task) = new (DBOps ~> Task) {
+  def execute: (DBOps ~> Task) = new (DBOps ~> Task) {
     def apply[A](prog: DBOps[A]): Task[A] =
-      bucket.flatMap(interpretK(prog).run(_))
+      bucket.flatMap(executeK(prog).run(_))
   }
 }
 
@@ -41,19 +41,19 @@ final case class CouchInterpreter(bucket: Task[Bucket]) extends Interpreter {
  * For details about how this translation is done, look at couchRunner which routes each DBOp to its couchbase
  * counterpart.
  */
-final object CouchInterpreter {
+final object CouchDatastore {
   type CouchK[A] = Kleisli[Task, Bucket, A]
 
   /**
    * Interpret the program into a Kleisli that will take a Bucket as its argument. Useful if you want to do
    * Kleisli arrow composition before running it.
    */
-  def interpretK[A](prog: DBProg[A]): CouchK[DBError \/ A] = interpretK(prog.run)
+  def executeK[A](prog: DBProg[A]): CouchK[DBError \/ A] = executeK(prog.run)
 
   /**
-   * Basic building block. Turns the DbOps into a Kleisli which takes a Bucket, used by interpret above.
+   * Basic building block. Turns the DbOps into a Kleisli which takes a Bucket, used by execute above.
    */
-  def interpretK[A](prog: DBOps[A]): CouchK[A] = Free.runFC[DBOp, CouchK, A](prog)(couchRunner)
+  def executeK[A](prog: DBOps[A]): CouchK[A] = Free.runFC[DBOp, CouchK, A](prog)(couchRunner)
 
   /**
    * In this case, the couchRunner object transforms [[DB.DBOp]] to
@@ -72,7 +72,7 @@ final object CouchInterpreter {
     }
 
     /*
-     * Helpers for the grammar interpreter
+     * Helpers for the datastore
      */
     private def getDoc(k: Key): CouchK[DBError \/ DBValue] =
       couchOpToDBValue(k)(_.get(k.value, classOf[RawJsonDocument]))

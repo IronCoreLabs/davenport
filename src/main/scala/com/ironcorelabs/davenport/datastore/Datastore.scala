@@ -2,17 +2,17 @@
 // Copyright (c) 2015 IronCore Labs
 //
 package com.ironcorelabs.davenport
-package interpreter
+package datastore
 
 import scalaz.concurrent.Task
 import scalaz.stream.Process
 import scalaz._
 import DB._
 
-trait Interpreter {
+trait Datastore {
   //Define how you map each op to a Task using a Natural Transformation.
-  def interpret: (DBOps ~> Task)
+  def execute: (DBOps ~> Task)
 
-  def interpret[A](db: DBProg[A]): Task[DBError \/ A] = interpret(db.run)
-  def interpretP[A](p: Process[DBOps, A]): Process[Task, A] = p.translate(interpret)
+  def execute[A](db: DBProg[A]): Task[DBError \/ A] = execute(db.run)
+  def executeP[A](p: Process[DBOps, A]): Process[Task, A] = p.translate(execute)
 }

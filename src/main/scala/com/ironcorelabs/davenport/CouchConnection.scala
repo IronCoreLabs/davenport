@@ -12,9 +12,9 @@ import com.couchbase.client.java.env.{ CouchbaseEnvironment, DefaultCouchbaseEnv
 // Configuration library
 import knobs.{ Required, Optional, FileResource, Config, ClassPathResource }
 import java.io.File
-import interpreter.CouchInterpreter
+import datastore.CouchDatastore
 
-/** Connect to Couchbase and interpret [[DB.DBProg]]s */
+/** Connect to Couchbase and execute [[DB.DBProg]]s */
 final object CouchConnection {
   //
   //
@@ -123,7 +123,7 @@ final object CouchConnection {
    */
   def connected: Boolean = !currentConnection.isEmpty
 
-  def createInterpreter: CouchInterpreter = CouchInterpreter(bucketOrError)
+  def createDatastore: CouchDatastore = CouchDatastore(bucketOrError)
 
   /**
    * Used for testing a failed connection without having

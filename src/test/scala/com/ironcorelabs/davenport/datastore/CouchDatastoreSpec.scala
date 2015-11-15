@@ -1,10 +1,10 @@
 //
-// com.ironcorelabs.davenport.CouchInterpreterSpec
+// com.ironcorelabs.davenport.CouchDatastoreSpec
 //
 // Copyright (c) 2015 IronCore Labs
 //
 package com.ironcorelabs.davenport
-package interpreter
+package datastore
 
 import syntax._
 import scalaz._, Scalaz._, scalaz.concurrent.Task, scalaz.stream.Process
@@ -15,11 +15,10 @@ import scala.concurrent.duration._
 import org.scalatest.BeforeAndAfter
 
 @RequiresCouch
-class CouchInterpreterSpec extends InterpreterSpec with BeforeAndAfter {
-  def interpreterName: String = "CouchInterpreterBasicTests"
+class CouchDatastoreSpec extends DatastoreSpec with BeforeAndAfter {
+  def datastoreName: String = "CouchDatastoreBasicTests"
 
-  //Interpreter to test.
-  def emptyInterpreter: Interpreter = CouchConnection.createInterpreter
+  def emptyDatastore: Datastore = CouchConnection.createDatastore
 
   override def beforeAll() = {
     CouchConnection.connect
@@ -46,7 +45,7 @@ class CouchInterpreterSpec extends InterpreterSpec with BeforeAndAfter {
     }
   }
 
-  "CouchInterpreter" should {
+  "CouchDatastore" should {
     "handle a failed connection" in {
       // Save off bucket and then ditch it
       CouchConnection.fakeDisconnect
@@ -75,12 +74,12 @@ class CouchInterpreterSpec extends InterpreterSpec with BeforeAndAfter {
       res should be(right)
     }
 
-    "work without using interpreter by instead using Kleisli" in {
+    "work without using datastore by instead using Kleisli" in {
       val createAndGet = for {
         _ <- createDoc(k, v)
         dbValue <- getDoc(k)
       } yield dbValue.data
-      val task = CouchConnection.bucketOrError.flatMap(CouchInterpreter.interpretK(createAndGet).run(_))
+      val task = CouchConnection.bucketOrError.flatMap(CouchDatastore.executeK(createAndGet).run(_))
       task.run.value shouldBe v
     }
   }
