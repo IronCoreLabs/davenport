@@ -81,11 +81,7 @@ object MemDatastore {
   private def getCounter(k: Key): KVState[DBError \/ Long] = {
     state { m: KVMap =>
       m.get(k).map { json =>
-        try {
-          (m -> json.value.toLong.right)
-        } catch {
-          case ex: Throwable => m -> GeneralError(ex).left
-        }
+        m -> \/.fromTryCatchNonFatal(json.value.toLong).leftMap(GeneralError(_))
       } getOrElse {
         (m + (k -> RawJsonString("0")) -> 0L.right)
       }
@@ -96,13 +92,10 @@ object MemDatastore {
     state { m: KVMap =>
       m.get(k).map { json =>
         // convert to long and increment by delta
-        try {
-          val newval = json.value.toLong + delta
-          (m + (k -> RawJsonString(newval.toString)) -> newval.right)
-        } catch {
-          case ex: Throwable => m -> GeneralError(ex).left
-        }
-      } getOrElse {
+        val newval = \/.fromTryCatchNonFatal(json.value.toLong + delta).leftMap(GeneralError(_))
+        val newMap = newval.fold(_ => m, v => m + (k -> RawJsonString(v.toString)))
+        newMap -> newval
+      }.getOrElse {
         // save delta to db
         (m + (k -> RawJsonString(delta.toString)), delta.right)
       }
