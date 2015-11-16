@@ -82,8 +82,8 @@ final object CouchConnection {
   def connectToHost(host: String): Throwable \/ Unit = connectWithConfig(dbconfig.map { cfg =>
     cfg.copy(host = host)
   })
-  def connectWithConfig(dbcfg: Task[CouchConnectionConfig]): Throwable \/ Unit = dbcfg.map { cfg =>
-    try {
+  def connectWithConfig(dbcfg: Task[CouchConnectionConfig]): Throwable \/ Unit = dbcfg.attemptRun.flatMap { cfg =>
+    \/.fromTryCatchNonFatal {
       // Want to print this line, but scalastyle doesn't like that call to
       // print line, so ignore.
       println("Attempting connection to " + cfg.host) // scalastyle:ignore
@@ -93,14 +93,12 @@ final object CouchConnection {
         cluster.openBucket(cfg.bucketName),
         cfg.env
       ))
-      ().right
-    } catch {
-      case e: Exception => {
-        currentConnection = None
-        e.left
-      }
+      ()
+    }.leftMap { e =>
+      currentConnection = None
+      e
     }
-  }.attemptRun.join
+  }
 
   /** Safely disconnect from couchbase */
   def disconnect(): Unit = {
