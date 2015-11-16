@@ -3,7 +3,7 @@
 //
 package com.ironcorelabs.davenport
 
-import scalaz._, Scalaz._, scalaz.concurrent.Task
+import scalaz.\/, scalaz.concurrent.Task
 
 // Couchbase
 import com.couchbase.client.java.{ CouchbaseCluster, Bucket, AsyncBucket }
