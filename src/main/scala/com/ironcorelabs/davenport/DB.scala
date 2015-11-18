@@ -170,7 +170,7 @@ final object DB {
    * @param value Value that failed to parse.
    */
   final case class DeserializationError(key: Key, value: String, errorMessage: String) extends DBError {
-    def message: String = s"Failed to deserilize '$value' which was at '$key' with message '$errorMessage'"
+    def message: String = s"Failed to deserialize '$value' which was at '$key' with message '$errorMessage'"
   }
 
   /**
