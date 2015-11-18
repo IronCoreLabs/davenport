@@ -90,6 +90,21 @@ class DBDocumentSpec extends TestBase {
       k1.dbGet[User].execute(datastore).run.value shouldBe noMoreName
 
     }
+
+    "displays useful information on failed deserialization" in {
+      import syntax._
+      val datastore = MemDatastore.empty
+      val putString = k1.dbCreate("hello").execute(datastore).run.value
+      val dbError = k1.dbGet[User].execute(datastore).run.leftValue
+      dbError match {
+        case error @ DeserializationError(key, value, errorMessage) =>
+          key shouldBe k1
+          value shouldBe "\"hello\""
+          errorMessage should include("(firstName)")
+        case error =>
+          fail(s"expected 'DeserializationError', but found  '$error' instead.")
+      }
+    }
     "have a lawful scalaz typeclasses" in {
       import scalaz.scalacheck.ScalazProperties
       check(ScalazProperties.equal.laws[DBDocument[Int]])
