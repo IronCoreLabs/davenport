@@ -29,3 +29,21 @@ Once you're setup, to update the site, do this:
 
 You can also do `sbt previewSite` to check things out locally, but you'll need to update the `src/jekyll/_config.yml` file to change the `baseurl` config to `""`.  Just don't check that in and push or you'll break the live site.  If you want to set up some kind of conditional to make this better, that would be great.
 
+
+## Pre-Pull Request Checklist
+
+1. Run `sbt lint:compile` and make sure it passes
+2. Run `sbt tut unidoc` to make sure the docs all work still
+3. Check your unit test coverage (see section above) to make sure your coverage is near 100%.
+4. Run a full suite of `sbt test` to make sure nothing broke
+
+## Releasing Davenport
+
+This will require access to the sonatype repo and to the PGP key used for signing releases.
+
+1. Go run `sbt lint:compile` if you haven't already.
+2. Run `sbt tut make-site` to update the documentation.
+3. Run `sbt release` to generate the artifacts and push them to sonatype.
+4. Go to [https://oss.sonatype.org](), click on Staging Repositories, find the staged `comironcorelabs` item, select it and press the `Close` button.
+5. Wait a minute and refresh and make sure it closed successfully. Select the item again and click the `Release` button.
+6. Once released, push the updated docs to the davenport website with `sbt ghpages-push-site`.
