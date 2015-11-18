@@ -29,8 +29,7 @@ after_success:
   test "${TRAVIS_PULL_REQUEST}" = 'false' &&
   test "${TRAVIS_JDK_VERSION}" = 'oraclejdk8' &&
   test "${TRAVIS_BRANCH}" = 'master' &&
-  sbt 'set version := version.value + "-SNAPSHOT"' publish
-  # sbt publish
+  sbt publish
   # sbt 'set version := version.value + "." + System.getenv("TRAVIS_BUILD_NUMBER") + "-SNAPSHOT"' publish
 notifications:
   slack:
