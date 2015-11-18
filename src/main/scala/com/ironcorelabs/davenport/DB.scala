@@ -166,11 +166,11 @@ final object DB {
   /**
    * Deserialization failures will be wrapped up in this type.
    * @param key The key that was requested
-   * @param underlying The underlying failure message from the parse failure.
+   * @param errorMessage The underlying failure message from the parse failure.
    * @param value Value that failed to parse.
    */
-  final case class DeserializationError(key: Key, underlying: String, value: String) extends DBError {
-    def message: String = s"Failed to deserilize '$value' which was at '$key' with message '$underlying'"
+  final case class DeserializationError(key: Key, value: String, errorMessage: String) extends DBError {
+    def message: String = s"Failed to deserilize '$value' which was at '$key' with message '$errorMessage'"
   }
 
   /**
