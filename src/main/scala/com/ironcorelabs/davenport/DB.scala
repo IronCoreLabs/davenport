@@ -162,6 +162,17 @@ final object DB {
   final case class CommitVersionMismatch(key: Key) extends DBError {
     def message: String = s"The CommitVersion for '$key' was incorrect."
   }
+
+  /**
+   * Deserialization failures will be wrapped up in this type.
+   * @param key The key that was requested
+   * @param underlying The underlying failure message from the parse failure.
+   * @param value Value that failed to parse.
+   */
+  final case class DeserializationError(key: Key, underlying: String, value: String) extends DBError {
+    def message: String = s"Failed to deserilize '$value' which was at '$key' with message '$underlying'"
+  }
+
   /**
    * All other errors will be exceptions that come out of the underlying store. They'll be
    * wrapped up in this type.

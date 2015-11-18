@@ -5,6 +5,7 @@ package com.ironcorelabs.davenport
 
 import argonaut._, Argonaut._
 import DB._
+import scalaz.syntax.either._
 
 /**
  * A document that's either destined to be put into the DB or came out of the DB.
@@ -38,7 +39,7 @@ final object DBDocument {
    * Create a document out of `t` using `codec` and store it at `key`.
    */
   def create[T](key: Key, t: T)(implicit codec: EncodeJson[T]): DBProg[DBDocument[T]] =
-    createDoc(key, RawJsonString(t.asJson.toString)).map(_.map(_ => t))
+    createDoc(key, RawJsonString(t.asJson.nospaces)).map(_.map(_ => t))
 
   /**
    * Fetch a document from the datastore and decode it using `codec`
@@ -46,7 +47,8 @@ final object DBDocument {
    */
   def get[T](k: Key)(implicit codec: DecodeJson[T]): DBProg[DBDocument[T]] = for {
     s <- getDoc(k)
-    v <- liftIntoDBProg(s.data.value.decodeOption[T], "Deserialization failed.")
+    decodedValue = s.data.value.decodeWithMessage({ t: T => t.right }, DeserializationError(k, s.data.value, _).left)
+    v <- liftDisjunction(decodedValue)
   } yield DBDocument(k, s.commitVersion, v)
 
   /**
