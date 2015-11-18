@@ -50,7 +50,7 @@
       </h4>
       
           <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Contains the primitives for building DBProg programs for later execution by
- a connection.</p><p>To use this, import com.ironcorelabs.davenport.DB._
+ a datastore.</p><p>To use this, import com.ironcorelabs.davenport.DB._
 </p></div><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
@@ -92,23 +92,78 @@
 
         <div id="types" class="types members">
               <h3>Type Members</h3>
-              <ol><li name="com.ironcorelabs.davenport.DB.CreateDoc" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="CreateDocextendsDB.DBOp[scalaz.\/[Throwable,com.ironcorelabs.davenport.DB.DbValue]]withProductwithSerializable"></a>
-      <a id="CreateDoc:CreateDoc"></a>
+              <ol><li name="com.ironcorelabs.davenport.DB.CommitVersion" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="CommitVersionextendsAnyValwithProductwithSerializable"></a>
+      <a id="CommitVersion:CommitVersion"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier"></span>
+        <span class="modifier">final </span>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="DB$$CreateDoc.html"><span class="name">CreateDoc</span></a><span class="params">(<span name="key">key: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>, <span name="doc">doc: <a href="DB$$RawJsonString.html" class="extype" name="com.ironcorelabs.davenport.DB.RawJsonString">RawJsonString</a></span>)</span><span class="result"> extends <a href="DB$$DBOp.html" class="extype" name="com.ironcorelabs.davenport.DB.DBOp">DBOp</a>[<span class="extype" name="scalaz.\/">\/</span>[<span class="extype" name="scala.Throwable">Throwable</span>, <a href="DB$$DbValue.html" class="extype" name="com.ironcorelabs.davenport.DB.DbValue">DbValue</a>]] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <a href="DB$$CommitVersion.html"><span class="name">CommitVersion</span></a><span class="params">(<span name="value">value: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result"> extends <span class="extype" name="scala.AnyVal">AnyVal</span> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@CreateDocextendsDB.DBOp[scalaz.\/[Throwable,com.ironcorelabs.davenport.DB.DbValue]]withProductwithSerializable" title="Permalink" target="_top">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@CommitVersionextendsAnyValwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">A commit version of an existing value in the db.</p><div class="fullcomment"><div class="comment cmt"><p>A commit version of an existing value in the db.</p><p> Couchbase calls this a CAS (check and save) as it is passed back
+ in with requests to update a value. If the value has been changed
+ by another actor, then the update fails and the caller is left
+ to handle the conflict.
+</p></div></div>
+    </li><li name="com.ironcorelabs.davenport.DB.CommitVersionMismatch" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="CommitVersionMismatchextendsDB.DBErrorwithProductwithSerializable"></a>
+      <a id="CommitVersionMismatch:CommitVersionMismatch"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="DB$$CommitVersionMismatch.html"><span class="name">CommitVersionMismatch</span></a><span class="params">(<span name="key">key: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>)</span><span class="result"> extends <a href="DB$$DBError.html" class="extype" name="com.ironcorelabs.davenport.DB.DBError">DBError</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@CommitVersionMismatchextendsDB.DBErrorwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">If the CommitVersion for an update doesn't match.</p>
+    </li><li name="com.ironcorelabs.davenport.DB.CreateDoc" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="CreateDocextendsDB.DBOp[scalaz.\/[com.ironcorelabs.davenport.DB.DBError,com.ironcorelabs.davenport.DB.DBValue]]withProductwithSerializable"></a>
+      <a id="CreateDoc:CreateDoc"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="DB$$CreateDoc.html"><span class="name">CreateDoc</span></a><span class="params">(<span name="key">key: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>, <span name="doc">doc: <a href="DB$$RawJsonString.html" class="extype" name="com.ironcorelabs.davenport.DB.RawJsonString">RawJsonString</a></span>)</span><span class="result"> extends <a href="DB$$DBOp.html" class="extype" name="com.ironcorelabs.davenport.DB.DBOp">DBOp</a>[<span class="extype" name="scalaz.\/">\/</span>[<a href="DB$$DBError.html" class="extype" name="com.ironcorelabs.davenport.DB.DBError">DBError</a>, <a href="#DBValue=com.ironcorelabs.davenport.DBDocument[com.ironcorelabs.davenport.DB.RawJsonString]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBValue">DBValue</a>]] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@CreateDocextendsDB.DBOp[scalaz.\/[com.ironcorelabs.davenport.DB.DBError,com.ironcorelabs.davenport.DB.DBValue]]withProductwithSerializable" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
+    </li><li name="com.ironcorelabs.davenport.DB.DBError" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="DBErrorextendsAnyRef"></a>
+      <a id="DBError:DBError"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="DB$$DBError.html"><span class="name">DBError</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@DBErrorextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">ADT for errors that might happen in working with our grammar.</p>
     </li><li name="com.ironcorelabs.davenport.DB.DBOp" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="DBOp[A]extendsAnyRef"></a>
       <a id="DBOp[A]:DBOp[A]"></a>
@@ -144,7 +199,7 @@
     </span>
       <p class="shortcomment cmt">A Free Co-yoneda of <a href="DB$$DBOp.html" class="extype" name="com.ironcorelabs.davenport.DB.DBOp">DBOp</a> classes</p>
     </li><li name="com.ironcorelabs.davenport.DB.DBProg" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,Throwable,A]"></a>
+      <a id="DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,com.ironcorelabs.davenport.DB.DBError,A]"></a>
       <a id="DBProg[A]:DBProg[A]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -152,103 +207,99 @@
         <span class="kind">type</span>
       </span>
       <span class="symbol">
-        <span class="name">DBProg</span><span class="tparams">[<span name="A">A</span>]</span><span class="result"> = <span class="extype" name="scalaz.EitherT">EitherT</span>[<a href="#DBOps[A]=scalaz.Free.FreeC[com.ironcorelabs.davenport.DB.DBOp,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBOps">DBOps</a>, <span class="extype" name="scala.Throwable">Throwable</span>, <span class="extype" name="com.ironcorelabs.davenport.DB.DBProg.A">A</span>]</span>
+        <span class="name">DBProg</span><span class="tparams">[<span name="A">A</span>]</span><span class="result"> = <span class="extype" name="scalaz.EitherT">EitherT</span>[<a href="#DBOps[A]=scalaz.Free.FreeC[com.ironcorelabs.davenport.DB.DBOp,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBOps">DBOps</a>, <a href="DB$$DBError.html" class="extype" name="com.ironcorelabs.davenport.DB.DBError">DBError</a>, <span class="extype" name="com.ironcorelabs.davenport.DB.DBProg.A">A</span>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,Throwable,A]" title="Permalink" target="_top">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,com.ironcorelabs.davenport.DB.DBError,A]" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">The basic building block sent to the interpreter.</p><div class="fullcomment"><div class="comment cmt"><p>The basic building block sent to the interpreter.</p><p> Effectively this captures expected return type of <code>Throwable \/ A</code>
- and a series of <a href="DB$$DBOp.html" class="extype" name="com.ironcorelabs.davenport.DB.DBOp">DBOp</a> classes or functions combined together.
- When passed to an interpreter such as <code>CouchConnection.exec</code> or
- <code>MemConnection.exec</code>, these are executed.
+      <p class="shortcomment cmt">The basic building block sent to the datastore.</p><div class="fullcomment"><div class="comment cmt"><p>The basic building block sent to the datastore.</p><p> Effectively this captures expected return type of <code>DBError \/ A</code> and a series of <a href="DB$$DBOp.html" class="extype" name="com.ironcorelabs.davenport.DB.DBOp">DBOp</a> classes or functions combined together.
+ When passed to an datastore such as <code>MemDatastore</code> or <code>CouchDatastore</code>, these are executed.
 </p></div></div>
-    </li><li name="com.ironcorelabs.davenport.DB.DbValue" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="DbValueextendsProductwithSerializable"></a>
-      <a id="DbValue:DbValue"></a>
+    </li><li name="com.ironcorelabs.davenport.DB.DBValue" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DBValue=com.ironcorelabs.davenport.DBDocument[com.ironcorelabs.davenport.DB.RawJsonString]"></a>
+      <a id="DBValue:DBValue"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">DBValue</span><span class="result"> = <a href="DBDocument.html" class="extype" name="com.ironcorelabs.davenport.DBDocument">DBDocument</a>[<a href="DB$$RawJsonString.html" class="extype" name="com.ironcorelabs.davenport.DB.RawJsonString">RawJsonString</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@DBValue=com.ironcorelabs.davenport.DBDocument[com.ironcorelabs.davenport.DB.RawJsonString]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.ironcorelabs.davenport.DB.GeneralError" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="GeneralErrorextendsDB.DBErrorwithProductwithSerializable"></a>
+      <a id="GeneralError:GeneralError"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">final </span>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="DB$$DbValue.html"><span class="name">DbValue</span></a><span class="params">(<span name="jsonString">jsonString: <a href="DB$$RawJsonString.html" class="extype" name="com.ironcorelabs.davenport.DB.RawJsonString">RawJsonString</a></span>, <span name="hashVer">hashVer: <a href="DB$$HashVer.html" class="extype" name="com.ironcorelabs.davenport.DB.HashVer">HashVer</a></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <a href="DB$$GeneralError.html"><span class="name">GeneralError</span></a><span class="params">(<span name="ex">ex: <span class="extype" name="scala.Throwable">Throwable</span></span>)</span><span class="result"> extends <a href="DB$$DBError.html" class="extype" name="com.ironcorelabs.davenport.DB.DBError">DBError</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@DbValueextendsProductwithSerializable" title="Permalink" target="_top">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@GeneralErrorextendsDB.DBErrorwithProductwithSerializable" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Just a string and a hashver</p>
+      <p class="shortcomment cmt">All other errors will be exceptions that come out of the underlying store.</p><div class="fullcomment"><div class="comment cmt"><p>All other errors will be exceptions that come out of the underlying store. They'll be
+wrapped up in this type.
+</p></div></div>
     </li><li name="com.ironcorelabs.davenport.DB.GetCounter" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="GetCounterextendsDB.DBOp[scalaz.\/[Throwable,Long]]withProductwithSerializable"></a>
+      <a id="GetCounterextendsDB.DBOp[scalaz.\/[com.ironcorelabs.davenport.DB.DBError,Long]]withProductwithSerializable"></a>
       <a id="GetCounter:GetCounter"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier"></span>
+        <span class="modifier">final </span>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="DB$$GetCounter.html"><span class="name">GetCounter</span></a><span class="params">(<span name="key">key: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>)</span><span class="result"> extends <a href="DB$$DBOp.html" class="extype" name="com.ironcorelabs.davenport.DB.DBOp">DBOp</a>[<span class="extype" name="scalaz.\/">\/</span>[<span class="extype" name="scala.Throwable">Throwable</span>, <span class="extype" name="scala.Long">Long</span>]] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <a href="DB$$GetCounter.html"><span class="name">GetCounter</span></a><span class="params">(<span name="key">key: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>)</span><span class="result"> extends <a href="DB$$DBOp.html" class="extype" name="com.ironcorelabs.davenport.DB.DBOp">DBOp</a>[<span class="extype" name="scalaz.\/">\/</span>[<a href="DB$$DBError.html" class="extype" name="com.ironcorelabs.davenport.DB.DBError">DBError</a>, <span class="extype" name="scala.Long">Long</span>]] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@GetCounterextendsDB.DBOp[scalaz.\/[Throwable,Long]]withProductwithSerializable" title="Permalink" target="_top">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@GetCounterextendsDB.DBOp[scalaz.\/[com.ironcorelabs.davenport.DB.DBError,Long]]withProductwithSerializable" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="com.ironcorelabs.davenport.DB.GetDoc" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="GetDocextendsDB.DBOp[scalaz.\/[Throwable,com.ironcorelabs.davenport.DB.DbValue]]withProductwithSerializable"></a>
+      <a id="GetDocextendsDB.DBOp[scalaz.\/[com.ironcorelabs.davenport.DB.DBError,com.ironcorelabs.davenport.DB.DBValue]]withProductwithSerializable"></a>
       <a id="GetDoc:GetDoc"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">case class</span>
-      </span>
-      <span class="symbol">
-        <a href="DB$$GetDoc.html"><span class="name">GetDoc</span></a><span class="params">(<span name="key">key: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>)</span><span class="result"> extends <a href="DB$$DBOp.html" class="extype" name="com.ironcorelabs.davenport.DB.DBOp">DBOp</a>[<span class="extype" name="scalaz.\/">\/</span>[<span class="extype" name="scala.Throwable">Throwable</span>, <a href="DB$$DbValue.html" class="extype" name="com.ironcorelabs.davenport.DB.DbValue">DbValue</a>]] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@GetDocextendsDB.DBOp[scalaz.\/[Throwable,com.ironcorelabs.davenport.DB.DbValue]]withProductwithSerializable" title="Permalink" target="_top">
-        <img src="../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      
-    </li><li name="com.ironcorelabs.davenport.DB.HashVer" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="HashVerextendsAnyValwithProductwithSerializable"></a>
-      <a id="HashVer:HashVer"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">final </span>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="DB$$HashVer.html"><span class="name">HashVer</span></a><span class="params">(<span name="value">value: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result"> extends <span class="extype" name="scala.AnyVal">AnyVal</span> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <a href="DB$$GetDoc.html"><span class="name">GetDoc</span></a><span class="params">(<span name="key">key: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>)</span><span class="result"> extends <a href="DB$$DBOp.html" class="extype" name="com.ironcorelabs.davenport.DB.DBOp">DBOp</a>[<span class="extype" name="scalaz.\/">\/</span>[<a href="DB$$DBError.html" class="extype" name="com.ironcorelabs.davenport.DB.DBError">DBError</a>, <a href="#DBValue=com.ironcorelabs.davenport.DBDocument[com.ironcorelabs.davenport.DB.RawJsonString]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBValue">DBValue</a>]] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@HashVerextendsAnyValwithProductwithSerializable" title="Permalink" target="_top">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@GetDocextendsDB.DBOp[scalaz.\/[com.ironcorelabs.davenport.DB.DBError,com.ironcorelabs.davenport.DB.DBValue]]withProductwithSerializable" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">A hashed signature of an existing value in the db.</p><div class="fullcomment"><div class="comment cmt"><p>A hashed signature of an existing value in the db.</p><p> Couchbase calls this a CAS (check and save) as it is passed back
- in with requests to update a value. If the value has been changed
- by another actor, then the update fails and the caller is left
- to handle the conflict.
-</p></div></div>
+      
     </li><li name="com.ironcorelabs.davenport.DB.IncrementCounter" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="IncrementCounterextendsDB.DBOp[scalaz.\/[Throwable,Long]]withProductwithSerializable"></a>
+      <a id="IncrementCounterextendsDB.DBOp[scalaz.\/[com.ironcorelabs.davenport.DB.DBError,Long]]withProductwithSerializable"></a>
       <a id="IncrementCounter:IncrementCounter"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier"></span>
+        <span class="modifier">final </span>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="DB$$IncrementCounter.html"><span class="name">IncrementCounter</span></a><span class="params">(<span name="key">key: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>, <span name="delta">delta: <span class="extype" name="scala.Long">Long</span> = <span class="symbol">1</span></span>)</span><span class="result"> extends <a href="DB$$DBOp.html" class="extype" name="com.ironcorelabs.davenport.DB.DBOp">DBOp</a>[<span class="extype" name="scalaz.\/">\/</span>[<span class="extype" name="scala.Throwable">Throwable</span>, <span class="extype" name="scala.Long">Long</span>]] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <a href="DB$$IncrementCounter.html"><span class="name">IncrementCounter</span></a><span class="params">(<span name="key">key: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>, <span name="delta">delta: <span class="extype" name="scala.Long">Long</span> = <span class="symbol">1</span></span>)</span><span class="result"> extends <a href="DB$$DBOp.html" class="extype" name="com.ironcorelabs.davenport.DB.DBOp">DBOp</a>[<span class="extype" name="scalaz.\/">\/</span>[<a href="DB$$DBError.html" class="extype" name="com.ironcorelabs.davenport.DB.DBError">DBError</a>, <span class="extype" name="scala.Long">Long</span>]] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@IncrementCounterextendsDB.DBOp[scalaz.\/[Throwable,Long]]withProductwithSerializable" title="Permalink" target="_top">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@IncrementCounterextendsDB.DBOp[scalaz.\/[com.ironcorelabs.davenport.DB.DBError,Long]]withProductwithSerializable" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -288,39 +339,73 @@
     </span>
       <p class="shortcomment cmt">Just a string.</p><div class="fullcomment"><div class="comment cmt"><p>Just a string. This is used for type safety.</p></div></div>
     </li><li name="com.ironcorelabs.davenport.DB.RemoveKey" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="RemoveKeyextendsDB.DBOp[scalaz.\/[Throwable,Unit]]withProductwithSerializable"></a>
+      <a id="RemoveKeyextendsDB.DBOp[scalaz.\/[com.ironcorelabs.davenport.DB.DBError,Unit]]withProductwithSerializable"></a>
       <a id="RemoveKey:RemoveKey"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier"></span>
+        <span class="modifier">final </span>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="DB$$RemoveKey.html"><span class="name">RemoveKey</span></a><span class="params">(<span name="key">key: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>)</span><span class="result"> extends <a href="DB$$DBOp.html" class="extype" name="com.ironcorelabs.davenport.DB.DBOp">DBOp</a>[<span class="extype" name="scalaz.\/">\/</span>[<span class="extype" name="scala.Throwable">Throwable</span>, <span class="extype" name="scala.Unit">Unit</span>]] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <a href="DB$$RemoveKey.html"><span class="name">RemoveKey</span></a><span class="params">(<span name="key">key: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>)</span><span class="result"> extends <a href="DB$$DBOp.html" class="extype" name="com.ironcorelabs.davenport.DB.DBOp">DBOp</a>[<span class="extype" name="scalaz.\/">\/</span>[<a href="DB$$DBError.html" class="extype" name="com.ironcorelabs.davenport.DB.DBError">DBError</a>, <span class="extype" name="scala.Unit">Unit</span>]] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@RemoveKeyextendsDB.DBOp[scalaz.\/[Throwable,Unit]]withProductwithSerializable" title="Permalink" target="_top">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@RemoveKeyextendsDB.DBOp[scalaz.\/[com.ironcorelabs.davenport.DB.DBError,Unit]]withProductwithSerializable" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="com.ironcorelabs.davenport.DB.UpdateDoc" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="UpdateDocextendsDB.DBOp[scalaz.\/[Throwable,com.ironcorelabs.davenport.DB.DbValue]]withProductwithSerializable"></a>
+      <a id="UpdateDocextendsDB.DBOp[scalaz.\/[com.ironcorelabs.davenport.DB.DBError,com.ironcorelabs.davenport.DB.DBValue]]withProductwithSerializable"></a>
       <a id="UpdateDoc:UpdateDoc"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier"></span>
+        <span class="modifier">final </span>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="DB$$UpdateDoc.html"><span class="name">UpdateDoc</span></a><span class="params">(<span name="key">key: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>, <span name="doc">doc: <a href="DB$$RawJsonString.html" class="extype" name="com.ironcorelabs.davenport.DB.RawJsonString">RawJsonString</a></span>, <span name="hashver">hashver: <a href="DB$$HashVer.html" class="extype" name="com.ironcorelabs.davenport.DB.HashVer">HashVer</a></span>)</span><span class="result"> extends <a href="DB$$DBOp.html" class="extype" name="com.ironcorelabs.davenport.DB.DBOp">DBOp</a>[<span class="extype" name="scalaz.\/">\/</span>[<span class="extype" name="scala.Throwable">Throwable</span>, <a href="DB$$DbValue.html" class="extype" name="com.ironcorelabs.davenport.DB.DbValue">DbValue</a>]] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <a href="DB$$UpdateDoc.html"><span class="name">UpdateDoc</span></a><span class="params">(<span name="key">key: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>, <span name="doc">doc: <a href="DB$$RawJsonString.html" class="extype" name="com.ironcorelabs.davenport.DB.RawJsonString">RawJsonString</a></span>, <span name="commitVersion">commitVersion: <a href="DB$$CommitVersion.html" class="extype" name="com.ironcorelabs.davenport.DB.CommitVersion">CommitVersion</a></span>)</span><span class="result"> extends <a href="DB$$DBOp.html" class="extype" name="com.ironcorelabs.davenport.DB.DBOp">DBOp</a>[<span class="extype" name="scalaz.\/">\/</span>[<a href="DB$$DBError.html" class="extype" name="com.ironcorelabs.davenport.DB.DBError">DBError</a>, <a href="#DBValue=com.ironcorelabs.davenport.DBDocument[com.ironcorelabs.davenport.DB.RawJsonString]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBValue">DBValue</a>]] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@UpdateDocextendsDB.DBOp[scalaz.\/[Throwable,com.ironcorelabs.davenport.DB.DbValue]]withProductwithSerializable" title="Permalink" target="_top">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@UpdateDocextendsDB.DBOp[scalaz.\/[com.ironcorelabs.davenport.DB.DBError,com.ironcorelabs.davenport.DB.DBValue]]withProductwithSerializable" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
+    </li><li name="com.ironcorelabs.davenport.DB.ValueExists" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ValueExistsextendsDB.DBErrorwithProductwithSerializable"></a>
+      <a id="ValueExists:ValueExists"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="DB$$ValueExists.html"><span class="name">ValueExists</span></a><span class="params">(<span name="key">key: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>)</span><span class="result"> extends <a href="DB$$DBError.html" class="extype" name="com.ironcorelabs.davenport.DB.DBError">DBError</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@ValueExistsextendsDB.DBErrorwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">If a value already exists at key.</p>
+    </li><li name="com.ironcorelabs.davenport.DB.ValueNotFound" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ValueNotFoundextendsDB.DBErrorwithProductwithSerializable"></a>
+      <a id="ValueNotFound:ValueNotFound"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="DB$$ValueNotFound.html"><span class="name">ValueNotFound</span></a><span class="params">(<span name="key">key: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>)</span><span class="result"> extends <a href="DB$$DBError.html" class="extype" name="com.ironcorelabs.davenport.DB.DBError">DBError</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@ValueNotFoundextendsDB.DBErrorwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">If no value was found at the requested key.</p>
     </li></ol>
             </div>
 
@@ -395,8 +480,8 @@
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Object that contains batch operations for DB.</p><div class="fullcomment"><div class="comment cmt"><p>Object that contains batch operations for DB. They have been separated out because they cannot be mixed with <code>DBProg</code> operations
-without first lifting them into a process via <code>liftToProcess</code>.
+      <p class="shortcomment cmt">Object that contains batch operations for DB.</p><div class="fullcomment"><div class="comment cmt"><p>Object that contains batch operations for DB. They have been separated out because they cannot be mixed with
+<code>DBProg</code> operations without first lifting them into a process via <code>liftToProcess</code>.
 </p></div></div>
     </li><li name="com.ironcorelabs.davenport.DB#MonadDBOps" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="MonadDBOps:scalaz.Monad[com.ironcorelabs.davenport.DB.DBOps]"></a>
@@ -456,18 +541,18 @@ without first lifting them into a process via <code>liftToProcess</code>.
               
         </dd></dl></div>
     </li><li name="com.ironcorelabs.davenport.DB#createDoc" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="createDoc(k:com.ironcorelabs.davenport.DB.Key,doc:com.ironcorelabs.davenport.DB.RawJsonString):com.ironcorelabs.davenport.DB.DBProg[com.ironcorelabs.davenport.DB.DbValue]"></a>
-      <a id="createDoc(Key,RawJsonString):DBProg[DbValue]"></a>
+      <a id="createDoc(k:com.ironcorelabs.davenport.DB.Key,doc:com.ironcorelabs.davenport.DB.RawJsonString):com.ironcorelabs.davenport.DB.DBProg[com.ironcorelabs.davenport.DB.DBValue]"></a>
+      <a id="createDoc(Key,RawJsonString):DBProg[DBValue]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">createDoc</span><span class="params">(<span name="k">k: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>, <span name="doc">doc: <a href="DB$$RawJsonString.html" class="extype" name="com.ironcorelabs.davenport.DB.RawJsonString">RawJsonString</a></span>)</span><span class="result">: <a href="#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,Throwable,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DBProg</a>[<a href="DB$$DbValue.html" class="extype" name="com.ironcorelabs.davenport.DB.DbValue">DbValue</a>]</span>
+        <span class="name">createDoc</span><span class="params">(<span name="k">k: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>, <span name="doc">doc: <a href="DB$$RawJsonString.html" class="extype" name="com.ironcorelabs.davenport.DB.RawJsonString">RawJsonString</a></span>)</span><span class="result">: <a href="#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,com.ironcorelabs.davenport.DB.DBError,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DBProg</a>[<a href="#DBValue=com.ironcorelabs.davenport.DBDocument[com.ironcorelabs.davenport.DB.RawJsonString]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBValue">DBValue</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@createDoc(k:com.ironcorelabs.davenport.DB.Key,doc:com.ironcorelabs.davenport.DB.RawJsonString):com.ironcorelabs.davenport.DB.DBProg[com.ironcorelabs.davenport.DB.DbValue]" title="Permalink" target="_top">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@createDoc(k:com.ironcorelabs.davenport.DB.Key,doc:com.ironcorelabs.davenport.DB.RawJsonString):com.ironcorelabs.davenport.DB.DBProg[com.ironcorelabs.davenport.DB.DBValue]" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -555,7 +640,7 @@ without first lifting them into a process via <code>liftToProcess</code>.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">getCounter</span><span class="params">(<span name="k">k: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>)</span><span class="result">: <a href="#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,Throwable,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DBProg</a>[<span class="extype" name="scala.Long">Long</span>]</span>
+        <span class="name">getCounter</span><span class="params">(<span name="k">k: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>)</span><span class="result">: <a href="#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,com.ironcorelabs.davenport.DB.DBError,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DBProg</a>[<span class="extype" name="scala.Long">Long</span>]</span>
       </span>
       </h4><span class="permalink">
       <a href="../../../index.html#com.ironcorelabs.davenport.DB$@getCounter(k:com.ironcorelabs.davenport.DB.Key):com.ironcorelabs.davenport.DB.DBProg[Long]" title="Permalink" target="_top">
@@ -564,18 +649,18 @@ without first lifting them into a process via <code>liftToProcess</code>.
     </span>
       <p class="shortcomment cmt">Fetch a counter from the DB given a key</p>
     </li><li name="com.ironcorelabs.davenport.DB#getDoc" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="getDoc(k:com.ironcorelabs.davenport.DB.Key):com.ironcorelabs.davenport.DB.DBProg[com.ironcorelabs.davenport.DB.DbValue]"></a>
-      <a id="getDoc(Key):DBProg[DbValue]"></a>
+      <a id="getDoc(k:com.ironcorelabs.davenport.DB.Key):com.ironcorelabs.davenport.DB.DBProg[com.ironcorelabs.davenport.DB.DBValue]"></a>
+      <a id="getDoc(Key):DBProg[DBValue]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">getDoc</span><span class="params">(<span name="k">k: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>)</span><span class="result">: <a href="#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,Throwable,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DBProg</a>[<a href="DB$$DbValue.html" class="extype" name="com.ironcorelabs.davenport.DB.DbValue">DbValue</a>]</span>
+        <span class="name">getDoc</span><span class="params">(<span name="k">k: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>)</span><span class="result">: <a href="#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,com.ironcorelabs.davenport.DB.DBError,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DBProg</a>[<a href="#DBValue=com.ironcorelabs.davenport.DBDocument[com.ironcorelabs.davenport.DB.RawJsonString]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBValue">DBValue</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@getDoc(k:com.ironcorelabs.davenport.DB.Key):com.ironcorelabs.davenport.DB.DBProg[com.ironcorelabs.davenport.DB.DbValue]" title="Permalink" target="_top">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@getDoc(k:com.ironcorelabs.davenport.DB.Key):com.ironcorelabs.davenport.DB.DBProg[com.ironcorelabs.davenport.DB.DBValue]" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -606,7 +691,7 @@ without first lifting them into a process via <code>liftToProcess</code>.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">incrementCounter</span><span class="params">(<span name="k">k: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>, <span name="delta">delta: <span class="extype" name="scala.Long">Long</span> = <span class="symbol">1</span></span>)</span><span class="result">: <a href="#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,Throwable,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DBProg</a>[<span class="extype" name="scala.Long">Long</span>]</span>
+        <span class="name">incrementCounter</span><span class="params">(<span name="k">k: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>, <span name="delta">delta: <span class="extype" name="scala.Long">Long</span> = <span class="symbol">1</span></span>)</span><span class="result">: <a href="#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,com.ironcorelabs.davenport.DB.DBError,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DBProg</a>[<span class="extype" name="scala.Long">Long</span>]</span>
       </span>
       </h4><span class="permalink">
       <a href="../../../index.html#com.ironcorelabs.davenport.DB$@incrementCounter(k:com.ironcorelabs.davenport.DB.Key,delta:Long):com.ironcorelabs.davenport.DB.DBProg[Long]" title="Permalink" target="_top">
@@ -631,28 +716,24 @@ without first lifting them into a process via <code>liftToProcess</code>.
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li name="com.ironcorelabs.davenport.DB#liftIntoDBProg" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="liftIntoDBProg[A](opt:Option[A],errormessage:String):com.ironcorelabs.davenport.DB.DBProg[A]"></a>
-      <a id="liftIntoDBProg[A](Option[A],String):DBProg[A]"></a>
+    </li><li name="com.ironcorelabs.davenport.DB#liftDisjunction" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="liftDisjunction[A](either:scalaz.\/[com.ironcorelabs.davenport.DB.DBError,A]):com.ironcorelabs.davenport.DB.DBProg[A]"></a>
+      <a id="liftDisjunction[A](\/[DBError,A]):DBProg[A]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">liftIntoDBProg</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="opt">opt: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="com.ironcorelabs.davenport.DB.liftIntoDBProg.A">A</span>]</span>, <span name="errormessage">errormessage: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,Throwable,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DBProg</a>[<span class="extype" name="com.ironcorelabs.davenport.DB.liftIntoDBProg.A">A</span>]</span>
+        <span class="name">liftDisjunction</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="either">either: <span class="extype" name="scalaz.\/">\/</span>[<a href="DB$$DBError.html" class="extype" name="com.ironcorelabs.davenport.DB.DBError">DBError</a>, <span class="extype" name="com.ironcorelabs.davenport.DB.liftDisjunction.A">A</span>]</span>)</span><span class="result">: <a href="#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,com.ironcorelabs.davenport.DB.DBError,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DBProg</a>[<span class="extype" name="com.ironcorelabs.davenport.DB.liftDisjunction.A">A</span>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@liftIntoDBProg[A](opt:Option[A],errormessage:String):com.ironcorelabs.davenport.DB.DBProg[A]" title="Permalink" target="_top">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@liftDisjunction[A](either:scalaz.\/[com.ironcorelabs.davenport.DB.DBError,A]):com.ironcorelabs.davenport.DB.DBProg[A]" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">The liftIntoDBProg operations allow any function or value to be deferred to
- the executor.</p><div class="fullcomment"><div class="comment cmt"><p>The liftIntoDBProg operations allow any function or value to be deferred to
- the executor.</p><p> This will most often be used when using <code>for</code> comprehensions mixing <a href="DB$$DBOp.html" class="extype" name="com.ironcorelabs.davenport.DB.DBOp">DBOp</a>
- operations with other data extraction such as json de/serialization.
-</p></div></div>
-    </li><li name="com.ironcorelabs.davenport.DB#liftIntoDBProg" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      
+    </li><li name="com.ironcorelabs.davenport.DB#liftIntoDBProg" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="liftIntoDBProg[A](either:scalaz.\/[Throwable,A]):com.ironcorelabs.davenport.DB.DBProg[A]"></a>
       <a id="liftIntoDBProg[A](\/[Throwable,A]):DBProg[A]"></a>
       <h4 class="signature">
@@ -661,31 +742,44 @@ without first lifting them into a process via <code>liftToProcess</code>.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">liftIntoDBProg</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="either">either: <span class="extype" name="scalaz.\/">\/</span>[<span class="extype" name="scala.Throwable">Throwable</span>, <span class="extype" name="com.ironcorelabs.davenport.DB.liftIntoDBProg.A">A</span>]</span>)</span><span class="result">: <a href="#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,Throwable,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DBProg</a>[<span class="extype" name="com.ironcorelabs.davenport.DB.liftIntoDBProg.A">A</span>]</span>
+        <span class="name">liftIntoDBProg</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="either">either: <span class="extype" name="scalaz.\/">\/</span>[<span class="extype" name="scala.Throwable">Throwable</span>, <span class="extype" name="com.ironcorelabs.davenport.DB.liftIntoDBProg.A">A</span>]</span>)</span><span class="result">: <a href="#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,com.ironcorelabs.davenport.DB.DBError,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DBProg</a>[<span class="extype" name="com.ironcorelabs.davenport.DB.liftIntoDBProg.A">A</span>]</span>
       </span>
       </h4><span class="permalink">
       <a href="../../../index.html#com.ironcorelabs.davenport.DB$@liftIntoDBProg[A](either:scalaz.\/[Throwable,A]):com.ironcorelabs.davenport.DB.DBProg[A]" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">The <code>liftIntoDBProg</code> operations allow any function or value to be deferred to
- the executor.</p><div class="fullcomment"><div class="comment cmt"><p>The <code>liftIntoDBProg</code> operations allow any function or value to be deferred to
- the executor.</p><p> This will most often be used when using for comprehensions mixing <a href="DB$$DBOp.html" class="extype" name="com.ironcorelabs.davenport.DB.DBOp">DBOp</a>
- operations with other data extraction such as json de/serialization.
-</p></div></div>
-    </li><li name="com.ironcorelabs.davenport.DB#liftIntoDBProg" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="liftIntoDBProg[A](opt:Option[A]):com.ironcorelabs.davenport.DB.DBProg[A]"></a>
-      <a id="liftIntoDBProg[A](Option[A]):DBProg[A]"></a>
+      
+    </li><li name="com.ironcorelabs.davenport.DB#liftIntoDBProg" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="liftIntoDBProg[A](opt:Option[A],errormessage:String):com.ironcorelabs.davenport.DB.DBProg[A]"></a>
+      <a id="liftIntoDBProg[A](Option[A],String):DBProg[A]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">liftIntoDBProg</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="opt">opt: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="com.ironcorelabs.davenport.DB.liftIntoDBProg.A">A</span>]</span>)</span><span class="result">: <a href="#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,Throwable,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DBProg</a>[<span class="extype" name="com.ironcorelabs.davenport.DB.liftIntoDBProg.A">A</span>]</span>
+        <span class="name">liftIntoDBProg</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="opt">opt: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="com.ironcorelabs.davenport.DB.liftIntoDBProg.A">A</span>]</span>, <span name="errormessage">errormessage: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,com.ironcorelabs.davenport.DB.DBError,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DBProg</a>[<span class="extype" name="com.ironcorelabs.davenport.DB.liftIntoDBProg.A">A</span>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@liftIntoDBProg[A](opt:Option[A]):com.ironcorelabs.davenport.DB.DBProg[A]" title="Permalink" target="_top">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@liftIntoDBProg[A](opt:Option[A],errormessage:String):com.ironcorelabs.davenport.DB.DBProg[A]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.ironcorelabs.davenport.DB#liftIntoDBProg" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="liftIntoDBProg[A](opt:Option[A],dbError:com.ironcorelabs.davenport.DB.DBError):com.ironcorelabs.davenport.DB.DBProg[A]"></a>
+      <a id="liftIntoDBProg[A](Option[A],DBError):DBProg[A]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">liftIntoDBProg</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="opt">opt: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="com.ironcorelabs.davenport.DB.liftIntoDBProg.A">A</span>]</span>, <span name="dbError">dbError: <a href="DB$$DBError.html" class="extype" name="com.ironcorelabs.davenport.DB.DBError">DBError</a></span>)</span><span class="result">: <a href="#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,com.ironcorelabs.davenport.DB.DBError,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DBProg</a>[<span class="extype" name="com.ironcorelabs.davenport.DB.liftIntoDBProg.A">A</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@liftIntoDBProg[A](opt:Option[A],dbError:com.ironcorelabs.davenport.DB.DBError):com.ironcorelabs.davenport.DB.DBProg[A]" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -695,18 +789,18 @@ without first lifting them into a process via <code>liftToProcess</code>.
  operations with other data extraction such as json de/serialization.
 </p></div></div>
     </li><li name="com.ironcorelabs.davenport.DB#modifyDoc" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="modifyDoc(k:com.ironcorelabs.davenport.DB.Key,f:com.ironcorelabs.davenport.DB.RawJsonString=&gt;com.ironcorelabs.davenport.DB.RawJsonString):com.ironcorelabs.davenport.DB.DBProg[com.ironcorelabs.davenport.DB.DbValue]"></a>
-      <a id="modifyDoc(Key,(RawJsonString)⇒RawJsonString):DBProg[DbValue]"></a>
+      <a id="modifyDoc(k:com.ironcorelabs.davenport.DB.Key,f:com.ironcorelabs.davenport.DB.RawJsonString=&gt;com.ironcorelabs.davenport.DB.RawJsonString):com.ironcorelabs.davenport.DB.DBProg[com.ironcorelabs.davenport.DB.DBValue]"></a>
+      <a id="modifyDoc(Key,(RawJsonString)⇒RawJsonString):DBProg[DBValue]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">modifyDoc</span><span class="params">(<span name="k">k: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>, <span name="f">f: (<a href="DB$$RawJsonString.html" class="extype" name="com.ironcorelabs.davenport.DB.RawJsonString">RawJsonString</a>) ⇒ <a href="DB$$RawJsonString.html" class="extype" name="com.ironcorelabs.davenport.DB.RawJsonString">RawJsonString</a></span>)</span><span class="result">: <a href="#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,Throwable,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DBProg</a>[<a href="DB$$DbValue.html" class="extype" name="com.ironcorelabs.davenport.DB.DbValue">DbValue</a>]</span>
+        <span class="name">modifyDoc</span><span class="params">(<span name="k">k: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>, <span name="f">f: (<a href="DB$$RawJsonString.html" class="extype" name="com.ironcorelabs.davenport.DB.RawJsonString">RawJsonString</a>) ⇒ <a href="DB$$RawJsonString.html" class="extype" name="com.ironcorelabs.davenport.DB.RawJsonString">RawJsonString</a></span>)</span><span class="result">: <a href="#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,com.ironcorelabs.davenport.DB.DBError,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DBProg</a>[<a href="#DBValue=com.ironcorelabs.davenport.DBDocument[com.ironcorelabs.davenport.DB.RawJsonString]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBValue">DBValue</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@modifyDoc(k:com.ironcorelabs.davenport.DB.Key,f:com.ironcorelabs.davenport.DB.RawJsonString=&gt;com.ironcorelabs.davenport.DB.RawJsonString):com.ironcorelabs.davenport.DB.DBProg[com.ironcorelabs.davenport.DB.DbValue]" title="Permalink" target="_top">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@modifyDoc(k:com.ironcorelabs.davenport.DB.Key,f:com.ironcorelabs.davenport.DB.RawJsonString=&gt;com.ironcorelabs.davenport.DB.RawJsonString):com.ironcorelabs.davenport.DB.DBProg[com.ironcorelabs.davenport.DB.DBValue]" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -774,7 +868,7 @@ without first lifting them into a process via <code>liftToProcess</code>.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">removeKey</span><span class="params">(<span name="k">k: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>)</span><span class="result">: <a href="#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,Throwable,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DBProg</a>[<span class="extype" name="scala.Unit">Unit</span>]</span>
+        <span class="name">removeKey</span><span class="params">(<span name="k">k: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>)</span><span class="result">: <a href="#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,com.ironcorelabs.davenport.DB.DBError,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DBProg</a>[<span class="extype" name="scala.Unit">Unit</span>]</span>
       </span>
       </h4><span class="permalink">
       <a href="../../../index.html#com.ironcorelabs.davenport.DB$@removeKey(k:com.ironcorelabs.davenport.DB.Key):com.ironcorelabs.davenport.DB.DBProg[Unit]" title="Permalink" target="_top">
@@ -817,22 +911,22 @@ without first lifting them into a process via <code>liftToProcess</code>.
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="com.ironcorelabs.davenport.DB#updateDoc" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="updateDoc(k:com.ironcorelabs.davenport.DB.Key,doc:com.ironcorelabs.davenport.DB.RawJsonString,hashver:com.ironcorelabs.davenport.DB.HashVer):com.ironcorelabs.davenport.DB.DBProg[com.ironcorelabs.davenport.DB.DbValue]"></a>
-      <a id="updateDoc(Key,RawJsonString,HashVer):DBProg[DbValue]"></a>
+      <a id="updateDoc(k:com.ironcorelabs.davenport.DB.Key,doc:com.ironcorelabs.davenport.DB.RawJsonString,commitVersion:com.ironcorelabs.davenport.DB.CommitVersion):com.ironcorelabs.davenport.DB.DBProg[com.ironcorelabs.davenport.DB.DBValue]"></a>
+      <a id="updateDoc(Key,RawJsonString,CommitVersion):DBProg[DBValue]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">updateDoc</span><span class="params">(<span name="k">k: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>, <span name="doc">doc: <a href="DB$$RawJsonString.html" class="extype" name="com.ironcorelabs.davenport.DB.RawJsonString">RawJsonString</a></span>, <span name="hashver">hashver: <a href="DB$$HashVer.html" class="extype" name="com.ironcorelabs.davenport.DB.HashVer">HashVer</a></span>)</span><span class="result">: <a href="#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,Throwable,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DBProg</a>[<a href="DB$$DbValue.html" class="extype" name="com.ironcorelabs.davenport.DB.DbValue">DbValue</a>]</span>
+        <span class="name">updateDoc</span><span class="params">(<span name="k">k: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>, <span name="doc">doc: <a href="DB$$RawJsonString.html" class="extype" name="com.ironcorelabs.davenport.DB.RawJsonString">RawJsonString</a></span>, <span name="commitVersion">commitVersion: <a href="DB$$CommitVersion.html" class="extype" name="com.ironcorelabs.davenport.DB.CommitVersion">CommitVersion</a></span>)</span><span class="result">: <a href="#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,com.ironcorelabs.davenport.DB.DBError,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DBProg</a>[<a href="#DBValue=com.ironcorelabs.davenport.DBDocument[com.ironcorelabs.davenport.DB.RawJsonString]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBValue">DBValue</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@updateDoc(k:com.ironcorelabs.davenport.DB.Key,doc:com.ironcorelabs.davenport.DB.RawJsonString,hashver:com.ironcorelabs.davenport.DB.HashVer):com.ironcorelabs.davenport.DB.DBProg[com.ironcorelabs.davenport.DB.DbValue]" title="Permalink" target="_top">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$@updateDoc(k:com.ironcorelabs.davenport.DB.Key,doc:com.ironcorelabs.davenport.DB.RawJsonString,commitVersion:com.ironcorelabs.davenport.DB.CommitVersion):com.ironcorelabs.davenport.DB.DBProg[com.ironcorelabs.davenport.DB.DBValue]" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Update a doc given its key, new value, and correct hashver</p>
+      <p class="shortcomment cmt">Update a doc given its key, new value, and correct commitVersion</p>
     </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
       <a id="wait():Unit"></a>

@@ -66,48 +66,26 @@
 
         <div id="types" class="types members">
               <h3>Type Members</h3>
-              <ol><li name="com.ironcorelabs.davenport.DBDocument" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="DBDocument[T]extendsAnyRef"></a>
-      <a id="DBDocument[T]:DBDocument[T]"></a>
+              <ol><li name="com.ironcorelabs.davenport.DBDocument" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="DBDocument[A]extendsProductwithSerializable"></a>
+      <a id="DBDocument[A]:DBDocument[A]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">trait</span>
+        <span class="modifier">final </span>
+        <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="DBDocument.html"><span class="name">DBDocument</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+        <a href="DBDocument.html"><span class="name">DBDocument</span></a><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="key">key: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>, <span name="commitVersion">commitVersion: <a href="DB$$CommitVersion.html" class="extype" name="com.ironcorelabs.davenport.DB.CommitVersion">CommitVersion</a></span>, <span name="data">data: <span class="extype" name="com.ironcorelabs.davenport.DBDocument.A">A</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.package@DBDocument[T]extendsAnyRef" title="Permalink" target="_top">
+      <a href="../../../index.html#com.ironcorelabs.davenport.package@DBDocument[A]extendsProductwithSerializable" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Should be implemented by a wrapper of a case class</p><div class="fullcomment"><div class="comment cmt"><p>Should be implemented by a wrapper of a case class</p><p> Typically you'll have this pattern:</p><pre><span class="kw">case</span> <span class="kw">class</span> User(name: <span class="std">String</span>, email: <span class="std">String</span>)
-<span class="kw">class</span> DBUser(<span class="kw">val</span> key: Key, data: User, hv: HashVer) <span class="kw">extends</span> DBDocument[User] {
-  <span class="cmt">// ...</span>
-}
-<span class="kw">object</span> DBUser <span class="kw">extends</span> DBDocumentCompanion[User] {
-  <span class="cmt">// ...</span>
-}</pre><p> If you follow this pattern, you'll be able to store/retrieve arbitrary
- documents of different types.
-</p></div></div>
-    </li><li name="com.ironcorelabs.davenport.DBDocumentCompanion" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="DBDocumentCompanion[T]extendsAnyRef"></a>
-      <a id="DBDocumentCompanion[T]:DBDocumentCompanion[T]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">trait</span>
-      </span>
-      <span class="symbol">
-        <a href="DBDocumentCompanion.html"><span class="name">DBDocumentCompanion</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.package@DBDocumentCompanion[T]extendsAnyRef" title="Permalink" target="_top">
-        <img src="../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <p class="shortcomment cmt">For the companion object for the <a href="DBDocument.html" class="extype" name="com.ironcorelabs.davenport.DBDocument">DBDocument</a></p><div class="fullcomment"><div class="comment cmt"><p>For the companion object for the <a href="DBDocument.html" class="extype" name="com.ironcorelabs.davenport.DBDocument">DBDocument</a></p><p> See <a href="DBDocument.html" class="extype" name="com.ironcorelabs.davenport.DBDocument">DBDocument</a> docs for more details.
+      <p class="shortcomment cmt">A document that's either destined to be put into the DB or came out of the DB.</p><div class="fullcomment"><div class="comment cmt"><p>A document that's either destined to be put into the DB or came out of the DB.
+Key - The key where the document is stored.
+commitVersion - The CommitVersion of the current document
+data - The data stored in the document, typically RawJsonString when it comes out of the DB.
 </p></div></div>
     </li></ol>
             </div>
@@ -132,7 +110,7 @@
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Connect to Couchbase and interpret <a href="DB$.html#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,Throwable,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DB.DBProg</a>s</p>
+      <p class="shortcomment cmt">Connect to Couchbase and execute <a href="DB$.html#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,com.ironcorelabs.davenport.DB.DBError,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DB.DBProg</a>s</p>
     </li><li name="com.ironcorelabs.davenport.DB" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="DB"></a>
       <a id="DB:DB"></a>
@@ -150,22 +128,39 @@
       </a>
     </span>
       <p class="shortcomment cmt">Contains the primitives for building DBProg programs for later execution by
- a connection.</p><div class="fullcomment"><div class="comment cmt"><p>Contains the primitives for building DBProg programs for later execution by
- a connection.</p><p>To use this, import com.ironcorelabs.davenport.DB._
+ a datastore.</p><div class="fullcomment"><div class="comment cmt"><p>Contains the primitives for building DBProg programs for later execution by
+ a datastore.</p><p>To use this, import com.ironcorelabs.davenport.DB._
 </p></div></div>
-    </li><li name="com.ironcorelabs.davenport.interpreter" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="interpreter"></a>
-      <a id="interpreter:interpreter"></a>
+    </li><li name="com.ironcorelabs.davenport.DBDocument" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DBDocument"></a>
+      <a id="DBDocument:DBDocument"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="DBDocument$.html"><span class="name">DBDocument</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.ironcorelabs.davenport.package@DBDocument" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.ironcorelabs.davenport.datastore" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="datastore"></a>
+      <a id="datastore:datastore"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">package</span>
       </span>
       <span class="symbol">
-        <a href="interpreter/package.html"><span class="name">interpreter</span></a>
+        <a href="datastore/package.html"><span class="name">datastore</span></a>
       </span>
       </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.package@interpreter" title="Permalink" target="_top">
+      <a href="../../../index.html#com.ironcorelabs.davenport.package@datastore" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>

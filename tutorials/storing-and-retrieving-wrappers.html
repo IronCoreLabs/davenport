@@ -95,123 +95,74 @@
 </div>
 </div>
 
-<p>We prefer not to adulterate the underlying class, but instead to wrap it in a class that can persist it to/from the database.  We do so by creating an interface that by convention we call <code>DBUser</code>:</p>
+<p>We prefer not to adulterate the underlying class. All you need to write is the <code>JsonCodec</code> and a way to generate the <code>Key</code> for your type. In our example, we’ll put the <code>createKey</code> function on the companion object, but it could be located anywhere.</p>
+
+<p>First, the data type definition:</p>
 
 <div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre>case class DBUser(key: Key, data: User, cas: Long) extends DBDocument[User] {
-  // ...
-}
-object DBUser extends DBDocumentCompanion[User] {
-  // ...
-}
-</pre></div>
-</div>
-</div>
-
-<p>In wrapping the User class, we put the concerns such as the key that is used, the check-and-store (cas) value (used to make sure someone else hasn’t updated the database since we last fetched a record) and implementations for serializing/deserializing outside of the core concerns for the class itself.</p>
-
-<p>In terms of implementation, the instantiated document needs to support one function:</p>
-
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre>def dataJson: Throwable \/ RawJsonString
-</pre></div>
-</div>
-</div>
-
-<p>And the companion object needs to support a few more:</p>
-
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre>implicit def codec: CodecJson[T]
-def genKey(d: T): DBProg[Key]
-def fromJson(s: RawJsonString): Throwable \/ T
-def create(d: T): DBProg[_]
-def get(k: Key): DBProg[_]
-</pre></div>
-</div>
-</div>
-
-<p>Generally speaking, these are pretty boilerplate.  One thing to note is that the <code>genKey</code> method returns a <code>DBProg</code>.  This is in case the key itself depends on the database, as in the case where you are using an incrementing index as the key.  If you are deriving the key from the underlying class, you just wrap the result into a <code>DBProg</code>.  In our case, our key for a <code>User</code> will be <code>user::&lt;email&gt;</code>, so statically derived.  Here’s a fuller implementation:</p>
-
-<div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre>import com.ironcorelabs.davenport._, DB._
-import scalaz._, Scalaz._, scalaz.concurrent.Task
+  <div class="code"><pre>import com.ironcorelabs.davenport.DB.Key
 import argonaut._, Argonaut._
 
-case class User(firstName: String, lastName: String, email: String, createdDate: Long)
-
 object Example {
-  case class DBUser(key: Key, data: User, cas: Long) extends DBDocument[User] {
-    def dataJson: Throwable \/ RawJsonString =
-      \/.fromTryCatchNonFatal(DBUser.toJsonString(data)(DBUser.codec))
-  }
-  object DBUser extends DBDocumentCompanion[User] {
-    implicit def codec: CodecJson[User] = casecodec4(User.apply, User.unapply)(
-      &quot;firstName&quot;, &quot;lastName&quot;, &quot;email&quot;, &quot;createdDate&quot;
-    )
-    def genKey(u: User): DBProg[Key] = liftIntoDBProg(Key(s&quot;user::${u.email}&quot;).right[Throwable])
-    def fromJson(s: RawJsonString): Throwable \/ User =
-      fromJsonString(s.value) \/&gt; new Exception(&quot;Failed to decode json to User&quot;)
-    def create(u: User): DBProg[DBUser] = for {
-      json &lt;- liftIntoDBProg(\/.fromTryCatchNonFatal(toJsonString(u)))
-      key &lt;- genKey(u)
-      newdoc &lt;- createDoc(key, json)
-      cas = newdoc.hashVer.value
-    } yield DBUser(key, u, cas)
-    def get(key: Key): DBProg[DBUser] = for {
-      doc &lt;- getDoc(key)
-      u &lt;- liftIntoDBProg(fromJson(doc.jsonString))
-      cas = doc.hashVer.value
-    } yield DBUser(key, u, cas)
+  case class User(firstName: String, lastName: String, email: String, createdDate: Long)
+  
+  object User{
+    implicit def codec: CodecJson[User] = casecodec4(User.apply, User.unapply)(&quot;firstName&quot;, &quot;lastName&quot;, &quot;email&quot;, &quot;createdDate&quot;)
+    def createKey(u: User): Key = Key(s&quot;user::${u.email}&quot;)
   }
 }
 </pre></div>
 </div>
 </div>
 
-<p>Anyone wanting to factor out some of the boilerplate – please be my guest, we’d love the pull requests.</p>
-
-<p>Now that we have a nice abstraction for persisting our user class, let’s try it out:</p>
+<p>Now that we have a <code>JsonCodec</code> and a way to get a key, let’s see how it works!</p>
 
 <div class="highlighter-coderay"><div class="CodeRay">
   <div class="code"><pre>scala&gt; import Example._
 import Example._
 
-scala&gt; import com.ironcorelabs.davenport.interpreter.MemInterpreter
-import com.ironcorelabs.davenport.interpreter.MemInterpreter
+scala&gt; import com.ironcorelabs.davenport.datastore.MemDatastore
+import com.ironcorelabs.davenport.datastore.MemDatastore
 
-scala&gt; import com.ironcorelabs.davenport.syntax.dbprog._
-import com.ironcorelabs.davenport.syntax.dbprog._
+scala&gt; import com.ironcorelabs.davenport.syntax._
+import com.ironcorelabs.davenport.syntax._
+
+scala&gt; import scalaz._
+import scalaz._
+
+scala&gt; val user1 = User(&quot;User&quot;, &quot;One&quot;, &quot;readyplayerone@example.com&quot;, System.currentTimeMillis())
+user1: Example.User = User(User,One,readyplayerone@example.com,1447818541661)
+
+scala&gt; val user2 = User(&quot;User&quot;, &quot;Two&quot;, &quot;readyplayertwo@example.com&quot;, System.currentTimeMillis())
+user2: Example.User = User(User,Two,readyplayertwo@example.com,1447818541791)
 
 scala&gt; val addTwoNewUsers = for {
-     |   newu1 &lt;- DBUser.create(User(&quot;User&quot;, &quot;One&quot;, &quot;readyplayerone@example.com&quot;, System.currentTimeMillis()))
-     |   newu2 &lt;- DBUser.create(User(&quot;User&quot;, &quot;Two&quot;, &quot;readyplayertwo@example.com&quot;, System.currentTimeMillis()))
+     |   newu1 &lt;- User.createKey(user1).dbCreate(user1)
+     |   newu2 &lt;- User.createKey(user2).dbCreate(user2)
      | } yield List(newu1, newu2)
-addTwoNewUsers: scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,Throwable,List[Example.DBUser]] = EitherT(Gosub())
+addTwoNewUsers: scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,com.ironcorelabs.davenport.DB.DBError,List[com.ironcorelabs.davenport.DBDocument[Example.User]]] = EitherT(Gosub())
 
-scala&gt; val users: Throwable \/ List[DBUser] = MemInterpreter.empty.interpret(addTwoNewUsers).run
-users: scalaz.\/[Throwable,List[Example.DBUser]] = \/-(List(DBUser(Key(user::readyplayerone@example.com),User(User,One,readyplayerone@example.com,1442856230690),-1724472512), DBUser(Key(user::readyplayertwo@example.com),User(User,Two,readyplayertwo@example.com,1442856230895),710019528)))
+scala&gt; val users = MemDatastore.empty.execute(addTwoNewUsers).run
+users: scalaz.\/[com.ironcorelabs.davenport.DB.DBError,List[com.ironcorelabs.davenport.DBDocument[Example.User]]] = \/-(List(DBDocument(Key(user::readyplayerone@example.com),CommitVersion(578477239),User(User,One,readyplayerone@example.com,1447818541661)), DBDocument(Key(user::readyplayertwo@example.com),CommitVersion(-2125049027),User(User,Two,readyplayertwo@example.com,1447818541791))))
 </pre></div>
 </div>
 </div>
 
-<p>Feel free to test against Couchbase as well.  We’ll keep illustrating with the MemInterpreter for now to show how you can easily experiment and write unit tests.  As an alternative to calling <code>MemInterpreter.empty.interpret</code> you can call <code>CouchConnection.createInterpreter.interpret</code>.  You could also import the syntax which will add <code>interpret</code> to <code>DBProg</code> which takes any <code>Interpreter</code>. Building on our example above, we could instead do this:</p>
+<p>Feel free to test against Couchbase as well.  We’ll keep illustrating with the MemDatastore for now to show how you can easily experiment and write unit tests.  As an alternative to calling <code>MemDatastore.empty.execute</code> you can call <code>CouchConnection.createInterpreter.execute</code>.  You could also import the syntax which will add <code>execute</code> to <code>DBProg</code> which takes any <code>Interpreter</code>. Building on our example above, we could instead do this:</p>
 
 <div class="highlighter-coderay"><div class="CodeRay">
-  <div class="code"><pre>scala&gt; val interpreter = MemInterpreter.empty
-interpreter: com.ironcorelabs.davenport.interpreter.MemInterpreter = com.ironcorelabs.davenport.interpreter.MemInterpreter$$anon$1@78f9d7c6
+  <div class="code"><pre>scala&gt; val datastore = MemDatastore.empty
+datastore: com.ironcorelabs.davenport.datastore.MemDatastore = com.ironcorelabs.davenport.datastore.MemDatastore$$anon$1@3fdd5104
 
-scala&gt; val users = addTwoNewUsers.interpret(interpreter).run
-users: scalaz.\/[Throwable,List[Example.DBUser]] = \/-(List(DBUser(Key(user::readyplayerone@example.com),User(User,One,readyplayerone@example.com,1442856230690),-1724472512), DBUser(Key(user::readyplayertwo@example.com),User(User,Two,readyplayertwo@example.com,1442856231169),-1867449197)))
+scala&gt; val users = addTwoNewUsers.execute(datastore).run
+users: scalaz.\/[com.ironcorelabs.davenport.DB.DBError,List[com.ironcorelabs.davenport.DBDocument[Example.User]]] = \/-(List(DBDocument(Key(user::readyplayerone@example.com),CommitVersion(578477239),User(User,One,readyplayerone@example.com,1447818541661)), DBDocument(Key(user::readyplayertwo@example.com),CommitVersion(-2125049027),User(User,Two,readyplayertwo@example.com,1447818541791))))
 
 scala&gt; // Fetch one of the users out of the database
-     | val u1 = DBUser.get(Key(&quot;user::readyplayerone@example.com&quot;)).interpret(interpreter).run
-u1: scalaz.\/[Throwable,Example.DBUser] = \/-(DBUser(Key(user::readyplayerone@example.com),User(User,One,readyplayerone@example.com,1442856230690),-1724472512))
+     | val u1 = Key(&quot;user::readyplayerone@example.com&quot;).dbGet[User].execute(datastore).run
+u1: scalaz.\/[com.ironcorelabs.davenport.DB.DBError,com.ironcorelabs.davenport.DBDocument[Example.User]] = \/-(DBDocument(Key(user::readyplayerone@example.com),CommitVersion(578477239),User(User,One,readyplayerone@example.com,1447818541661)))
 </pre></div>
 </div>
 </div>
-
-<p>We expect that the primitives with <code>RawJsonString</code> will generally not be used outside of the <code>DBDocument</code> classes.</p>
-
 
     </div>
   </article>

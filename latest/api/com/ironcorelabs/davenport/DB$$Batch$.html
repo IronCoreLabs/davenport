@@ -49,8 +49,8 @@
       </span>
       </h4>
       
-          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Object that contains batch operations for DB. They have been separated out because they cannot be mixed with <code>DBProg</code> operations
-without first lifting them into a process via <code>liftToProcess</code>.
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Object that contains batch operations for DB. They have been separated out because they cannot be mixed with
+<code>DBProg</code> operations without first lifting them into a process via <code>liftToProcess</code>.
 </p></div><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
@@ -187,23 +187,25 @@ without first lifting them into a process via <code>liftToProcess</code>.
     </span>)</span>
               
         </dd></dl></div>
-    </li><li name="com.ironcorelabs.davenport.DB.Batch#createDocs" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="createDocs[F[_]](foldable:F[(com.ironcorelabs.davenport.DB.Key,com.ironcorelabs.davenport.DB.RawJsonString)])(implicitF:scalaz.Foldable[F]):scalaz.stream.Process[com.ironcorelabs.davenport.DB.DBOps,scalaz.\/[Throwable,com.ironcorelabs.davenport.DB.DbValue]]"></a>
-      <a id="createDocs[F[_]](F[(Key,RawJsonString)])(Foldable[F]):Process[DBOps,\/[Throwable,DbValue]]"></a>
+    </li><li name="com.ironcorelabs.davenport.DB.Batch#createDocs" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="createDocs[F[_]](foldable:F[(com.ironcorelabs.davenport.DB.Key,com.ironcorelabs.davenport.DB.RawJsonString)])(implicitF:scalaz.Foldable[F]):scalaz.stream.Process[com.ironcorelabs.davenport.DB.DBOps,scalaz.\/[com.ironcorelabs.davenport.DB.DBError,com.ironcorelabs.davenport.DB.DBValue]]"></a>
+      <a id="createDocs[F[_]](F[(Key,RawJsonString)])(Foldable[F]):Process[DBOps,\/[DBError,DBValue]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">createDocs</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="params">(<span name="foldable">foldable: <span class="extype" name="com.ironcorelabs.davenport.DB.Batch.createDocs.F">F</span>[(<a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a>, <a href="DB$$RawJsonString.html" class="extype" name="com.ironcorelabs.davenport.DB.RawJsonString">RawJsonString</a>)]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="scalaz.Foldable">Foldable</span>[<span class="extype" name="com.ironcorelabs.davenport.DB.Batch.createDocs.F">F</span>]</span>)</span><span class="result">: <span class="extype" name="scalaz.stream.Process">Process</span>[<a href="DB$.html#DBOps[A]=scalaz.Free.FreeC[com.ironcorelabs.davenport.DB.DBOp,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBOps">DBOps</a>, <span class="extype" name="scalaz.\/">\/</span>[<span class="extype" name="scala.Throwable">Throwable</span>, <a href="DB$$DbValue.html" class="extype" name="com.ironcorelabs.davenport.DB.DbValue">DbValue</a>]]</span>
+        <span class="name">createDocs</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="params">(<span name="foldable">foldable: <span class="extype" name="com.ironcorelabs.davenport.DB.Batch.createDocs.F">F</span>[(<a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a>, <a href="DB$$RawJsonString.html" class="extype" name="com.ironcorelabs.davenport.DB.RawJsonString">RawJsonString</a>)]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="scalaz.Foldable">Foldable</span>[<span class="extype" name="com.ironcorelabs.davenport.DB.Batch.createDocs.F">F</span>]</span>)</span><span class="result">: <span class="extype" name="scalaz.stream.Process">Process</span>[<a href="DB$.html#DBOps[A]=scalaz.Free.FreeC[com.ironcorelabs.davenport.DB.DBOp,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBOps">DBOps</a>, <span class="extype" name="scalaz.\/">\/</span>[<a href="DB$$DBError.html" class="extype" name="com.ironcorelabs.davenport.DB.DBError">DBError</a>, <a href="DB$.html#DBValue=com.ironcorelabs.davenport.DBDocument[com.ironcorelabs.davenport.DB.RawJsonString]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBValue">DBValue</a>]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$$Batch$@createDocs[F[_]](foldable:F[(com.ironcorelabs.davenport.DB.Key,com.ironcorelabs.davenport.DB.RawJsonString)])(implicitF:scalaz.Foldable[F]):scalaz.stream.Process[com.ironcorelabs.davenport.DB.DBOps,scalaz.\/[Throwable,com.ironcorelabs.davenport.DB.DbValue]]" title="Permalink" target="_top">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$$Batch$@createDocs[F[_]](foldable:F[(com.ironcorelabs.davenport.DB.Key,com.ironcorelabs.davenport.DB.RawJsonString)])(implicitF:scalaz.Foldable[F]):scalaz.stream.Process[com.ironcorelabs.davenport.DB.DBOps,scalaz.\/[com.ironcorelabs.davenport.DB.DBError,com.ironcorelabs.davenport.DB.DBValue]]" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Create all values in the Foldable F.</p>
+      <p class="shortcomment cmt">Create all values in the Foldable F.</p><div class="fullcomment"><div class="comment cmt"><p>Create all values in the Foldable F.</p><p>Line is too long for scalastyle, but scalariform keeps pasting it back
+together, so ignore error.
+</p></div></div>
     </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a>
       <a id="eq(AnyRef):Boolean"></a>
@@ -313,18 +315,18 @@ without first lifting them into a process via <code>liftToProcess</code>.
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="com.ironcorelabs.davenport.DB.Batch#liftToProcess" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="liftToProcess[A](prog:com.ironcorelabs.davenport.DB.DBProg[A]):scalaz.stream.Process[com.ironcorelabs.davenport.DB.DBOps,scalaz.\/[Throwable,A]]"></a>
-      <a id="liftToProcess[A](DBProg[A]):Process[DBOps,\/[Throwable,A]]"></a>
+      <a id="liftToProcess[A](prog:com.ironcorelabs.davenport.DB.DBProg[A]):scalaz.stream.Process[com.ironcorelabs.davenport.DB.DBOps,scalaz.\/[com.ironcorelabs.davenport.DB.DBError,A]]"></a>
+      <a id="liftToProcess[A](DBProg[A]):Process[DBOps,\/[DBError,A]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">liftToProcess</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="prog">prog: <a href="DB$.html#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,Throwable,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DBProg</a>[<span class="extype" name="com.ironcorelabs.davenport.DB.Batch.liftToProcess.A">A</span>]</span>)</span><span class="result">: <span class="extype" name="scalaz.stream.Process">Process</span>[<a href="DB$.html#DBOps[A]=scalaz.Free.FreeC[com.ironcorelabs.davenport.DB.DBOp,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBOps">DBOps</a>, <span class="extype" name="scalaz.\/">\/</span>[<span class="extype" name="scala.Throwable">Throwable</span>, <span class="extype" name="com.ironcorelabs.davenport.DB.Batch.liftToProcess.A">A</span>]]</span>
+        <span class="name">liftToProcess</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="prog">prog: <a href="DB$.html#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,com.ironcorelabs.davenport.DB.DBError,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DBProg</a>[<span class="extype" name="com.ironcorelabs.davenport.DB.Batch.liftToProcess.A">A</span>]</span>)</span><span class="result">: <span class="extype" name="scalaz.stream.Process">Process</span>[<a href="DB$.html#DBOps[A]=scalaz.Free.FreeC[com.ironcorelabs.davenport.DB.DBOp,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBOps">DBOps</a>, <span class="extype" name="scalaz.\/">\/</span>[<a href="DB$$DBError.html" class="extype" name="com.ironcorelabs.davenport.DB.DBError">DBError</a>, <span class="extype" name="com.ironcorelabs.davenport.DB.Batch.liftToProcess.A">A</span>]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$$Batch$@liftToProcess[A](prog:com.ironcorelabs.davenport.DB.DBProg[A]):scalaz.stream.Process[com.ironcorelabs.davenport.DB.DBOps,scalaz.\/[Throwable,A]]" title="Permalink" target="_top">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$$Batch$@liftToProcess[A](prog:com.ironcorelabs.davenport.DB.DBProg[A]):scalaz.stream.Process[com.ironcorelabs.davenport.DB.DBOps,scalaz.\/[com.ironcorelabs.davenport.DB.DBError,A]]" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>

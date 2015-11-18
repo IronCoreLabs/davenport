@@ -1,9 +1,9 @@
 <!DOCTYPE html >
 <html>
         <head>
-          <title>interpreter - com.ironcorelabs.davenport.interpreter</title>
-          <meta name="description" content="interpreter - com.ironcorelabs.davenport.interpreter" />
-          <meta name="keywords" content="interpreter com.ironcorelabs.davenport.interpreter" />
+          <title>datastore - com.ironcorelabs.davenport.datastore</title>
+          <meta name="description" content="datastore - com.ironcorelabs.davenport.datastore" />
+          <meta name="keywords" content="datastore com.ironcorelabs.davenport.datastore" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
@@ -16,7 +16,7 @@
       <script type="text/javascript">
          if(top === self) {
             var url = '../../../../index.html';
-            var hash = 'com.ironcorelabs.davenport.interpreter.package';
+            var hash = 'com.ironcorelabs.davenport.datastore.package';
             var anchor = window.location.hash;
             var anchor_opt = '';
             if (anchor.length >= 1)
@@ -30,8 +30,8 @@
       <div id="definition">
         <img alt="Package" src="../../../../lib/package_big.png" />
         <p id="owner"><a href="../../../package.html" class="extype" name="com">com</a>.<a href="../../package.html" class="extype" name="com.ironcorelabs">ironcorelabs</a>.<a href="../package.html" class="extype" name="com.ironcorelabs.davenport">davenport</a></p>
-        <h1>interpreter</h1><span class="permalink">
-      <a href="../../../../index.html#com.ironcorelabs.davenport.interpreter.package" title="Permalink" target="_top">
+        <h1>datastore</h1><span class="permalink">
+      <a href="../../../../index.html#com.ironcorelabs.davenport.datastore.package" title="Permalink" target="_top">
         <img src="../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -43,7 +43,7 @@
         <span class="kind">package</span>
       </span>
       <span class="symbol">
-        <span class="name">interpreter</span>
+        <span class="name">datastore</span>
       </span>
       </h4>
       
@@ -66,53 +66,53 @@
 
         <div id="types" class="types members">
               <h3>Type Members</h3>
-              <ol><li name="com.ironcorelabs.davenport.interpreter.CouchInterpreter" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="CouchInterpreterextendsInterpreter"></a>
-      <a id="CouchInterpreter:CouchInterpreter"></a>
+              <ol><li name="com.ironcorelabs.davenport.datastore.CouchDatastore" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="CouchDatastoreextendsDatastorewithProductwithSerializable"></a>
+      <a id="CouchDatastore:CouchDatastore"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier">abstract </span>
-        <span class="kind">class</span>
+        <span class="modifier">final </span>
+        <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="CouchInterpreter.html"><span class="name">CouchInterpreter</span></a><span class="result"> extends <a href="Interpreter.html" class="extype" name="com.ironcorelabs.davenport.interpreter.Interpreter">Interpreter</a></span>
+        <a href="CouchDatastore.html"><span class="name">CouchDatastore</span></a><span class="params">(<span name="bucket">bucket: <span class="extype" name="scalaz.concurrent.Task">Task</span>[<span class="extype" name="com.couchbase.client.java.Bucket">Bucket</span>]</span>)</span><span class="result"> extends <a href="Datastore.html" class="extype" name="com.ironcorelabs.davenport.datastore.Datastore">Datastore</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../index.html#com.ironcorelabs.davenport.interpreter.package@CouchInterpreterextendsInterpreter" title="Permalink" target="_top">
+      <a href="../../../../index.html#com.ironcorelabs.davenport.datastore.package@CouchDatastoreextendsDatastorewithProductwithSerializable" title="Permalink" target="_top">
         <img src="../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
-    </li><li name="com.ironcorelabs.davenport.interpreter.Interpreter" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="InterpreterextendsAnyRef"></a>
-      <a id="Interpreter:Interpreter"></a>
+    </li><li name="com.ironcorelabs.davenport.datastore.Datastore" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="DatastoreextendsAnyRef"></a>
+      <a id="Datastore:Datastore"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="Interpreter.html"><span class="name">Interpreter</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+        <a href="Datastore.html"><span class="name">Datastore</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../index.html#com.ironcorelabs.davenport.interpreter.package@InterpreterextendsAnyRef" title="Permalink" target="_top">
+      <a href="../../../../index.html#com.ironcorelabs.davenport.datastore.package@DatastoreextendsAnyRef" title="Permalink" target="_top">
         <img src="../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
-    </li><li name="com.ironcorelabs.davenport.interpreter.MemInterpreter" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="MemInterpreterextendsInterpreter"></a>
-      <a id="MemInterpreter:MemInterpreter"></a>
+    </li><li name="com.ironcorelabs.davenport.datastore.MemDatastore" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="MemDatastoreextendsDatastore"></a>
+      <a id="MemDatastore:MemDatastore"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">abstract </span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="MemInterpreter.html"><span class="name">MemInterpreter</span></a><span class="result"> extends <a href="Interpreter.html" class="extype" name="com.ironcorelabs.davenport.interpreter.Interpreter">Interpreter</a></span>
+        <a href="MemDatastore.html"><span class="name">MemDatastore</span></a><span class="result"> extends <a href="Datastore.html" class="extype" name="com.ironcorelabs.davenport.datastore.Datastore">Datastore</a></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../index.html#com.ironcorelabs.davenport.interpreter.package@MemInterpreterextendsInterpreter" title="Permalink" target="_top">
+      <a href="../../../../index.html#com.ironcorelabs.davenport.datastore.package@MemDatastoreextendsDatastore" title="Permalink" target="_top">
         <img src="../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -124,37 +124,38 @@
 
         <div id="values" class="values members">
               <h3>Value Members</h3>
-              <ol><li name="com.ironcorelabs.davenport.interpreter.CouchInterpreter" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="CouchInterpreter"></a>
-      <a id="CouchInterpreter:CouchInterpreter"></a>
+              <ol><li name="com.ironcorelabs.davenport.datastore.CouchDatastore" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="CouchDatastore"></a>
+      <a id="CouchDatastore:CouchDatastore"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="CouchInterpreter$.html"><span class="name">CouchInterpreter</span></a>
+        <a href="CouchDatastore$.html"><span class="name">CouchDatastore</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../index.html#com.ironcorelabs.davenport.interpreter.package@CouchInterpreter" title="Permalink" target="_top">
+      <a href="../../../../index.html#com.ironcorelabs.davenport.datastore.package@CouchDatastore" title="Permalink" target="_top">
         <img src="../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Things related to translating DBOp to Kleisli[Task, Bucket, A] and some helpers for translating to Task[A]
-</p>
-    </li><li name="com.ironcorelabs.davenport.interpreter.MemInterpreter" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="MemInterpreter"></a>
-      <a id="MemInterpreter:MemInterpreter"></a>
+      <p class="shortcomment cmt">Things related to translating DBOp to Kleisli[Task, Bucket, A] and some helpers for translating to Task[A].</p><div class="fullcomment"><div class="comment cmt"><p>Things related to translating DBOp to Kleisli[Task, Bucket, A] and some helpers for translating to Task[A].</p><p>This object contains couchbase specific things such as CAS, which is modeled as CommitVersion.</p><p>For details about how this translation is done, look at couchRunner which routes each DBOp to its couchbase
+counterpart.
+</p></div></div>
+    </li><li name="com.ironcorelabs.davenport.datastore.MemDatastore" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="MemDatastore"></a>
+      <a id="MemDatastore:MemDatastore"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="MemInterpreter$.html"><span class="name">MemInterpreter</span></a>
+        <a href="MemDatastore$.html"><span class="name">MemDatastore</span></a>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../index.html#com.ironcorelabs.davenport.interpreter.package@MemInterpreter" title="Permalink" target="_top">
+      <a href="../../../../index.html#com.ironcorelabs.davenport.datastore.package@MemDatastore" title="Permalink" target="_top">
         <img src="../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>

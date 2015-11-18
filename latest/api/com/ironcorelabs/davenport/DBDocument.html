@@ -28,10 +28,12 @@
         </head>
         <body class="type">
       <div id="definition">
-        <img alt="Trait" src="../../../lib/trait_big.png" />
+        <a href="DBDocument$.html" title="See companion object"><img alt="Class/Object" src="../../../lib/class_to_object_big.png" /></a>
         <p id="owner"><a href="../../package.html" class="extype" name="com">com</a>.<a href="../package.html" class="extype" name="com.ironcorelabs">ironcorelabs</a>.<a href="package.html" class="extype" name="com.ironcorelabs.davenport">davenport</a></p>
-        <h1>DBDocument</h1><h3><span class="morelinks"><div>Related Doc:
-            <a href="package.html" class="extype" name="com.ironcorelabs.davenport">package davenport</a>
+        <h1><a href="DBDocument$.html" title="See companion object">DBDocument</a></h1><h3><span class="morelinks"><div>
+            Related Docs:
+            <a href="DBDocument$.html" title="See companion object">object DBDocument</a>
+            | <a href="package.html" class="extype" name="com.ironcorelabs.davenport">package davenport</a>
           </div></span></h3><span class="permalink">
       <a href="../../../index.html#com.ironcorelabs.davenport.DBDocument" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
@@ -41,25 +43,21 @@
 
       <h4 id="signature" class="signature">
       <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">trait</span>
+        <span class="modifier">final </span>
+        <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">DBDocument</span><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+        <span class="name">DBDocument</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="key">key: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>, <span name="commitVersion">commitVersion: <a href="DB$$CommitVersion.html" class="extype" name="com.ironcorelabs.davenport.DB.CommitVersion">CommitVersion</a></span>, <span name="data">data: <span class="extype" name="com.ironcorelabs.davenport.DBDocument.A">A</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Should be implemented by a wrapper of a case class</p><p> Typically you'll have this pattern:</p><pre><span class="kw">case</span> <span class="kw">class</span> User(name: <span class="std">String</span>, email: <span class="std">String</span>)
-<span class="kw">class</span> DBUser(<span class="kw">val</span> key: Key, data: User, hv: HashVer) <span class="kw">extends</span> DBDocument[User] {
-  <span class="cmt">// ...</span>
-}
-<span class="kw">object</span> DBUser <span class="kw">extends</span> DBDocumentCompanion[User] {
-  <span class="cmt">// ...</span>
-}</pre><p> If you follow this pattern, you'll be able to store/retrieve arbitrary
- documents of different types.
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>A document that's either destined to be put into the DB or came out of the DB.
+Key - The key where the document is stored.
+commitVersion - The CommitVersion of the current document
+data - The data stored in the document, typically RawJsonString when it comes out of the DB.
 </p></div><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
+          <div class="superTypes hiddenContent"><span class="extype" name="scala.Serializable">Serializable</span>, <span class="extype" name="java.io.Serializable">Serializable</span>, <span class="extype" name="scala.Product">Product</span>, <span class="extype" name="scala.Equals">Equals</span>, <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
         
 
@@ -77,7 +75,7 @@
                 <span class="filtertype">Inherited<br />
                 </span>
                 <ol id="linearization">
-                  <li class="in" name="com.ironcorelabs.davenport.DBDocument"><span>DBDocument</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                  <li class="in" name="com.ironcorelabs.davenport.DBDocument"><span>DBDocument</span></li><li class="in" name="scala.Serializable"><span>Serializable</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.Product"><span>Product</span></li><li class="in" name="scala.Equals"><span>Equals</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
                 </ol>
               </div><div id="ancestors">
             <span class="filtertype"></span>
@@ -94,86 +92,34 @@
 
       <div id="template">
         <div id="allMembers">
-        
-
-        
-
-        <div id="values" class="values members">
-              <h3>Abstract Value Members</h3>
-              <ol><li name="com.ironcorelabs.davenport.DBDocument#cas" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="cas:Long"></a>
-      <a id="cas:Long"></a>
+        <div id="constructors" class="members">
+              <h3>Instance Constructors</h3>
+              <ol><li name="com.ironcorelabs.davenport.DBDocument#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="&lt;init&gt;(key:com.ironcorelabs.davenport.DB.Key,commitVersion:com.ironcorelabs.davenport.DB.CommitVersion,data:A):com.ironcorelabs.davenport.DBDocument[A]"></a>
+      <a id="&lt;init&gt;:DBDocument[A]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier">abstract </span>
-        <span class="kind">val</span>
+        <span class="modifier"></span>
+        <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">cas</span><span class="result">: <span class="extype" name="scala.Long">Long</span></span>
+        <span class="name">DBDocument</span><span class="params">(<span name="key">key: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>, <span name="commitVersion">commitVersion: <a href="DB$$CommitVersion.html" class="extype" name="com.ironcorelabs.davenport.DB.CommitVersion">CommitVersion</a></span>, <span name="data">data: <span class="extype" name="com.ironcorelabs.davenport.DBDocument.A">A</span></span>)</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DBDocument@cas:Long" title="Permalink" target="_top">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DBDocument@&lt;init&gt;(key:com.ironcorelabs.davenport.DB.Key,commitVersion:com.ironcorelabs.davenport.DB.CommitVersion,data:A):com.ironcorelabs.davenport.DBDocument[A]" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Typically put in the parameters for the <code>DBDocument</code> class.</p><div class="fullcomment"><div class="comment cmt"><p>Typically put in the parameters for the <code>DBDocument</code> class.</p><p> Used to capture the database state when this was fetched.
-</p></div></div>
-    </li><li name="com.ironcorelabs.davenport.DBDocument#data" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="data:T"></a>
-      <a id="data:T"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">abstract </span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">data</span><span class="result">: <span class="extype" name="com.ironcorelabs.davenport.DBDocument.T">T</span></span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DBDocument@data:T" title="Permalink" target="_top">
-        <img src="../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <p class="shortcomment cmt">Typically put in the parameters for the <code>DBDocument</code> class.</p>
-    </li><li name="com.ironcorelabs.davenport.DBDocument#dataJson" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="dataJson:scalaz.\/[Throwable,com.ironcorelabs.davenport.DB.RawJsonString]"></a>
-      <a id="dataJson:\/[Throwable,RawJsonString]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">abstract </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">dataJson</span><span class="result">: <span class="extype" name="scalaz.\/">\/</span>[<span class="extype" name="scala.Throwable">Throwable</span>, <a href="DB$$RawJsonString.html" class="extype" name="com.ironcorelabs.davenport.DB.RawJsonString">RawJsonString</a>]</span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DBDocument@dataJson:scalaz.\/[Throwable,com.ironcorelabs.davenport.DB.RawJsonString]" title="Permalink" target="_top">
-        <img src="../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <p class="shortcomment cmt">Generate a json string from the data</p>
-    </li><li name="com.ironcorelabs.davenport.DBDocument#key" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="key:com.ironcorelabs.davenport.DB.Key"></a>
-      <a id="key:Key"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">abstract </span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">key</span><span class="result">: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DBDocument@key:com.ironcorelabs.davenport.DB.Key" title="Permalink" target="_top">
-        <img src="../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <p class="shortcomment cmt">Typically put in the parameters for the <code>DBDocument</code> class.</p>
+      
     </li></ol>
             </div>
 
+        
+
+        
+
         <div id="values" class="values members">
-              <h3>Concrete Value Members</h3>
+              <h3>Value Members</h3>
               <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a>
       <a id="!=(Any):Boolean"></a>
@@ -265,6 +211,40 @@
     </span>)</span>
               
         </dd></dl></div>
+    </li><li name="com.ironcorelabs.davenport.DBDocument#commitVersion" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="commitVersion:com.ironcorelabs.davenport.DB.CommitVersion"></a>
+      <a id="commitVersion:CommitVersion"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">commitVersion</span><span class="result">: <a href="DB$$CommitVersion.html" class="extype" name="com.ironcorelabs.davenport.DB.CommitVersion">CommitVersion</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DBDocument@commitVersion:com.ironcorelabs.davenport.DB.CommitVersion" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.ironcorelabs.davenport.DBDocument#data" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="data:A"></a>
+      <a id="data:A"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">data</span><span class="result">: <span class="extype" name="com.ironcorelabs.davenport.DBDocument.A">A</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DBDocument@data:A" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a>
       <a id="eq(AnyRef):Boolean"></a>
@@ -282,23 +262,6 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="equals(x$1:Any):Boolean"></a>
-      <a id="equals(Any):Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DBDocument@equals(x$1:Any):Boolean" title="Permalink" target="_top">
-        <img src="../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
       <a id="finalize():Unit"></a>
@@ -339,40 +302,6 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="hashCode():Int"></a>
-      <a id="hashCode():Int"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DBDocument@hashCode():Int" title="Permalink" target="_top">
-        <img src="../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li name="com.ironcorelabs.davenport.DBDocument#hashver" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="hashver:com.ironcorelabs.davenport.DB.HashVer"></a>
-      <a id="hashver:HashVer"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">lazy val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">hashver</span><span class="result">: <a href="DB$$HashVer.html" class="extype" name="com.ironcorelabs.davenport.DB.HashVer">HashVer</a></span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DBDocument@hashver:com.ironcorelabs.davenport.DB.HashVer" title="Permalink" target="_top">
-        <img src="../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <p class="shortcomment cmt">Convenience function used on update</p>
     </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <a id="isInstanceOf[T0]:Boolean"></a>
@@ -390,6 +319,40 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="com.ironcorelabs.davenport.DBDocument#key" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="key:com.ironcorelabs.davenport.DB.Key"></a>
+      <a id="key:Key"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">key</span><span class="result">: <a href="DB$$Key.html" class="extype" name="com.ironcorelabs.davenport.DB.Key">Key</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DBDocument@key:com.ironcorelabs.davenport.DB.Key" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="com.ironcorelabs.davenport.DBDocument#map" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="map[B](f:A=&gt;B):com.ironcorelabs.davenport.DBDocument[B]"></a>
+      <a id="map[B]((A)⇒B):DBDocument[B]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">map</span><span class="tparams">[<span name="B">B</span>]</span><span class="params">(<span name="f">f: (<span class="extype" name="com.ironcorelabs.davenport.DBDocument.A">A</span>) ⇒ <span class="extype" name="com.ironcorelabs.davenport.DBDocument.map.B">B</span></span>)</span><span class="result">: <a href="" class="extype" name="com.ironcorelabs.davenport.DBDocument">DBDocument</a>[<span class="extype" name="com.ironcorelabs.davenport.DBDocument.map.B">B</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DBDocument@map[B](f:A=&gt;B):com.ironcorelabs.davenport.DBDocument[B]" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a>
       <a id="ne(AnyRef):Boolean"></a>
@@ -441,23 +404,6 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="com.ironcorelabs.davenport.DBDocument#remove" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="remove:com.ironcorelabs.davenport.DB.DBProg[Unit]"></a>
-      <a id="remove:DBProg[Unit]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">remove</span><span class="result">: <a href="DB$.html#DBProg[A]=scalaz.EitherT[com.ironcorelabs.davenport.DB.DBOps,Throwable,A]" class="extmbr" name="com.ironcorelabs.davenport.DB.DBProg">DBProg</a>[<span class="extype" name="scala.Unit">Unit</span>]</span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DBDocument@remove:com.ironcorelabs.davenport.DB.DBProg[Unit]" title="Permalink" target="_top">
-        <img src="../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <p class="shortcomment cmt">Remove this from the database</p>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
       <a id="synchronized[T0](⇒T0):T0"></a>
@@ -475,23 +421,6 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="toString():String"></a>
-      <a id="toString():String"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DBDocument@toString():String" title="Permalink" target="_top">
-        <img src="../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
       <a id="wait():Unit"></a>
@@ -570,7 +499,15 @@
         </div>
 
         <div id="inheritedMembers">
-        <div class="parent" name="scala.AnyRef">
+        <div class="parent" name="scala.Serializable">
+              <h3>Inherited from <span class="extype" name="scala.Serializable">Serializable</span></h3>
+            </div><div class="parent" name="java.io.Serializable">
+              <h3>Inherited from <span class="extype" name="java.io.Serializable">Serializable</span></h3>
+            </div><div class="parent" name="scala.Product">
+              <h3>Inherited from <span class="extype" name="scala.Product">Product</span></h3>
+            </div><div class="parent" name="scala.Equals">
+              <h3>Inherited from <span class="extype" name="scala.Equals">Equals</span></h3>
+            </div><div class="parent" name="scala.AnyRef">
               <h3>Inherited from <span class="extype" name="scala.AnyRef">AnyRef</span></h3>
             </div><div class="parent" name="scala.Any">
               <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>

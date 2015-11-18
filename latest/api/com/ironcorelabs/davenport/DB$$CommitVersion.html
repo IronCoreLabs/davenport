@@ -1,9 +1,9 @@
 <!DOCTYPE html >
 <html>
         <head>
-          <title>HashVer - com.ironcorelabs.davenport.DB.HashVer</title>
-          <meta name="description" content="HashVer - com.ironcorelabs.davenport.DB.HashVer" />
-          <meta name="keywords" content="HashVer com.ironcorelabs.davenport.DB.HashVer" />
+          <title>CommitVersion - com.ironcorelabs.davenport.DB.CommitVersion</title>
+          <meta name="description" content="CommitVersion - com.ironcorelabs.davenport.DB.CommitVersion" />
+          <meta name="keywords" content="CommitVersion com.ironcorelabs.davenport.DB.CommitVersion" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
@@ -16,7 +16,7 @@
       <script type="text/javascript">
          if(top === self) {
             var url = '../../../index.html';
-            var hash = 'com.ironcorelabs.davenport.DB$$HashVer';
+            var hash = 'com.ironcorelabs.davenport.DB$$CommitVersion';
             var anchor = window.location.hash;
             var anchor_opt = '';
             if (anchor.length >= 1)
@@ -30,10 +30,10 @@
       <div id="definition">
         <img alt="Class" src="../../../lib/class_big.png" />
         <p id="owner"><a href="../../package.html" class="extype" name="com">com</a>.<a href="../package.html" class="extype" name="com.ironcorelabs">ironcorelabs</a>.<a href="package.html" class="extype" name="com.ironcorelabs.davenport">davenport</a>.<a href="DB$.html" class="extype" name="com.ironcorelabs.davenport.DB">DB</a></p>
-        <h1>HashVer</h1><h3><span class="morelinks"><div>Related Doc:
+        <h1>CommitVersion</h1><h3><span class="morelinks"><div>Related Doc:
             <a href="DB$.html" class="extype" name="com.ironcorelabs.davenport.DB">package DB</a>
           </div></span></h3><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$$HashVer" title="Permalink" target="_top">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$$CommitVersion" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -45,11 +45,11 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">HashVer</span><span class="params">(<span name="value">value: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result"> extends <span class="extype" name="scala.AnyVal">AnyVal</span> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <span class="name">CommitVersion</span><span class="params">(<span name="value">value: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result"> extends <span class="extype" name="scala.AnyVal">AnyVal</span> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>A hashed signature of an existing value in the db.</p><p> Couchbase calls this a CAS (check and save) as it is passed back
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>A commit version of an existing value in the db.</p><p> Couchbase calls this a CAS (check and save) as it is passed back
  in with requests to update a value. If the value has been changed
  by another actor, then the update fails and the caller is left
  to handle the conflict.
@@ -73,7 +73,7 @@
                 <span class="filtertype">Inherited<br />
                 </span>
                 <ol id="linearization">
-                  <li class="in" name="com.ironcorelabs.davenport.DB.HashVer"><span>HashVer</span></li><li class="in" name="scala.Serializable"><span>Serializable</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.Product"><span>Product</span></li><li class="in" name="scala.Equals"><span>Equals</span></li><li class="in" name="scala.AnyVal"><span>AnyVal</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                  <li class="in" name="com.ironcorelabs.davenport.DB.CommitVersion"><span>CommitVersion</span></li><li class="in" name="scala.Serializable"><span>Serializable</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.Product"><span>Product</span></li><li class="in" name="scala.Equals"><span>Equals</span></li><li class="in" name="scala.AnyVal"><span>AnyVal</span></li><li class="in" name="scala.Any"><span>Any</span></li>
                 </ol>
               </div><div id="ancestors">
             <span class="filtertype"></span>
@@ -92,19 +92,19 @@
         <div id="allMembers">
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
-              <ol><li name="com.ironcorelabs.davenport.DB.HashVer#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(value:Long):com.ironcorelabs.davenport.DB.HashVer"></a>
-      <a id="&lt;init&gt;:HashVer"></a>
+              <ol><li name="com.ironcorelabs.davenport.DB.CommitVersion#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="&lt;init&gt;(value:Long):com.ironcorelabs.davenport.DB.CommitVersion"></a>
+      <a id="&lt;init&gt;:CommitVersion"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">HashVer</span><span class="params">(<span name="value">value: <span class="extype" name="scala.Long">Long</span></span>)</span>
+        <span class="name">CommitVersion</span><span class="params">(<span name="value">value: <span class="extype" name="scala.Long">Long</span></span>)</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$$HashVer@&lt;init&gt;(value:Long):com.ironcorelabs.davenport.DB.HashVer" title="Permalink" target="_top">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$$CommitVersion@&lt;init&gt;(value:Long):com.ironcorelabs.davenport.DB.CommitVersion" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -130,7 +130,7 @@
         <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$$HashVer@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$$CommitVersion@!=(x$1:Any):Boolean" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -147,7 +147,7 @@
         <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$$HashVer@##():Int" title="Permalink" target="_top">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$$CommitVersion@##():Int" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -164,7 +164,7 @@
         <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$$HashVer@==(x$1:Any):Boolean" title="Permalink" target="_top">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$$CommitVersion@==(x$1:Any):Boolean" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -181,7 +181,7 @@
         <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$$HashVer@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$$CommitVersion@asInstanceOf[T0]:T0" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -198,7 +198,7 @@
         <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Predef.Class">Class</span>[_ &lt;: <span class="extype" name="scala.AnyVal">AnyVal</span>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$$HashVer@getClass():Class[_&lt;:AnyVal]" title="Permalink" target="_top">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$$CommitVersion@getClass():Class[_&lt;:AnyVal]" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -215,12 +215,12 @@
         <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$$HashVer@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$$CommitVersion@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li name="com.ironcorelabs.davenport.DB.HashVer#value" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="com.ironcorelabs.davenport.DB.CommitVersion#value" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="value:Long"></a>
       <a id="value:Long"></a>
       <h4 class="signature">
@@ -232,7 +232,7 @@
         <span class="name">value</span><span class="result">: <span class="extype" name="scala.Long">Long</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../index.html#com.ironcorelabs.davenport.DB$$HashVer@value:Long" title="Permalink" target="_top">
+      <a href="../../../index.html#com.ironcorelabs.davenport.DB$$CommitVersion@value:Long" title="Permalink" target="_top">
         <img src="../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
