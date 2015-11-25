@@ -8,8 +8,8 @@ package datastore
 
 import syntax._
 import scalaz._, Scalaz._, scalaz.concurrent.Task
-import DB._
-import DB.Batch._
+import db._
+import db.batch._
 import scalaz.stream.Process
 
 class MemDatastoreSpec extends DatastoreSpec {

@@ -8,7 +8,7 @@ import scalaz.concurrent.Task
 import scalaz.stream.Process
 import scalaz._
 import scalaz.syntax.either._
-import DB._
+import db._
 
 abstract class MemDatastore extends Datastore {
   import MemDatastore._

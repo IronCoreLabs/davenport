@@ -7,7 +7,7 @@ package syntax
 import scalaz.concurrent.Task
 import scalaz.stream.Process
 import com.couchbase.client.java.Bucket
-import DB.DBOps
+import db.DBOps
 import datastore.Datastore
 
 // The convention is for syntax objects to start with lower case, so they look

@@ -4,8 +4,7 @@
 package com.ironcorelabs.davenport
 
 import scalaz._, Scalaz._, scalaz.concurrent.Task, scalaz.stream.Process
-import DB._
-import DB.Batch._
+import db._
 import tags.RequiresCouch
 import syntax.dbprog._
 import scala.concurrent.duration._

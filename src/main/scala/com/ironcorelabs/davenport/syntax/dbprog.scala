@@ -4,7 +4,7 @@
 package com.ironcorelabs.davenport
 package syntax
 
-import DB._
+import db._
 import scalaz.stream.Process
 import scalaz._
 import scalaz.concurrent.Task
@@ -16,7 +16,7 @@ final object dbprog extends DBProgOps // scalastyle:ignore
 
 trait DBProgOps {
   implicit class OurDBProgOps[A](self: DBProg[A]) {
-    def process: Process[DBOps, DBError \/ A] = Batch.liftToProcess(self)
+    def process: Process[DBOps, DBError \/ A] = batch.liftToProcess(self)
     def execute(d: Datastore): Task[DBError \/ A] = d.execute(self.run)
   }
 }

@@ -1,10 +1,9 @@
 //
 // Copyright (c) 2015 IronCore Labs
 //
-package com.ironcorelabs.davenport
+package com.ironcorelabs.davenport.db
 
 import argonaut._, Argonaut._
-import DB._
 import scalaz.syntax.either._
 
 /**

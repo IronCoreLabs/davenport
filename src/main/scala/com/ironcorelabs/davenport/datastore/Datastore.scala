@@ -7,7 +7,7 @@ package datastore
 import scalaz.concurrent.Task
 import scalaz.stream.Process
 import scalaz._
-import DB._
+import db._
 
 trait Datastore {
   //Define how you map each op to a Task using a Natural Transformation.
