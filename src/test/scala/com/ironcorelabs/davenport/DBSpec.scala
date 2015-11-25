@@ -4,7 +4,7 @@
 package com.ironcorelabs.davenport
 
 import scalaz._, Scalaz._, scalaz.concurrent.Task
-import DB._
+import db._
 import datastore.MemDatastore
 import syntax._
 

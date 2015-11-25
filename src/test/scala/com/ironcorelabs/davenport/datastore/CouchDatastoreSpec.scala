@@ -8,8 +8,7 @@ package datastore
 
 import syntax._
 import scalaz._, Scalaz._, scalaz.concurrent.Task, scalaz.stream.Process
-import DB._
-import DB.Batch._
+import db._
 import tags.RequiresCouch
 import scala.concurrent.duration._
 import org.scalatest.BeforeAndAfter

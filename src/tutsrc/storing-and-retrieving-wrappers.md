@@ -13,7 +13,7 @@ We prefer not to adulterate the underlying class. All you need to write is the `
 First, the data type definition:
 
 ```tut:silent
-import com.ironcorelabs.davenport.DB.Key
+import com.ironcorelabs.davenport.db.Key
 import argonaut._, Argonaut._
 
 object Example {

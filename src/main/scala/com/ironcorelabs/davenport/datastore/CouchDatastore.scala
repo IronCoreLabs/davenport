@@ -9,7 +9,7 @@ package datastore
 import scalaz.{ \/, \/-, ~>, Kleisli, Free }
 import scalaz.concurrent.Task
 import scalaz.syntax.either._
-import DB._
+import db._
 import scalaz.stream.Process
 
 // Couchbase

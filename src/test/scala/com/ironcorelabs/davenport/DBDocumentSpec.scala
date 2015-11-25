@@ -6,7 +6,7 @@ package com.ironcorelabs.davenport
 import org.scalacheck._
 import org.scalacheck.Prop._
 import Arbitrary.arbitrary
-import DB._
+import db._
 import scalaz._, Scalaz._, scalaz.concurrent.Task
 import argonaut._, Argonaut._
 import datastore.MemDatastore
@@ -101,6 +101,7 @@ class DBDocumentSpec extends TestBase {
           key shouldBe k1
           value shouldBe "\"hello\""
           errorMessage should include("(firstName)")
+          error.message should include(errorMessage)
         case error =>
           fail(s"expected 'DeserializationError', but found  '$error' instead.")
       }

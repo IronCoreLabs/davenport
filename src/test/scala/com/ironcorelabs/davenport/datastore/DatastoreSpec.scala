@@ -6,8 +6,7 @@ package datastore
 
 import syntax._
 import scalaz._, Scalaz._, scalaz.concurrent.Task
-import DB._
-import DB.Batch._
+import db._
 import scalaz.stream.Process
 
 /**
@@ -190,15 +189,15 @@ abstract class DatastoreSpec extends TestBase {
     // Test batch import
     //
     "be happy doing initial batch import" in {
-      val res = runProcess(createDocs(tenrows)).value
+      val res = runProcess(batch.createDocs(tenrows)).value
       res.toList.separate._2.length shouldBe tenrows.length
     }
     "return errors batch importing the same items again" in {
       val datastore = emptyDatastore
-      val initialInsertResult = createDocs(tenrows).execute(datastore).runLog.run
+      val initialInsertResult = batch.createDocs(tenrows).execute(datastore).runLog.run
       //Verified by another test, but sanity check.
       initialInsertResult.forall(_.isRight) shouldBe true
-      val res = createDocs(tenrows ++ fiveMoreRows).execute(datastore).runLog.run
+      val res = batch.createDocs(tenrows ++ fiveMoreRows).execute(datastore).runLog.run
       res.length shouldBe tenrows.length + fiveMoreRows.length
       val (lefts, rights) = res.toList.separate
       lefts.length shouldBe tenrows.length
@@ -206,13 +205,13 @@ abstract class DatastoreSpec extends TestBase {
     }
     "fail after on first error if we pass in a halting function" in {
       val datastore = emptyDatastore
-      val initialInsert = createDocs(tenrows).execute(datastore).runLog.attemptRun.value
-      val res = createDocs(tenrows).takeThrough(_.isRight).execute(datastore).runLog.attemptRun.value
+      val initialInsert = batch.createDocs(tenrows).execute(datastore).runLog.attemptRun.value
+      val res = batch.createDocs(tenrows).takeThrough(_.isRight).execute(datastore).runLog.attemptRun.value
       res.length shouldBe 1
       res.head shouldBe left
     }
     "don't try and insert first 5 and return 5 errors" in {
-      val res = runProcess(createDocs(tenrows.drop(5))).value
+      val res = runProcess(batch.createDocs(tenrows.drop(5))).value
       res.length shouldBe 5
       res.toList.separate._2.length shouldBe 5
     }

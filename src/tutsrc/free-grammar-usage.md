@@ -7,7 +7,7 @@ Davenport uses a Free Grammar abstraction based on [scalaz](https://github.com/s
 In Davenport, we provide an in-memory local option as well as Couchbase, but someone could implement the grammar against any backend and none of your code would change except your choice of datastore.  The immediate advantage is testing: you get fast unit tests via the MemDatastore that verify functionality without needing a Couchbase server or connection setup and teardown.  For example:
 
 ```tut:silent
-import com.ironcorelabs.davenport.DB._
+import com.ironcorelabs.davenport.db._
 import com.ironcorelabs.davenport.CouchConnection
 import com.ironcorelabs.davenport.datastore.MemDatastore
 import com.ironcorelabs.davenport.syntax._
@@ -39,7 +39,7 @@ val finalResult = operations.execute(MemDatastore.empty).run
 * You can map over the DB and inject whatever other functions you like into the process.  As a more complex example, you can make an operation that copies a json field from one stored document to another:
 
 ```tut
-import com.ironcorelabs.davenport.DB._
+import com.ironcorelabs.davenport.db._
 import argonaut._, Argonaut._
 
 // This function is just argonaut magic and not really important for our use case
