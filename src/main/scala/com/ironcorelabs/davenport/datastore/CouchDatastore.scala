@@ -22,14 +22,14 @@ import com.couchbase.client.java.error._
 import rx.lang.scala.Observable
 import rx.lang.scala.JavaConversions._
 
+//TODO identify if Task[Bucket] is still needed.
 final case class CouchDatastore(bucket: Task[Bucket]) extends Datastore {
   import CouchDatastore._
   /**
    * Given a Bucket return back a NT that can turn DBOps into a Task.
    */
   def execute: (DBOps ~> Task) = new (DBOps ~> Task) {
-    def apply[A](prog: DBOps[A]): Task[A] =
-      bucket.flatMap(executeK(prog).run(_))
+    def apply[A](prog: DBOps[A]): Task[A] = bucket.flatMap(executeK(prog).run(_))
   }
 }
 
@@ -118,11 +118,10 @@ final object CouchDatastore {
       couchOpToA(fetchOp)(doc => DBDocument(k, CommitVersion(doc.cas), RawJsonString(doc.content))).
         map(_.leftMap(throwableToDBError(k, _)))
 
-    private def couchOpToA[A, B](fetchOp: AsyncBucket => Observable[AbstractDocument[B]])(f: AbstractDocument[B] => A): Kleisli[Task, Bucket, Throwable \/ A] = { // scalastyle:ignore
-
-      Kleisli.kleisli { bucket: Bucket =>
-        obs2Task(fetchOp(bucket.async)).map(_.map(f))
-      }
+    private def couchOpToA[A, B](
+      fetchOp: AsyncBucket => Observable[AbstractDocument[B]]
+    )(f: AbstractDocument[B] => A): Kleisli[Task, Bucket, Throwable \/ A] = Kleisli.kleisli { bucket: Bucket =>
+      obs2Task(fetchOp(bucket.async)).map(_.map(f))
     }
 
     private def throwableToDBError(key: Key, t: Throwable): DBError = t match {
@@ -132,19 +131,12 @@ final object CouchDatastore {
       case t => GeneralError(t)
     }
 
-    // This is the most efficient way of running things in the couchbase lib
-    // -- far more efficient then using the blocking observables. This converts
-    // the callbacks from the observable into a task, which is easier to work
-    // with when composing and reasoning about functions and operations.
     private def obs2Task[A](o: Observable[A]): Task[Throwable \/ A] = {
-      Task.async[A](k => {
-        o.headOption.subscribe(
-          n => k(n.map(_.right).getOrElse(new DocumentDoesNotExistException().left)),
-          e => k(e.left),
-          () => ()
-        )
-        ()
-      }).attempt
+      import scalaz.Scalaz._
+      val headOptionTask = util.observable.toSingleItemTask(o)
+      //Map the Some to a value, None to an error. We want to attempt to gather all the errors and then we need to 
+      //flatten the nested disjunctions so all the Throwables are on the left of the disjunction.
+      headOptionTask.map(_.toRightDisjunction(new DocumentDoesNotExistException())).attempt.map(_.join)
     }
   }
 }
