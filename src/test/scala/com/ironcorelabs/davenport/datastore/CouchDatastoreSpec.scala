@@ -18,7 +18,7 @@ import com.couchbase.client.java.Bucket
 @RequiresCouch
 class CouchDatastoreSpec extends DatastoreSpec with BeforeAndAfter {
   def datastoreName: String = "CouchDatastoreBasicTests"
-  val davenportConfig = DavenportConfig.withDefaults //COLT: Read with Knobs.
+  val davenportConfig = DavenportConfig.withDefaults() //COLT: Read with Knobs.
   var connection: CouchConnection = null
   def emptyDatastore: Datastore = connection.openDatastore(BucketNameAndPassword("default", None))
 
@@ -28,7 +28,7 @@ class CouchDatastoreSpec extends DatastoreSpec with BeforeAndAfter {
   }
 
   override def afterAll() = {
-    connection.disconnect.attemptRun.value
+    connection.disconnect.run
     ()
   }
 

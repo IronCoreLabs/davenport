@@ -11,7 +11,7 @@ import scala.concurrent.duration._
 
 @RequiresCouch
 class CouchConnectionSpec extends TestBase {
-  val davenportConfig = DavenportConfig.withDefaults //COLT: Read with Knobs.
+  val davenportConfig = DavenportConfig.withDefaults() //COLT: Read with Knobs.
   var connection: CouchConnection = null
 
   override def beforeAll() = {
@@ -31,20 +31,23 @@ class CouchConnectionSpec extends TestBase {
       // Prove that the connection fails
       val connectionfail = db.getDoc(Key("a")).execute(connection.openDatastore(BucketNameAndPassword("default", None)))
       connectionfail.attemptRun.leftValue shouldBe a[DisconnectedException]
+      //Reconnect so the next test has a connection.
       connection = CouchConnection(davenportConfig)
     }
-    "allow closing buckets if they're open" in {
+    "be able to open and close bucket" in {
       val b = BucketNameAndPassword("default", None)
       val openedBucket = connection.openBucket(b).attemptRun.value
       openedBucket.name shouldBe b.name
       connection.openBuckets.get(b).value shouldBe openedBucket
-      //Close should succeed
       val closeTask = connection.closeBucket(b)
+      //Close should succeed
       closeTask.attemptRun should beRight(true)
       //The bucket shouldn't be there anymore
       connection.openBuckets.get(b) shouldBe None
-      //The close still suceeds if closing something that isn't there, but it'll be false.
-      closeTask.attemptRun should beRight(false)
+    }
+    "return false for closeBucket which isn't open" in {
+      val b = BucketNameAndPassword("myuknownbucket", None)
+      connection.closeBucket(b).attemptRun.value shouldBe false
     }
   }
 }

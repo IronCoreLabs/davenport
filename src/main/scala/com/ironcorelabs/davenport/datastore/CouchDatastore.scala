@@ -6,11 +6,11 @@
 package com.ironcorelabs.davenport
 package datastore
 
-import scalaz.{ \/, \/-, ~>, Kleisli, Free }
+import scalaz.{ \/, Kleisli, ~>, Free }
 import scalaz.concurrent.Task
-import scalaz.syntax.either._
+import scalaz.syntax.std.option._ //for .toRightDisjunction
+import scalaz.syntax.monad._ //For .join
 import db._
-import scalaz.stream.Process
 
 // Couchbase
 import com.couchbase.client.java.{ ReplicateTo, PersistTo, ReplicaMode, CouchbaseCluster, Bucket, AsyncBucket }
@@ -22,11 +22,14 @@ import com.couchbase.client.java.error._
 import rx.lang.scala.Observable
 import rx.lang.scala.JavaConversions._
 
-//TODO identify if Task[Bucket] is still needed.
+/**
+ * Create a CouchDatastore which operates on the bucket provided. Note that the primary way this should be used is through
+ * [[CouchConnection.openDatastore]].
+ */
 final case class CouchDatastore(bucket: Task[Bucket]) extends Datastore {
   import CouchDatastore._
   /**
-   * Given a Bucket return back a NT that can turn DBOps into a Task.
+   * A function from DBOps[A] => Task[A] which operates on the bucket provided.
    */
   def execute: (DBOps ~> Task) = new (DBOps ~> Task) {
     def apply[A](prog: DBOps[A]): Task[A] = bucket.flatMap(executeK(prog).run(_))
@@ -132,10 +135,11 @@ final object CouchDatastore {
     }
 
     private def obs2Task[A](o: Observable[A]): Task[Throwable \/ A] = {
-      import scalaz.Scalaz._
       val headOptionTask = util.observable.toSingleItemTask(o)
-      //Map the Some to a value, None to an error. We want to attempt to gather all the errors and then we need to 
-      //flatten the nested disjunctions so all the Throwables are on the left of the disjunction.
+      //Map the Some to a value. None indicates that the observable was "completed" with no value, this 
+      //is translated to a DocumentNotFoundException. 
+      //We want to `attempt` to gather any error that might have happened in the task
+      //and then we need to flatten the nested disjunctions.
       headOptionTask.map(_.toRightDisjunction(new DocumentDoesNotExistException())).attempt.map(_.join)
     }
   }

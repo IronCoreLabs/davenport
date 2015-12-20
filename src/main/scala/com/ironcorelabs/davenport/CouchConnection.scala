@@ -3,7 +3,9 @@
 //
 package com.ironcorelabs.davenport
 
-import scalaz._, scalaz.concurrent.Task
+import scala.collection.concurrent.TrieMap
+
+import scalaz.concurrent.Task
 import scalaz.syntax.monad._ // Brought in for .join
 
 // Couchbase
@@ -14,25 +16,26 @@ import datastore.{ CouchDatastore, Datastore }
 import rx.lang.scala.JavaConversions._
 import scala.collection.JavaConverters._
 
-/** Connect to Couchbase and execute [[db.DBProg]]s */
-final object CouchConnection {
-  final val DefaultPoolSize: Int = 4
-  final val DefaultComputationPoolSize: Int = 4
-  final val DefaultKeyValueEndpoints: Int = 2
-}
-
+/**
+ * Create a connection to the Couchbase Cluster, which will allow you to create a [[com.ironcorelabs.davenport.datastore.CouchDatastore]]
+ * for a particular bucket.
+ * Only one of CouchConnection should be created at a time in an application as it handles all the underlying threading and is expensive
+ * to create.
+ *
+ * This is primarily used to for the purpose of calling [[CouchConnection.openDatastore]] which creates a
+ * [[com.ironcorelabs.davenport.datastore.Datastore]] for the [[BucketNameAndPassword]]
+ * that was passed in. The datastore created can be reused or discarded.
+ */
 final case class CouchConnection(config: DavenportConfig) {
-  import CouchConnection._
   private val (environment, cluster) = createCouchbaseCluster(config)
   //This is only package private for testing. Use openBucket if you need a bucket.
-  private[davenport] val openBuckets: scala.collection.concurrent.Map[BucketNameAndPassword, Bucket] = new scala.collection.concurrent.TrieMap()
+  private[davenport] val openBuckets: TrieMap[BucketNameAndPassword, Bucket] = new TrieMap()
 
   private final def createCouchbaseCluster(config: DavenportConfig): (CouchbaseEnvironment, CouchbaseCluster) = {
     val environment = DefaultCouchbaseEnvironment.builder()
-      // .queryEnabled(cfg.lookup[Boolean]("cdb.queryEnabled") getOrElse false)
-      .ioPoolSize(config.poolSize.getOrElse(DefaultPoolSize))
-      .computationPoolSize(config.computationPoolSize.getOrElse(DefaultComputationPoolSize))
-      .kvEndpoints(config.kvEndpoints.getOrElse(DefaultKeyValueEndpoints))
+      .ioPoolSize(config.ioPoolSize)
+      .computationPoolSize(config.computationPoolSize)
+      .kvEndpoints(config.kvEndpoints)
       .build()
     val cluster = CouchbaseCluster.create(environment, config.hosts.list.asJava)
     environment -> cluster
@@ -45,7 +48,6 @@ final case class CouchConnection(config: DavenportConfig) {
 
   /**
    * Attempt to get the current cached bucket for the BucketNameAndPassword. If it isn't in the cache, create a new one.
-   * If when we go to put a new value into the cache there is conflict we'll close the new one we created and return the old.
    */
   def openBucket(bucketAndPassword: BucketNameAndPassword): Task[Bucket] = Task.delay {
     openBuckets.get(bucketAndPassword).map(Task.now(_)).getOrElse {
@@ -68,7 +70,7 @@ final case class CouchConnection(config: DavenportConfig) {
   }
 
   /**
-   * Disconnect this CouchConnection. It will no longer be usable and all datastores created from it will
+   * Disconnect this CouchConnection. The Connection will no longer be usable and all datastores created from it will
    * no longer work.
    */
   def disconnect: Task[Boolean] = for {
@@ -96,5 +98,8 @@ final case class CouchConnection(config: DavenportConfig) {
 
 final case class BucketNameAndPassword(name: String, password: Option[String])
 
+/**
+ * Indicates that the Exception is due to the underlying connection being terminated.
+ */
 final class DisconnectedException(inner: Exception)
-  extends Exception(s" Cluster appears to have been disconnected and cannot be used.", inner)
+  extends Exception(" Cluster appears to have been disconnected and cannot be used.", inner)

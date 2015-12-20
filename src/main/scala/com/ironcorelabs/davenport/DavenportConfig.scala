@@ -4,18 +4,32 @@
 package com.ironcorelabs.davenport
 
 import scalaz.NonEmptyList
+
 /**
  * The configuration class to tell Davenport how to configure the [[CouchConnection]].
- * @param poolSize: Number of threads to use for IO.
- * @param
+ * @param ioPoolSize - Number of threads to use for IO in the underlying couchbase connection.
+ * @param computationPoolSize - Number of threads to use for computation in underlying couchbase connection.
+ * @param kvEndpoints - Number of sockets to keep open per node. Should be left at 1 unless you're sure the socket is saturated.
+ * @param hosts - ip addresses or hostnames of the couchbase cluster nodes.
  */
 final case class DavenportConfig(
-  poolSize: Option[Int],
-  computationPoolSize: Option[Int],
-  kvEndpoints: Option[Int],
+  ioPoolSize: Int,
+  computationPoolSize: Int,
+  kvEndpoints: Int,
   hosts: NonEmptyList[String]
 )
 
 final object DavenportConfig {
-  final def withDefaults = DavenportConfig(None, None, None, NonEmptyList.nels("127.0.0.1"))
+  /**
+   * Produce a DavenportConfig object with default configuration.
+   */
+  final def withDefaults(
+    poolSize: Int = DefaultPoolSize,
+    computationPoolSize: Int = DefaultComputationPoolSize,
+    kvEndpoints: Int = DefaultKeyValueEndpoints,
+    hosts: NonEmptyList[String] = NonEmptyList.nels("127.0.0.1")
+  ): DavenportConfig = DavenportConfig(poolSize, computationPoolSize, kvEndpoints, hosts)
+  private final val DefaultPoolSize: Int = 4
+  private final val DefaultComputationPoolSize: Int = 4
+  private final val DefaultKeyValueEndpoints: Int = 1
 }
