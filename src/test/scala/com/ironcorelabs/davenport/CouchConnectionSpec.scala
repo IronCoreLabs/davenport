@@ -10,22 +10,45 @@ import syntax.dbprog._
 import scala.concurrent.duration._
 
 @RequiresCouch
-class CouchConnectionSpec extends TestBase {
+class CouchConnectionSpec extends TestBase with KnobsConfiguration {
+  var connection: CouchConnection = null
+
+  val davenportConfig = knobsConfiguration.run
+  override def beforeAll() = {
+
+    connection = CouchConnection(davenportConfig)
+    ()
+  }
+
+  override def afterAll() = {
+    connection.disconnect.attemptRun.value
+    ()
+  }
 
   "CouchConnection" should {
-    "attempt connect to bad host and fail" in {
-      // Store off good connection
-      CouchConnection.fakeDisconnect
-
-      // Attempt to connect with bogus config
-      val res = CouchConnection.connectToHost("badhostnocookie.local")
-
-      // Get error in return
-      res should be(left)
-
-      CouchConnection.connected should ===(false)
-
-      CouchConnection.fakeDisconnectRevert
+    "handle a failed connection" in {
+      //Disconnect our connection.
+      connection.disconnect.attemptRun.value
+      // Prove that the connection fails
+      val connectionfail = db.getDoc(Key("a")).execute(connection.openDatastore(BucketNameAndPassword("default", None)))
+      connectionfail.attemptRun.leftValue shouldBe a[DisconnectedException]
+      //Reconnect so the next test has a connection.
+      connection = CouchConnection(davenportConfig)
+    }
+    "be able to open and close bucket" in {
+      val b = BucketNameAndPassword("default", None)
+      val openedBucket = connection.openBucket(b).attemptRun.value
+      openedBucket.name shouldBe b.name
+      connection.openBuckets.get(b).value shouldBe openedBucket
+      val closeTask = connection.closeBucket(b)
+      //Close should succeed
+      closeTask.attemptRun should beRight(true)
+      //The bucket shouldn't be there anymore
+      connection.openBuckets.get(b) shouldBe None
+    }
+    "return false for closeBucket which isn't open" in {
+      val b = BucketNameAndPassword("myuknownbucket", None)
+      connection.closeBucket(b).attemptRun.value shouldBe false
     }
   }
 }

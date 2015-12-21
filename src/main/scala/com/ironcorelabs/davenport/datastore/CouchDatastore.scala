@@ -6,15 +6,14 @@
 package com.ironcorelabs.davenport
 package datastore
 
-import scalaz.{ \/, \/-, ~>, Kleisli, Free }
+import scalaz.{ \/, Kleisli, ~>, Free }
 import scalaz.concurrent.Task
-import scalaz.syntax.either._
+import scalaz.syntax.std.option._ //for .toRightDisjunction
+import scalaz.syntax.monad._ //For .join
 import db._
-import scalaz.stream.Process
 
 // Couchbase
-import com.couchbase.client.java.{ ReplicateTo, PersistTo, ReplicaMode, CouchbaseCluster, Bucket, AsyncBucket }
-import com.couchbase.client.java.env.{ CouchbaseEnvironment, DefaultCouchbaseEnvironment }
+import com.couchbase.client.java.{ Bucket, AsyncBucket }
 import com.couchbase.client.java.document.{ AbstractDocument, JsonLongDocument, RawJsonDocument }
 import com.couchbase.client.java.error._
 
@@ -22,14 +21,17 @@ import com.couchbase.client.java.error._
 import rx.lang.scala.Observable
 import rx.lang.scala.JavaConversions._
 
+/**
+ * Create a CouchDatastore which operates on the bucket provided. Note that the primary way this should be used is through
+ * [[CouchConnection.openDatastore]].
+ */
 final case class CouchDatastore(bucket: Task[Bucket]) extends Datastore {
   import CouchDatastore._
   /**
-   * Given a Bucket return back a NT that can turn DBOps into a Task.
+   * A function from DBOps[A] => Task[A] which operates on the bucket provided.
    */
   def execute: (DBOps ~> Task) = new (DBOps ~> Task) {
-    def apply[A](prog: DBOps[A]): Task[A] =
-      bucket.flatMap(executeK(prog).run(_))
+    def apply[A](prog: DBOps[A]): Task[A] = bucket.flatMap(executeK(prog).run(_))
   }
 }
 
@@ -118,11 +120,10 @@ final object CouchDatastore {
       couchOpToA(fetchOp)(doc => DBDocument(k, CommitVersion(doc.cas), RawJsonString(doc.content))).
         map(_.leftMap(throwableToDBError(k, _)))
 
-    private def couchOpToA[A, B](fetchOp: AsyncBucket => Observable[AbstractDocument[B]])(f: AbstractDocument[B] => A): Kleisli[Task, Bucket, Throwable \/ A] = { // scalastyle:ignore
-
-      Kleisli.kleisli { bucket: Bucket =>
-        obs2Task(fetchOp(bucket.async)).map(_.map(f))
-      }
+    private def couchOpToA[A, B](
+      fetchOp: AsyncBucket => Observable[AbstractDocument[B]]
+    )(f: AbstractDocument[B] => A): Kleisli[Task, Bucket, Throwable \/ A] = Kleisli.kleisli { bucket: Bucket =>
+      obs2Task(fetchOp(bucket.async)).map(_.map(f))
     }
 
     private def throwableToDBError(key: Key, t: Throwable): DBError = t match {
@@ -132,19 +133,13 @@ final object CouchDatastore {
       case t => GeneralError(t)
     }
 
-    // This is the most efficient way of running things in the couchbase lib
-    // -- far more efficient then using the blocking observables. This converts
-    // the callbacks from the observable into a task, which is easier to work
-    // with when composing and reasoning about functions and operations.
     private def obs2Task[A](o: Observable[A]): Task[Throwable \/ A] = {
-      Task.async[A](k => {
-        o.headOption.subscribe(
-          n => k(n.map(_.right).getOrElse(new DocumentDoesNotExistException().left)),
-          e => k(e.left),
-          () => ()
-        )
-        ()
-      }).attempt
+      val headOptionTask = util.observable.toSingleItemTask(o)
+      //Map the Some to a value. None indicates that the observable was "completed" with no value, this 
+      //is translated to a DocumentNotFoundException. 
+      //We want to `attempt` to gather any error that might have happened in the task
+      //and then we need to flatten the nested disjunctions.
+      headOptionTask.map(_.toRightDisjunction(new DocumentDoesNotExistException())).attempt.map(_.join)
     }
   }
 }

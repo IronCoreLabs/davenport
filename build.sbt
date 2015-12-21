@@ -17,7 +17,6 @@ libraryDependencies ++= Seq(
   "com.couchbase.client" % "java-client" % "2.1.4", // interacting with couch
   "io.reactivex" %% "rxscala" % "0.25.0", // to better work with the couchbase java client
   "io.argonaut" %% "argonaut" % "6.1", // json (de)serialization scalaz style
-  "oncue.knobs" %% "core" % "3.3.3", // for config happiness
   "org.scalaz.stream" %% "scalaz-stream" % "0.7.2a"
 )
 
@@ -26,7 +25,8 @@ libraryDependencies ++= Seq(
   "org.scalatest" % "scalatest_2.11" % "2.2.1" % "test",
   "org.typelevel" %% "scalaz-scalatest" % "0.2.2" % "test",
   "org.scalacheck" %% "scalacheck" % "1.12.5" % "test",
-  "org.scalaz" %% "scalaz-scalacheck-binding" % ScalazVersion
+  "org.scalaz" %% "scalaz-scalacheck-binding" % ScalazVersion,
+  "oncue.knobs" %% "core" % "3.3.3" % "test"
 )
 
 addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.6.3")
@@ -35,7 +35,6 @@ addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.6.3")
 coverageMinimum := 70
 coverageFailOnMinimum := true
 coverageHighlighting := scalaBinaryVersion.value == "2.11"
-
 
 tutSettings
 unidocSettings
