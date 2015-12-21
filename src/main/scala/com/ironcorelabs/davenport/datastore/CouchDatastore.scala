@@ -13,8 +13,7 @@ import scalaz.syntax.monad._ //For .join
 import db._
 
 // Couchbase
-import com.couchbase.client.java.{ ReplicateTo, PersistTo, ReplicaMode, CouchbaseCluster, Bucket, AsyncBucket }
-import com.couchbase.client.java.env.{ CouchbaseEnvironment, DefaultCouchbaseEnvironment }
+import com.couchbase.client.java.{ Bucket, AsyncBucket }
 import com.couchbase.client.java.document.{ AbstractDocument, JsonLongDocument, RawJsonDocument }
 import com.couchbase.client.java.error._
 

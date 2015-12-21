@@ -16,9 +16,9 @@ import com.couchbase.client.java.env.CouchbaseEnvironment
 import com.couchbase.client.java.Bucket
 
 @RequiresCouch
-class CouchDatastoreSpec extends DatastoreSpec with BeforeAndAfter {
+class CouchDatastoreSpec extends DatastoreSpec with BeforeAndAfter with KnobsConfiguration {
   def datastoreName: String = "CouchDatastoreBasicTests"
-  val davenportConfig = DavenportConfig.withDefaults() //COLT: Read with Knobs.
+  val davenportConfig = knobsConfiguration.run
   var connection: CouchConnection = null
   def emptyDatastore: Datastore = connection.openDatastore(BucketNameAndPassword("default", None))
 

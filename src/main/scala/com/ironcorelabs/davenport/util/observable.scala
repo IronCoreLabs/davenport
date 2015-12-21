@@ -26,9 +26,8 @@ final object observable { //scalastyle:ignore
     ()
   }
 
-  private final def funcToObserver[A](f: (Throwable \/ A) => Unit): Observer[A] = new Observer[A] {
-    override def onNext(a: A): Unit = f(a.right)
-    val onComplete = Function.const(())(_: Unit)
-    override def onError(t: Throwable): Unit = f(t.left)
-  }
+  private final def funcToObserver[A](f: (Throwable \/ A) => Unit): Observer[A] = Observer[A](
+    onNext = { a: A => f(a.right) },
+    onError = { t: Throwable => f(t.left) }
+  )
 }

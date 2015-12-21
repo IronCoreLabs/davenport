@@ -10,11 +10,12 @@ import syntax.dbprog._
 import scala.concurrent.duration._
 
 @RequiresCouch
-class CouchConnectionSpec extends TestBase {
-  val davenportConfig = DavenportConfig.withDefaults() //COLT: Read with Knobs.
+class CouchConnectionSpec extends TestBase with KnobsConfiguration {
   var connection: CouchConnection = null
 
+  val davenportConfig = knobsConfiguration.run
   override def beforeAll() = {
+
     connection = CouchConnection(davenportConfig)
     ()
   }
