@@ -6,7 +6,6 @@ package syntax
 
 import scalaz.concurrent.Task
 import scalaz.stream.Process
-import com.couchbase.client.java.Bucket
 import db.DBOps
 import datastore.Datastore
 
