@@ -81,7 +81,7 @@ private object Bucket {
 
   def get(core: CouchbaseCore, bucket: String, id: String): Task[DBDocument[ByteVector]] = {
     toSingleItemTask(core.send[GetResponse](new GetRequest(id, bucket))).flatMap { res =>
-      processResponseToByteVector(id, bucket, res).map(DBDocument(Key(id), CommitVersion(res.cas), _))
+      toByteVector(id, bucket, res).map(DBDocument(Key(id), CommitVersion(res.cas), _))
     }
   }
 
@@ -90,7 +90,10 @@ private object Bucket {
     val expiresSeconds = expires.map(_.toSeconds.toInt).getOrElse(0)
     val request = new InsertRequest(id, Unpooled.wrappedBuffer(content.toArray), expiresSeconds, 0, bucket)
     toSingleItemTask(core.send[InsertResponse](request)).flatMap { res =>
-      processResponseToByteVector(id, bucket, res).map(DBDocument(Key(id), CommitVersion(res.cas), _))
+      val bytesOrError = toByteVectorWithCustomErrorHandling(id, bucket, res) {
+        case ResponseStatus.EXISTS => DocumentAlreadyExistsException(id)
+      }
+      bytesOrError.map(DBDocument(Key(id), CommitVersion(res.cas), _))
     }
   }
 
@@ -99,14 +102,14 @@ private object Bucket {
     val expiresSeconds = expires.map(_.toSeconds.toInt).getOrElse(0)
     val request = new ReplaceRequest(id, Unpooled.wrappedBuffer(content.toArray), cas, expiresSeconds, 0, bucket)
     toSingleItemTask(core.send[ReplaceResponse](request)).flatMap { res =>
-      processResponseToByteVector(id, bucket, res).map(DBDocument(Key(id), CommitVersion(res.cas), _))
+      toByteVector(id, bucket, res).map(DBDocument(Key(id), CommitVersion(res.cas), _))
     }
   }
 
   def remove(core: CouchbaseCore, bucket: String, id: String, cas: Long): Task[DBDocument[Unit]] = {
     val request = new RemoveRequest(id, cas, bucket)
     toSingleItemTask(core.send[RemoveResponse](request)).flatMap { res =>
-      processResponseToByteVector(id, bucket, res).map(_ => DBDocument(Key(id), CommitVersion(res.cas), ()))
+      toByteVector(id, bucket, res).map(_ => DBDocument(Key(id), CommitVersion(res.cas), ()))
     }
   }
 
@@ -116,29 +119,40 @@ private object Bucket {
     val request = new CounterRequest(id, initial, delta, expiresSeconds, bucket)
     toSingleItemTask(core.send[CounterResponse](request)).flatMap { res =>
       //COLT: What do we want to do about the value
-      processResponse(id, bucket, res)(Function.const(())(_)).map(_ => DBDocument(Key(id), CommitVersion(res.cas), res.value))
+      processResponse(id, bucket, res)(Function.const(())(_))(PartialFunction.empty).map(_ => DBDocument(Key(id), CommitVersion(res.cas), res.value))
     }
   }
 
-  private def processResponseToByteVector(id: String, bucket: String, res: AbstractKeyValueResponse): Task[ByteVector] =
-    processResponse(id, bucket, res) { res => readBytes(res.content) }
+  private def toByteVectorWithCustomErrorHandling(id: String, bucket: String, res: AbstractKeyValueResponse)(specialErrorHandler: PartialFunction[ResponseStatus, CouchbaseError]): Task[ByteVector] =
+    processResponse(id, bucket, res) { res => readBytes(res.content) }(specialErrorHandler)
+
+  private def toByteVector(id: String, bucket: String, res: AbstractKeyValueResponse): Task[ByteVector] =
+    toByteVectorWithCustomErrorHandling(id, bucket, res)(PartialFunction.empty)
 
   /**
    * Process the response and free the ByteBuf associated with it. We do both of these things in an
    * eager way to avoid doing it more than once.
    */
-  private def processResponse[A](id: String, bucket: String,
-    res: AbstractKeyValueResponse)(onSuccess: AbstractKeyValueResponse => A): Task[A] = {
+  private def processResponse[A](
+    id: String,
+    bucket: String,
+    res: AbstractKeyValueResponse
+  )(onSuccess: AbstractKeyValueResponse => A)(specialErrorHandler: PartialFunction[ResponseStatus, CouchbaseError]): Task[A] = {
     //Important that all of these eagerly consume res.content if they need it. It's freed immediately after this match.
-    val result = res.status() match {
-      case ResponseStatus.SUCCESS => Task.now(onSuccess(res))
-      case ResponseStatus.NOT_EXISTS => Task.fail(DocumentDoesNotExistException(id, bucket))
-      case ResponseStatus.EXISTS => Task.fail(CASMismatchException(id))
-      case ResponseStatus.TEMPORARY_FAILURE | ResponseStatus.SERVER_BUSY => Task.fail(TemporaryFailureException())
-      case ResponseStatus.COMMAND_UNAVAILABLE | ResponseStatus.FAILURE | ResponseStatus.INTERNAL_ERROR |
-        ResponseStatus.INVALID_ARGUMENTS | ResponseStatus.NOT_STORED | ResponseStatus.OUT_OF_MEMORY |
-        ResponseStatus.RETRY | ResponseStatus.TOO_BIG | ResponseStatus.RANGE_ERROR | ResponseStatus.ROLLBACK =>
-        Task.fail(new CouchbaseException(s"Error '${res.status().toString}' returned from the couchbase server."))
+    val status = res.status()
+    val maybeHandledError = specialErrorHandler.lift(status).map(Task.fail(_))
+
+    val result = maybeHandledError.getOrElse {
+      res.status() match {
+        case ResponseStatus.SUCCESS => Task.now(onSuccess(res))
+        case ResponseStatus.NOT_EXISTS => Task.fail(DocumentDoesNotExistException(id, bucket))
+        case ResponseStatus.EXISTS => Task.fail(CASMismatchException(id))
+        case ResponseStatus.TEMPORARY_FAILURE | ResponseStatus.SERVER_BUSY => Task.fail(TemporaryFailureException())
+        case ResponseStatus.COMMAND_UNAVAILABLE | ResponseStatus.FAILURE | ResponseStatus.INTERNAL_ERROR |
+          ResponseStatus.INVALID_ARGUMENTS | ResponseStatus.NOT_STORED | ResponseStatus.OUT_OF_MEMORY |
+          ResponseStatus.RETRY | ResponseStatus.TOO_BIG | ResponseStatus.RANGE_ERROR | ResponseStatus.ROLLBACK =>
+          Task.fail(new CouchbaseException(s"Error '${res.status().toString}' returned from the couchbase server."))
+      }
     }
     //Free the bytebuf.
     Option(res.content()).filter(_.refCnt > 0).foreach(_.release)

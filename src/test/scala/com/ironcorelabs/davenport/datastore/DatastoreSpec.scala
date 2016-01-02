@@ -167,8 +167,7 @@ abstract class DatastoreSpec extends TestBase {
       result.toSeq.head.value shouldBe v
     }
 
-    //COLT: fix the create case to map to the correct error type.
-    "show partial success will still change the backing store" ignore {
+    "show partial success will still change the backing store" in {
       val datastore = emptyDatastore
       val createOne = createAndGet(k, v)
       val k2 = Key("something.")

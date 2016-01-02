@@ -8,12 +8,15 @@ import scodec.bits.ByteVector
 import scalaz._, Scalaz._
 import argonaut._
 
-//COLT: Correct error type
 case class ByteVectorEncoder[A](encode: A => EncodeError \/ ByteVector) {
+  def apply(a: A): EncodeError \/ ByteVector = encode(a)
   def contramap[B](f: B => A): ByteVectorEncoder[B] = ByteVectorEncoder { b => encode(f(b)) }
 }
 
 object ByteVectorEncoder {
+  implicit val ContravariantInstance: Contravariant[ByteVectorEncoder] = new Contravariant[ByteVectorEncoder] {
+    def contramap[A, B](encoder: ByteVectorEncoder[A])(f: B => A) = encoder.contramap(f)
+  }
   implicit final val IdEncoder: ByteVectorEncoder[ByteVector] = ByteVectorEncoder { b => b.right }
   implicit final val StringEncoder: ByteVectorEncoder[String] = ByteVectorEncoder { string =>
     \/.fromEither(ByteVector.encodeUtf8(string)).leftMap { ex =>
@@ -21,8 +24,8 @@ object ByteVectorEncoder {
       EncodeError(s"Couldn't encode the string '$string'", Some(ex))
     }
   }
-  implicit final val JsonEncoder: ByteVectorEncoder[Json] =
-    ByteVectorEncoder { json => StringEncoder.encode(json.nospaces) }
-  def fromDecodeJson[A](jsonEncode: EncodeJson[A]): ByteVectorEncoder[A] =
-    ByteVectorEncoder { a => JsonEncoder.encode(jsonEncode.encode(a)) }
+  implicit final val JsonEncoder: ByteVectorEncoder[Json] = encodeBy(_.nospaces)
+  def fromEncodeJson[A](jencode: EncodeJson[A]): ByteVectorEncoder[A] = encodeBy(jencode.encode(_))
+  //Alias for contramap with an implicit encoder.
+  def encodeBy[A, B](f: B => A)(implicit encoder: ByteVectorEncoder[A]): ByteVectorEncoder[B] = encoder.contramap(f)
 }
