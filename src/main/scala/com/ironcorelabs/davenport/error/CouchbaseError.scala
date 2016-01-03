@@ -2,7 +2,7 @@ package com.ironcorelabs.davenport
 package error
 
 import com.couchbase.client.core.CouchbaseException
-import codec.{ EncodeError, DecodeError }
+import codec.DecodeError
 sealed trait CouchbaseError extends CouchbaseException
 //Splitting these ADT entries didn't work well.
 // scalastyle:off line.size.limit
@@ -23,13 +23,5 @@ object DocumentDecodeFailedException {
   def apply(cause: DecodeError): DocumentDecodeFailedException = cause match {
     case DecodeError(message, None) => new CouchbaseException(message) with DocumentDecodeFailedException
     case DecodeError(message, Some(ex)) => new CouchbaseException(message, ex) with DocumentDecodeFailedException
-  }
-}
-
-trait DocumentEncodeFailedException extends CouchbaseException with CouchbaseError {}
-object DocumentEncodeFailedException {
-  def apply(cause: EncodeError): DocumentEncodeFailedException = cause match {
-    case EncodeError(message, None) => new CouchbaseException(message) with DocumentEncodeFailedException
-    case EncodeError(message, Some(ex)) => new CouchbaseException(message, ex) with DocumentEncodeFailedException
   }
 }

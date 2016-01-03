@@ -97,9 +97,8 @@ class DBDocumentSpec extends TestBase {
       val putString = k1.dbCreate("hello").execute(datastore).run.value
       val dbError = k1.dbGet[User].execute(datastore).run.leftValue
       dbError match {
-        case error @ DeserializationError(key, value, errorMessage) =>
+        case error @ DeserializationError(key, errorMessage) =>
           key shouldBe k1
-          value shouldBe "\"hello\""
           errorMessage should include("(firstName)")
           error.message should include(errorMessage)
         case error =>

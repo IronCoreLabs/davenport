@@ -47,18 +47,20 @@ private[davenport] final object CouchbaseCoreUtil {
       } else {
         Task.fail(new CouchbaseException(s"Couldn't open $bucketName."))
       }
-    }.handleWith {
-      case ex: ConfigurationException =>
-        ex.getCause match {
-          case _: IllegalStateException if ex.getCause.getMessage.contains("NOT_EXISTS") =>
-            Task.fail(new BucketDoesNotExistException(bucketName))
-          case _: IllegalStateException if ex.getCause.getMessage.contains("Unauthorized") =>
-            Task.fail(new InvalidPasswordException(bucketName))
-          case _ =>
-            Task.fail(ex)
-        }
-      case ex: CouchbaseException =>
-        Task.fail(ex)
-    }
+    }.handleWith(bucketErrorHandler(bucketName))
+  }
+
+  private[internal] def bucketErrorHandler[A](bucketName: String): PartialFunction[Throwable, Task[A]] = {
+    case ex: ConfigurationException =>
+      ex.getCause match {
+        case _: IllegalStateException if ex.getCause.getMessage.contains("NOT_EXISTS") =>
+          Task.fail(BucketDoesNotExistException(bucketName))
+        case _: IllegalStateException if ex.getCause.getMessage.contains("Unauthorized") =>
+          Task.fail(InvalidPasswordException(bucketName))
+        case _ =>
+          Task.fail(ex)
+      }
+    case ex: CouchbaseException =>
+      Task.fail(ex)
   }
 }

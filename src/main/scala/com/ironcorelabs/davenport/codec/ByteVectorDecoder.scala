@@ -38,3 +38,8 @@ object ByteVectorDecoder {
     } yield a
   }
 }
+
+/**
+ * Error indicating a failure to decode a value from a ByteVector.
+ */
+case class DecodeError(message: String, cause: Option[Exception] = None)

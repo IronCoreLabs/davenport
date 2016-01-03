@@ -84,6 +84,7 @@ final object CouchDatastore {
       case _: error.DocumentDoesNotExistException => ValueNotFound(key)
       case _: error.DocumentAlreadyExistsException => ValueExists(key)
       case _: error.CASMismatchException => CommitVersionMismatch(key)
+      case ex: error.DocumentDecodeFailedException => DeserializationError(key, ex.getMessage)
       case t => GeneralError(t)
     }
   }

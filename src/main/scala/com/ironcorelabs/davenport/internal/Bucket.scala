@@ -33,8 +33,8 @@ final class Bucket(core: CouchbaseCore, val name: String, password: Option[Strin
   /**
    * Create a document at key with a value of A, which will be encoded into bytes using encoder.
    */
-  final def create[A](key: Key, value: A)(implicit encoder: ByteVectorEncoder[A]): Task[DBDocument[A]] =
-    Task.fromDisjunction(encodeToByteVector(value)).flatMap(Bucket.create(core, name, key.value, _, None)).map(_.map(_ => value))
+  final def create[A: ByteVectorEncoder](key: Key, value: A): Task[DBDocument[A]] =
+    Bucket.create(core, name, key.value, encodeToByteVector(value), None).map(_.map(_ => value))
 
   /**
    * Remove the value at key.
@@ -55,8 +55,8 @@ final class Bucket(core: CouchbaseCore, val name: String, password: Option[Strin
    * Update (or replace) the document that is stored at key with the encoded value. Note that this will only succeed if the cas matches
    * the one stored in couchbase.
    */
-  final def update[A](key: Key, value: A, cas: Long)(implicit encoder: ByteVectorEncoder[A]): Task[DBDocument[A]] =
-    Task.fromDisjunction(encodeToByteVector(value)).flatMap(Bucket.replace(core, name, key.value, _, cas, None)).map(_.map(_ => value))
+  final def update[A: ByteVectorEncoder](key: Key, value: A, cas: Long): Task[DBDocument[A]] =
+    Bucket.replace(core, name, key.value, encodeToByteVector(value), cas, None).map(_.map(_ => value))
 
   private final def decodeDBDocument[A](t: Task[DBDocument[ByteVector]])(implicit decoder: ByteVectorDecoder[A]): Task[DBDocument[A]] = {
     t.flatMap { document =>
@@ -65,9 +65,7 @@ final class Bucket(core: CouchbaseCore, val name: String, password: Option[Strin
     }
   }
 
-  private final def encodeToByteVector[A](a: A)(implicit encoder: ByteVectorEncoder[A]): DocumentEncodeFailedException \/ ByteVector = {
-    encoder.encode(a).leftMap(DocumentEncodeFailedException(_))
-  }
+  private final def encodeToByteVector[A](a: A)(implicit encoder: ByteVectorEncoder[A]): ByteVector = encoder.encode(a)
 }
 
 /**
@@ -76,7 +74,7 @@ final class Bucket(core: CouchbaseCore, val name: String, password: Option[Strin
 private object Bucket {
   import util.observable.toSingleItemTask
 
-  def apply(core: CouchbaseCore, name: String): Bucket = new Bucket(core, name, None)
+  def apply(core: CouchbaseCore, name: String): Bucket = apply(core, name, None)
   def apply(core: CouchbaseCore, name: String, password: Option[String]): Bucket = new Bucket(core, name, password)
 
   def get(core: CouchbaseCore, bucket: String, id: String): Task[DBDocument[ByteVector]] = {
