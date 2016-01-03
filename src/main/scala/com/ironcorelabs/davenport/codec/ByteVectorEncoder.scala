@@ -5,7 +5,7 @@ package com.ironcorelabs.davenport
 package codec
 
 import scodec.bits.ByteVector
-import scalaz._, Scalaz._
+import scalaz.{ Contravariant, \/ }
 import argonaut._
 
 /**

@@ -116,16 +116,21 @@ private object Bucket {
     val expiresSeconds = expires.map(_.toSeconds.toInt).getOrElse(0)
     val request = new CounterRequest(id, initial, delta, expiresSeconds, bucket)
     toSingleItemTask(core.send[CounterResponse](request)).flatMap { res =>
-      //COLT: What do we want to do about the value
-      processResponse(id, bucket, res)(Function.const(())(_))(PartialFunction.empty).map(_ => DBDocument(Key(id), CommitVersion(res.cas), res.value))
+      processResponse(id, bucket, res)(Function.const(())(_))(PartialFunction.empty[ResponseStatus, CouchbaseError]).map { _ =>
+        DBDocument(Key(id), CommitVersion(res.cas), res.value)
+      }
     }
   }
 
-  private def toByteVectorWithCustomErrorHandling(id: String, bucket: String, res: AbstractKeyValueResponse)(specialErrorHandler: PartialFunction[ResponseStatus, CouchbaseError]): Task[ByteVector] =
+  private def toByteVectorWithCustomErrorHandling(
+    id: String,
+    bucket: String,
+    res: AbstractKeyValueResponse
+  )(specialErrorHandler: PartialFunction[ResponseStatus, CouchbaseError]): Task[ByteVector] =
     processResponse(id, bucket, res) { res => readBytes(res.content) }(specialErrorHandler)
 
   private def toByteVector(id: String, bucket: String, res: AbstractKeyValueResponse): Task[ByteVector] =
-    toByteVectorWithCustomErrorHandling(id, bucket, res)(PartialFunction.empty)
+    toByteVectorWithCustomErrorHandling(id, bucket, res)(PartialFunction.empty[ResponseStatus, CouchbaseError])
 
   /**
    * Process the response and free the ByteBuf associated with it. We do both of these things in an
