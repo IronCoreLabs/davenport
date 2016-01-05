@@ -46,7 +46,7 @@ final object DBDocument {
    */
   def get[T](k: Key)(implicit codec: DecodeJson[T]): DBProg[DBDocument[T]] = for {
     s <- getDoc(k)
-    decodedValue = s.data.value.decodeWithMessage({ t: T => t.right }, DeserializationError(k, s.data.value, _).left)
+    decodedValue = s.data.value.decodeWithMessage({ t: T => t.right }, DeserializationError(k, _).left)
     v <- liftDisjunction(decodedValue)
   } yield DBDocument(k, s.commitVersion, v)
 

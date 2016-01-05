@@ -12,8 +12,6 @@ import db._
 import tags.RequiresCouch
 import scala.concurrent.duration._
 import org.scalatest.BeforeAndAfter
-import com.couchbase.client.java.env.CouchbaseEnvironment
-import com.couchbase.client.java.Bucket
 
 @RequiresCouch
 class CouchDatastoreSpec extends DatastoreSpec with BeforeAndAfter with KnobsConfiguration {

@@ -34,8 +34,8 @@ final case class CommitVersionMismatch(key: Key) extends DBError {
  * @param errorMessage The underlying failure message from the parse failure.
  * @param value Value that failed to parse.
  */
-final case class DeserializationError(key: Key, value: String, errorMessage: String) extends DBError {
-  def message: String = s"Failed to deserialize '$value' which was at '$key' with message '$errorMessage'"
+final case class DeserializationError(key: Key, errorMessage: String) extends DBError {
+  def message: String = s"Failed to deserialize document at '$key' with message '$errorMessage'"
 }
 
 /**

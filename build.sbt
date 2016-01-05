@@ -14,10 +14,11 @@ resolvers ++= Seq(
 libraryDependencies ++= Seq(
   "org.scalaz" %% "scalaz-core" % ScalazVersion, // for type awesomeness
   "org.scalaz" %% "scalaz-concurrent" % ScalazVersion, // for type awesomeness
-  "com.couchbase.client" % "java-client" % "2.1.4", // interacting with couch
+  "com.couchbase.client" % "core-io" % "1.2.1",
   "io.reactivex" %% "rxscala" % "0.25.0", // to better work with the couchbase java client
   "io.argonaut" %% "argonaut" % "6.1", // json (de)serialization scalaz style
-  "org.scalaz.stream" %% "scalaz-stream" % "0.7.2a"
+  "org.scalaz.stream" %% "scalaz-stream" % "0.7.2a",
+  "org.scodec" %% "scodec-bits" % "1.0.12"
 )
 
 // Test

@@ -1,13 +1,20 @@
 //
 // Copyright (c) 2015 IronCore Labs
 //
-package com.ironcorelabs.davenport.db
+package com.ironcorelabs.davenport
+package db
+
+import codec.{ ByteVectorDecoder, ByteVectorEncoder }
 
 /** Just a string. This is used for type safety. */
 final case class Key(value: String) extends AnyVal
 
 /** Just a string. This is used for type safety. */
 final case class RawJsonString(value: String) extends AnyVal
+object RawJsonString {
+  implicit val decoder: ByteVectorDecoder[RawJsonString] = ByteVectorDecoder.StringDecoder.map(RawJsonString(_))
+  implicit val encoder: ByteVectorEncoder[RawJsonString] = ByteVectorEncoder.StringEncoder.contramap(_.value)
+}
 
 /**
  * A commit version of an existing value in the db.

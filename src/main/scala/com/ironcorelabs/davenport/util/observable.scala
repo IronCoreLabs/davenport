@@ -11,10 +11,19 @@ import scalaz.\/
 
 final object observable { //scalastyle:ignore
 
+  case class NoElementInObservableException() extends Exception("No elements in the observable.")
   /**
-   * Get the first value of the observable in a Task. If there was an error fail the task using that exception.
+   * Get the first value of the observable in a Task. If there was an error fail the task.
    */
-  final def toSingleItemTask[A](o: Observable[A]): Task[Option[A]] = Task.async(subscribe(o.headOption)(_))
+  final def toSingleItemTask[A](o: Observable[A]): Task[A] = toOptionTask(o).flatMap {
+    case None => Task.fail(NoElementInObservableException())
+    case Some(a) => Task.now(a)
+  }
+
+  /**
+   * Get the first value of the observable in the Task, if the observable completes with no items return None.
+   */
+  final def toOptionTask[A](o: Observable[A]): Task[Option[A]] = Task.async(subscribe(o.headOption)(_))
 
   /**
    * Get all the values from the observable in a Task[List[A]].
