@@ -28,7 +28,7 @@ class ByteVectorEncoderSpec extends TestBase {
     "encode string as utf8" in { ByteVectorEncoder.StringEncoder(stringWithUnicode) shouldBe utf8Bytes }
     "encode json utf8Bytes" in { ByteVectorEncoder.fromEncodeJson(EncodeJson.of[Map[String, String]])(Map("key" -> jsonValue)) shouldBe utf8Bytes }
 
-    "have a lawful scalaz typeclasses" in {
+    "have lawful scalaz typeclasses" in {
       implicit val byteVectorEquals: Equal[ByteVector] = Equal.equalBy[ByteVector, List[Byte]](_.toArray.toList)
       //Function equality isn't possible so I chose to evaluate it at a single point and prove that the functor laws hold given that point.
       implicit def equal = Equal.equalBy[ByteVectorEncoder[Int], ByteVector](_.apply(0))

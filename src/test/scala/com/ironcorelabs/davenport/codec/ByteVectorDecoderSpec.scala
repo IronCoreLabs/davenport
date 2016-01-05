@@ -44,7 +44,7 @@ class ByteVectorDecoderSpec extends TestBase {
       failure.message should include("Failed to decode json giving excuse")
     }
 
-    "have a lawful scalaz typeclasses" in {
+    "have lawful scalaz typeclasses" in {
       //Function equality isn't possible so I chose to evaluate it at a single point and prove that the functor laws hold given that point.
       implicit def equal[A: Equal] = Equal.equalBy[ByteVectorDecoder[A], A](_.apply(utf8Bytes).getOrElse(throw new Exception("Decoding bytes failed")))
       import scalaz.scalacheck.ScalazProperties

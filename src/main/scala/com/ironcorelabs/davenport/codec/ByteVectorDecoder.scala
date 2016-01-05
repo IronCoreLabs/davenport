@@ -11,7 +11,7 @@ import argonaut._
 /**
  * Decode a ByteVector into some type A
  */
-case class ByteVectorDecoder[A](decode: ByteVector => DecodeError \/ A) {
+final case class ByteVectorDecoder[A](decode: ByteVector => DecodeError \/ A) {
   /**
    * Alias for [[ByteVectorDecoder.decode]].
    */

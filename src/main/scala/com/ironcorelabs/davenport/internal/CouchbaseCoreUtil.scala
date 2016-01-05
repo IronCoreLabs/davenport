@@ -3,11 +3,10 @@ package internal
 
 import util.observable.toSingleItemTask
 import com.couchbase.client.core.config.ConfigurationException
-import com.couchbase.client.core.message.cluster.{ OpenBucketRequest, OpenBucketResponse, SeedNodesRequest, SeedNodesResponse }
 import com.couchbase.client.core.{ CouchbaseCore, CouchbaseException }
 import error.{ BucketDoesNotExistException, InvalidPasswordException }
 import com.couchbase.client.core.env.{ DefaultCoreEnvironment, CoreEnvironment }
-import com.couchbase.client.core.message.cluster.{ DisconnectResponse, DisconnectRequest }
+import com.couchbase.client.core.message.cluster.{ DisconnectResponse, DisconnectRequest, OpenBucketRequest, OpenBucketResponse, SeedNodesRequest, SeedNodesResponse } //scalastyle:ignore
 
 import rx.lang.scala.JavaConversions._
 import scalaz.concurrent.Task

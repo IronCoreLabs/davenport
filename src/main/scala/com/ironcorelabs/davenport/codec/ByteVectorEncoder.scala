@@ -11,7 +11,7 @@ import argonaut._
 /**
  * Encode some A into a ByteVector for serialization using the encode function.
  */
-case class ByteVectorEncoder[A](encode: A => ByteVector) {
+final case class ByteVectorEncoder[A](encode: A => ByteVector) {
   def apply(a: A): ByteVector = encode(a)
   def contramap[B](f: B => A): ByteVectorEncoder[B] = ByteVectorEncoder { b => encode(f(b)) }
 }
