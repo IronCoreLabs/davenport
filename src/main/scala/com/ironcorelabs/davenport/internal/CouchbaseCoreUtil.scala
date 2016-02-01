@@ -61,5 +61,6 @@ private[davenport] final object CouchbaseCoreUtil {
       }
     case ex: CouchbaseException =>
       Task.fail(ex)
+
   }
 }

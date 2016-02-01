@@ -125,8 +125,7 @@ private object Bucket {
   private def toByteVectorWithCustomErrorHandling(
     id: String,
     bucket: String,
-    res: AbstractKeyValueResponse
-  )(specialErrorHandler: PartialFunction[ResponseStatus, CouchbaseError]): Task[ByteVector] =
+    res: AbstractKeyValueResponse)(specialErrorHandler: PartialFunction[ResponseStatus, CouchbaseError]): Task[ByteVector] =
     processResponse(id, bucket, res) { res => readBytes(res.content) }(specialErrorHandler)
 
   private def toByteVector(id: String, bucket: String, res: AbstractKeyValueResponse): Task[ByteVector] =
@@ -139,8 +138,7 @@ private object Bucket {
   private def processResponse[A](
     id: String,
     bucket: String,
-    res: AbstractKeyValueResponse
-  )(onSuccess: AbstractKeyValueResponse => A)(specialErrorHandler: PartialFunction[ResponseStatus, CouchbaseError]): Task[A] = {
+    res: AbstractKeyValueResponse)(onSuccess: AbstractKeyValueResponse => A)(specialErrorHandler: PartialFunction[ResponseStatus, CouchbaseError]): Task[A] = { //scalastyle:ignore
     //Important that all of these eagerly consume res.content if they need it. It's freed immediately after this match.
     val status = res.status()
     val maybeHandledError = specialErrorHandler.lift(status).map(Task.fail(_))
@@ -153,7 +151,12 @@ private object Bucket {
         case ResponseStatus.TEMPORARY_FAILURE | ResponseStatus.SERVER_BUSY => Task.fail(TemporaryFailureException())
         case ResponseStatus.COMMAND_UNAVAILABLE | ResponseStatus.FAILURE | ResponseStatus.INTERNAL_ERROR |
           ResponseStatus.INVALID_ARGUMENTS | ResponseStatus.NOT_STORED | ResponseStatus.OUT_OF_MEMORY |
-          ResponseStatus.RETRY | ResponseStatus.TOO_BIG | ResponseStatus.RANGE_ERROR | ResponseStatus.ROLLBACK =>
+          ResponseStatus.RETRY | ResponseStatus.TOO_BIG | ResponseStatus.RANGE_ERROR | ResponseStatus.ROLLBACK |
+          ResponseStatus.SUBDOC_DELTA_RANGE | ResponseStatus.SUBDOC_DOC_NOT_JSON | ResponseStatus.SUBDOC_DOC_TOO_DEEP |
+          ResponseStatus.SUBDOC_INVALID_COMBO | ResponseStatus.SUBDOC_MULTI_PATH_FAILURE | ResponseStatus.SUBDOC_NUM_RANGE |
+          ResponseStatus.SUBDOC_PATH_EXISTS | ResponseStatus.SUBDOC_PATH_INVALID | ResponseStatus.SUBDOC_PATH_MISMATCH |
+          ResponseStatus.SUBDOC_PATH_NOT_FOUND | ResponseStatus.SUBDOC_PATH_TOO_BIG | ResponseStatus.SUBDOC_VALUE_CANTINSERT |
+          ResponseStatus.SUBDOC_VALUE_TOO_DEEP =>
           Task.fail(new CouchbaseException(s"Error '${res.status().toString}' returned from the couchbase server."))
       }
     }
