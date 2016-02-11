@@ -3,7 +3,7 @@
 //
 package com.ironcorelabs.davenport
 
-import scalaz._, Scalaz._, scalaz.concurrent.Task, scalaz.stream.Process
+import scalaz._, Scalaz._, scalaz.concurrent.Task
 import db._
 import tags.RequiresCouch
 import syntax.dbprog._
@@ -21,7 +21,7 @@ class CouchConnectionSpec extends TestBase with KnobsConfiguration {
   }
 
   override def afterAll() = {
-    connection.disconnect.attemptRun.value
+    connection.disconnect.attemptRun.valueOr(throw _)
     ()
   }
 

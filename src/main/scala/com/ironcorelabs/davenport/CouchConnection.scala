@@ -6,7 +6,6 @@ package com.ironcorelabs.davenport
 import scala.collection.concurrent.TrieMap
 
 import scalaz.concurrent.Task
-import scalaz.syntax.monad._ // Brought in for .join
 
 // Couchbase
 import com.couchbase.client.core.CouchbaseCore
@@ -51,13 +50,16 @@ final case class CouchConnection(config: DavenportConfig) {
       createNewBucket(bucketAndPassword.name, bucketAndPassword.password).map { newBucket =>
         openBuckets.putIfAbsent(bucketAndPassword, newBucket).getOrElse(newBucket)
       }
-    }.handleWith {
-      //This exception happens when the cluster and environment have been shut down. Try and give a slightly
-      //better message.
-      case ex: java.util.concurrent.RejectedExecutionException =>
-        Task.fail(new DisconnectedException(ex))
-    }
-  }.join
+      //We have to run here because the rx.exceptions.OnErrorFailedException escapes the task, the outer Task.delay catches.
+    }.run
+  }.handleWith {
+    //This exception happens when the cluster and environment have been shut down. Try and give a slightly
+    //better message.
+    case ex: java.util.concurrent.RejectedExecutionException =>
+      Task.fail(new DisconnectedException(ex))
+    case ex: rx.exceptions.OnErrorFailedException =>
+      Task.fail(new DisconnectedException(ex))
+  }
 
   /**
    * Returns a Task[Boolean] where the boolean represents if the bucket was actually closed or not.
@@ -73,7 +75,7 @@ final case class CouchConnection(config: DavenportConfig) {
   def disconnect: Task[Boolean] = for {
     core <- Task.fromDisjunction(maybeCore)
     _ <- internal.CouchbaseCoreUtil.disconnectCouchbaseCore(core)
-    environmentResultAsJava <- util.observable.toSingleItemTask(environment.shutdown)
+    environmentResultAsJava <- util.observable.toSingleItemTask(environment.shutdownAsync)
     environmentResult = Boolean2boolean(environmentResultAsJava)
     _ <- Task.delay(openBuckets.clear)
   } yield environmentResult
