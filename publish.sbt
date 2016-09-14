@@ -1,6 +1,6 @@
 name := "davenport"
 
-homepage := Some(url("https://ironcorelabs.com/davenport"))
+//homepage := Some(url("https://ironcorelabs.com/davenport"))
 
 organization := "com.ironcorelabs"
 
