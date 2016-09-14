@@ -18,7 +18,7 @@ libraryDependencies ++= Seq(
   "io.reactivex" %% "rxscala" % "0.25.0", // to better work with the couchbase java client
   "io.argonaut" %% "argonaut" % "6.1", // json (de)serialization scalaz style
   "org.scalaz.stream" %% "scalaz-stream" % "0.7.2a",
-  "org.scodec" %% "scodec-bits" % "1.0.12"
+  "org.scodec" %% "scodec-bits" % "1.1.1"
 )
 
 // Test
